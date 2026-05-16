@@ -1,0 +1,49 @@
+{
+  "name": "Odunayo Abraham",
+  "title": "DevOps Engineer & Software Developer",
+  "location": "Lagos, Nigeria",
+  "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
+  "about": "I am a Software Developer and DevOps Engineer. I specialize in systems-level programming, having spent years building and maintaining custom Android ROMs like StatixOS and helluvaOS. Whether I am writing high-performance Rust services or Debugging Java projects, I thrive on understanding how systems work under the hood. When I'm not compiling kernels, you can usually find me deep in Tolkien's lore, catching up on the latest anime episode, or fine-tuning network latency for competitive gaming.",
+  "education": {
+    "degree": "BSc. Computer Science",
+    "institution": "Federal University Oye-Ekiti",
+    "year": "2024"
+  },
+  "experience": [
+    {
+      "role": "Networking Tutor",
+      "company": "KHEMSAFE(NYSC)",
+      "description": "Instructing students on basic and core networking fundamentals and infrastructure."
+    },
+    {
+      "role": "Software Developer",
+      "company": "GitHub Octernship",
+      "description": "Engineered cross-platform solutions utilizing Flutter and Rust."
+    },
+    {
+      "role": "Android OS Developer",
+      "company": "Open Source (StatixOS, helluvaOS)",
+      "description": "Maintained custom ROMs for Pixel devices, resolving device-specific bugs and merging monthly AOSP security patches."
+    }
+  ],
+  "projects": [
+    {
+      "title": "Flutter & Rust Octernship",
+      "description": "Cross-platform application built with a native Flutter UI and a high-performance Rust backend core.",
+      "tech": ["Flutter", "Rust", "Dart"],
+      "link": "https://github.com/mattDev0/flutter_rust_octernship"
+    },
+    {
+      "title": "Custom Android ROMs",
+      "description": "Device tree bring-up and kernel compilations for StatixOS and helluvaOS, optimizing Pixel 3/XL hardware.",
+      "tech": ["C++", "Java", "Makefile"],
+      "link": "https://github.com/mattDev0"
+    },
+    {
+      "title": "Polyglot Microservice Portfolio",
+      "description": "A full-stack monorepo bridging a hot-reloading React frontend with live Rust and Spring Boot API engines.",
+      "tech": ["React", "Rust", "Spring Boot"],
+      "link": "https://github.com/ymattDev0/portfolio-monorepo"
+    }
+  ]
+}
