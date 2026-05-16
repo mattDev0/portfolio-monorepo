@@ -102,16 +102,16 @@ function App() {
             {javaStatus ? (
               <div className="font-mono text-sm space-y-3 mt-4">
                 <div className="flex flex-col border-b border-gray-700 pb-2">
-                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Engine</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Engine Version</span>
                   <span className="text-gray-200">{javaStatus.engine}</span>
                 </div>
                 <div className="flex flex-col border-b border-gray-700 pb-2">
-                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Database & Containers</span>
-                  <span className="text-blue-400">{javaStatus.database_status} — {javaStatus.active_containers} Active</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Server Uptime & Threads</span>
+                  <span className="text-blue-400">Up {javaStatus.uptime} — {javaStatus.active_threads}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Deployment Region</span>
-                  <span className="text-cyan-400">{javaStatus.cloud_region}</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Live JVM Memory Allocation</span>
+                  <span className="text-cyan-400">{javaStatus.jvm_memory}</span>
                 </div>
               </div>
             ) : (

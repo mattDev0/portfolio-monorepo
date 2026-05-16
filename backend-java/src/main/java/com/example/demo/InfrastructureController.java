@@ -5,22 +5,35 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.management.ManagementFactory;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/infrastructure")
-// Allow the React frontend on port 5173 to access this endpoint
 @CrossOrigin(origins = "http://localhost:5173")
 public class InfrastructureController {
 
     @GetMapping("/metrics")
     public Map<String, Object> getMetrics() {
-        // Using a Map to quickly generate a JSON response
+        // Get Memory Stats
+        Runtime runtime = Runtime.getRuntime();
+        long totalMem = runtime.totalMemory() / (1024 * 1024);
+        long freeMem = runtime.freeMemory() / (1024 * 1024);
+        long usedMem = totalMem - freeMem;
+
+        // Get Uptime
+        long uptimeMillis = ManagementFactory.getRuntimeMXBean().getUptime();
+        long uptimeHours = uptimeMillis / (1000 * 60 * 60);
+        long uptimeMinutes = (uptimeMillis / (1000 * 60)) % 60;
+
+        // Get Active Threads
+        int threadCount = ManagementFactory.getThreadMXBean().getThreadCount();
+
         return Map.of(
-            "engine", "Spring Boot Enterprise",
-            "active_containers", 14,
-            "database_status", "Connected (PostgreSQL)",
-            "cloud_region", "Azure West Europe"
+            "engine", "Spring Boot " + org.springframework.boot.SpringBootVersion.getVersion(),
+            "uptime", String.format("%dh %dm", uptimeHours, uptimeMinutes),
+            "jvm_memory", String.format("%d MB / %d MB", usedMem, totalMem),
+            "active_threads", String.valueOf(threadCount) + " Threads"
         );
     }
 }
