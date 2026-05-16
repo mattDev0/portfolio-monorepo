@@ -72,16 +72,16 @@ function App() {
             {rustStatus ? (
               <div className="font-mono text-sm space-y-3 mt-4">
                 <div className="flex flex-col border-b border-gray-700 pb-2">
-                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Service</span>
-                  <span className="text-gray-200">{rustStatus.service}</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Host OS</span>
+                  <span className="text-gray-200">{rustStatus.os_info}</span>
                 </div>
                 <div className="flex flex-col border-b border-gray-700 pb-2">
-                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">State</span>
-                  <span className="text-green-400">{rustStatus.status}</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Hardware Threads</span>
+                  <span className="text-blue-400">{rustStatus.cpu_cores}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Architecture</span>
-                  <span className="text-purple-400">{rustStatus.uptime_concept}</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wider mb-1">Live Memory Usage</span>
+                  <span className="text-purple-400">{rustStatus.memory_usage}</span>
                 </div>
               </div>
             ) : (
