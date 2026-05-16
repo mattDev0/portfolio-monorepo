@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: ./frontend-react
+    ports:
+      - "5173:80" # Maps local port 5173 to Nginx port 80 inside the container
+    depends_on:
+      - rust-api
+      - java-api
+
+  rust-api:
+    build:
+      context: ./backend-rust
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  java-api:
+    build:
+      context: ./backend-java
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
