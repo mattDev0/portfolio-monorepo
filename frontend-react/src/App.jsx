@@ -8,7 +8,7 @@ function App() {
 
   // Fetch Rust Hardware Metrics
   useEffect(() => {
-    fetch('http://localhost:8080/api/status')
+    fetch('https://mattdev0.tech/api/status')
       .then(response => response.json())
       .then(data => setRustStatus(data))
       .catch(error => console.error("Error fetching from Rust API:", error));
@@ -16,7 +16,7 @@ function App() {
 
   // Fetch Java JVM Metrics
   useEffect(() => {
-    fetch('http://localhost:8081/api/infrastructure/metrics')
+    fetch('https://mattdev0.tech/api/infrastructure/metrics')
       .then(response => response.json())
       .then(data => setJavaStatus(data))
       .catch(error => console.error("Error fetching from Java API:", error));
@@ -24,7 +24,7 @@ function App() {
 
   // Fetch Live Spotify Session via Rust
   useEffect(() => {
-    fetch('http://localhost:8080/api/spotify')
+    fetch('https://mattdev0.tech/api/spotify')
       .then(response => response.json())
       .then(data => setSpotifyData(data))
       .catch(error => console.error("Error fetching Spotify API:", error));
