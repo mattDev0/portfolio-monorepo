@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import portfolioConfig from './config.json';
+import GitHubActivity from './GitHubActivity';
 
 function App() {
   const [rustStatus, setRustStatus] = useState(null);
@@ -84,23 +85,35 @@ function App() {
         
         {/* Profile & Experience Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <section className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700 md:col-span-2 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2">About the Developer</h3>
-              <p className="text-gray-300 leading-relaxed text-sm">
-                {portfolioConfig.about}
-              </p>
-            </div>
-            <div className="mt-6 pt-6 border-t border-gray-700">
-               <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Education</h4>
-               <div className="flex justify-between items-center">
-                 <span className="text-gray-200 font-medium">{portfolioConfig.education.degree}</span>
-                 <span className="text-blue-400 text-sm">{portfolioConfig.education.year}</span>
-               </div>
-               <div className="text-gray-500 text-sm">{portfolioConfig.education.institution}</div>
-            </div>
-          </section>
+          
+          {/* --- LEFT COLUMN WRAPPER (Spans 2 of 3 columns) --- */}
+          <div className="md:col-span-2 flex flex-col gap-8">
+            
+            {/* 1. About the Developer */}
+            <section className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700 flex flex-col justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2">About the Developer</h3>
+                <p className="text-gray-300 leading-relaxed text-sm">
+                  {portfolioConfig.about}
+                </p>
+              </div>
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                 <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Education</h4>
+                 <div className="flex justify-between items-center">
+                   <span className="text-gray-200 font-medium">{portfolioConfig.education.degree}</span>
+                   <span className="text-blue-400 text-sm">{portfolioConfig.education.year}</span>
+                 </div>
+                 <div className="text-gray-500 text-sm">{portfolioConfig.education.institution}</div>
+              </div>
+            </section>
 
+            {/* 2. Live GitHub Activity */}
+            <GitHubActivity />
+            
+          </div>
+          {/* --- END LEFT COLUMN WRAPPER --- */}
+
+          {/* --- RIGHT COLUMN: Experience (Spans 1 of 3 columns) --- */}
           <section className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
             <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2">Recent Roles</h3>
             <div className="space-y-6">
@@ -114,6 +127,7 @@ function App() {
               ))}
             </div>
           </section>
+
         </div>
 
         {/* Featured Projects Section */}
