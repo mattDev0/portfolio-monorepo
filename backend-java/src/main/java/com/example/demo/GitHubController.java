@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/github")
-@CrossOrigin(origins = "http://localhost:5173") // Matches your local Vite testing setup
+@CrossOrigin(origins = "*")
 public class GitHubController {
 
     private final GitHubService gitHubService;
