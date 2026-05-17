@@ -6,11 +6,7 @@ const GitHubActivity = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Use Vite's native environment checker.
-    // If running locally, hit the local Java server. If on Azure, use the relative path.
-    const apiUrl = import.meta.env.DEV 
-      ? 'http://localhost:8081/api/github/activity' 
-      : '/api/github/activity'; 
+    const apiUrl = 'https://mattdev0.tech/api/github/activity';
 
     const fetchCommits = async () => {
       try {
