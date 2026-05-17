@@ -37,13 +37,13 @@
       "title": "Custom Android ROMs",
       "description": "Device tree bring-up and kernel compilations for StatixOS and helluvaOS, optimizing Pixel 3/XL hardware.",
       "tech": ["C++", "Java", "Makefile"],
-      "link": "https://github.com/mattDev0"
+      "link": "https://github.com/mattDev0/device_google_crosshatch"
     },
     {
       "title": "Polyglot Microservice Portfolio",
       "description": "A full-stack monorepo bridging a hot-reloading React frontend with live Rust and Spring Boot API engines.",
       "tech": ["React", "Rust", "Spring Boot"],
-      "link": "https://github.com/ymattDev0/portfolio-monorepo"
+      "link": "https://github.com/mattDev0/portfolio-monorepo"
     }
   ]
 }
