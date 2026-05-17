@@ -17,9 +17,9 @@ jobs:
       - name: Executing Remote SSH Commands to Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets::AZURE_HOST }}
-          username: ${{ secrets::AZURE_USER }}
-          key: ${{ secrets::AZURE_SSH_KEY }}
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
           script: |
             echo "Successfully connected to Azure Production Server."
