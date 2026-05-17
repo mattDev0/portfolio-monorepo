@@ -2,6 +2,7 @@
 
 A high-performance, microservice-backed personal portfolio demonstrating full-stack engineering, system-level telemetry, and automated CI/CD deployment.
 
+**🌐 Live Production Site:** [https://mattdev0.tech](https://mattdev0.tech)
 ![Live Status](https://img.shields.io/badge/Status-Live_on_Azure-success)
 ![Frontend](https://img.shields.io/badge/Frontend-React_%2B_Vite-blue)
 ![Backend](https://img.shields.io/badge/Backends-Java_Spring_%7C_Rust-orange)
