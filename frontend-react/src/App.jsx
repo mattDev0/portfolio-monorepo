@@ -37,13 +37,47 @@ function App() {
       <header className="text-center mb-12">
         <h1 className="text-5xl font-bold text-blue-400 mb-2 tracking-tight">{portfolioConfig.name}</h1>
         <h2 className="text-2xl font-semibold text-gray-300 mb-2">{portfolioConfig.title}</h2>
-        <div className="flex items-center justify-center space-x-2 text-gray-400 mb-6">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        
+        {/* Location and Remote Status */}
+        <div className="flex items-center justify-center text-gray-400 mb-4">
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
           <span>{portfolioConfig.location}</span>
+          
+          {portfolioConfig.openToRemote && (
+            <>
+              <span className="mx-2 text-gray-600">•</span>
+              <span className="text-green-400 font-medium">Open to Remote</span>
+            </>
+          )}
         </div>
-        <p className="max-w-2xl mx-auto text-gray-400 leading-relaxed italic">
+
+        {/* Tagline */}
+        <p className="max-w-2xl mx-auto text-gray-400 leading-relaxed italic mb-6">
           "{portfolioConfig.tagline}"
         </p>
+
+        {/* Contact Links */}
+        <div className="flex items-center justify-center space-x-4">
+          <a 
+            href={`mailto:${portfolioConfig.email}`} 
+            className="flex items-center space-x-2 px-6 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-600 rounded-lg transition-all duration-200"
+          >
+            <span>📧</span>
+            <span className="font-medium">Email Me</span>
+          </a>
+          <a 
+            href={portfolioConfig.githubUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="flex items-center space-x-2 px-6 py-2 bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 hover:border-blue-500/50 rounded-lg transition-all duration-200"
+          >
+            <span>🐙</span>
+            <span className="font-medium">GitHub</span>
+          </a>
+        </div>
       </header>
       
       <main className="w-full max-w-5xl space-y-12">
@@ -184,7 +218,7 @@ function App() {
               
               <h3 className="text-lg font-bold text-[#1DB954] mb-4 border-b border-gray-600 pb-2 flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.54.659.3 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.84.241 1.2zM20.4 9.06C16.8 6.9 9.72 6.72 5.64 8.04c-.6.18-1.2-.12-1.38-.72-.18-.6.12-1.2.72-1.38 4.68-1.44 12.48-1.2 16.68 1.32.54.3.72.96.42 1.5-.24.54-.84.72-1.68.3z"/></svg>
-                Shared Session
+                Spotify Session
               </h3>
               
               {spotifyData ? (
