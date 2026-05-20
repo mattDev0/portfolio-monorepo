@@ -271,7 +271,7 @@ docker-compose up -d --build
 
 | Method | Route                         | Microservice | Description                                    |
 | ------ | ----------------------------- | ------------ | ---------------------------------------------- |
-| GET    | `/api/github/activity`        | Java         | Returns top 5 recent code pushes               |
+| GET    | `/api/github/activity`        | Java         | Returns top 4 recent code pushes               |
 | GET    | `/api/infrastructure/metrics` | Java         | Returns JVM memory allocation and thread count |
 | GET    | `/api/status`                 | Rust         | Returns host OS telemetry                      |
 | GET    | `/api/spotify`                | Rust         | Returns current Spotify listening session      |

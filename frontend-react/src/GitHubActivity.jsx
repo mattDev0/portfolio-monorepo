@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { apiUrl } from './api';
 
 const GitHubActivity = () => {
@@ -26,13 +26,6 @@ const GitHubActivity = () => {
     fetchCommits();
   }, []);
 
-  // Format the ISO date into a readable string (e.g., "May 17, 2026")
-  const formatDate = (dateString) => {
-    if (dateString === "Just now") return dateString;
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 mb-8 w-full">
       <div className="flex items-center mb-6">
@@ -44,7 +37,7 @@ const GitHubActivity = () => {
 
       {loading ? (
         <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className="h-16 bg-gray-700/50 rounded-lg"></div>
           ))}
         </div>
@@ -54,7 +47,7 @@ const GitHubActivity = () => {
         <ul className="space-y-4">
             {commits.map((commit, index) => (
               <li key={index} className="pb-4 border-b border-gray-700/50 last:border-0 last:pb-0">
-                
+
                 {/* Repo Name & Date */}
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-blue-400 font-medium text-sm truncate pr-4">
@@ -64,7 +57,7 @@ const GitHubActivity = () => {
                     {new Date(commit.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>
-                
+
                 {/* Hash Badge & Commit Message */}
                 <div className="flex items-center space-x-2">
                   <span className="bg-gray-800/80 border border-gray-600 text-gray-400 font-mono text-[10px] px-1.5 py-0.5 rounded shadow-sm">
@@ -84,3 +77,4 @@ const GitHubActivity = () => {
 };
 
 export default GitHubActivity;
+

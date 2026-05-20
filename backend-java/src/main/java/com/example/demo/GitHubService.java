@@ -30,7 +30,7 @@ public class GitHubService {
                 JsonNode rootNode = objectMapper.readTree(rawJson);
 
                 for (JsonNode event : rootNode) {
-                    if (recentCommits.size() >= 5) break;
+                    if (recentCommits.size() >= 4) break;
 
                     if ("PushEvent".equals(event.get("type").asText())) {
                         String repoName = event.get("repo").get("name").asText();
