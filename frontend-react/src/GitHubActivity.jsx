@@ -50,19 +50,33 @@ const GitHubActivity = () => {
       ) : error ? (
         <p className="text-gray-400 italic">{error}</p>
       ) : (
-        <div className="space-y-4">
-          {commits.map((commit, index) => (
-            <div key={index} className="flex flex-col p-4 bg-gray-900/50 border border-gray-700/50 rounded-lg hover:border-gray-600 transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-sm font-semibold text-blue-400">{commit.repo}</span>
-                <span className="text-xs text-gray-500">{formatDate(commit.date)}</span>
-              </div>
-              <p className="text-sm text-gray-300 font-mono truncate">
-                {commit.message}
-              </p>
-            </div>
-          ))}
-        </div>
+        <ul className="space-y-4">
+            {commits.map((commit, index) => (
+              <li key={index} className="pb-4 border-b border-gray-700/50 last:border-0 last:pb-0">
+                
+                {/* Repo Name & Date */}
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-blue-400 font-medium text-sm truncate pr-4">
+                    {commit.repo}
+                  </span>
+                  <span className="text-gray-500 text-xs flex-shrink-0">
+                    {new Date(commit.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+                
+                {/* Hash Badge & Commit Message */}
+                <div className="flex items-center space-x-2">
+                  <span className="bg-gray-800/80 border border-gray-600 text-gray-400 font-mono text-[10px] px-1.5 py-0.5 rounded shadow-sm">
+                    {commit.hash}
+                  </span>
+                  <span className="text-gray-300 text-sm truncate">
+                    {commit.message}
+                  </span>
+                </div>
+
+              </li>
+            ))}
+          </ul>
       )}
     </div>
   );
