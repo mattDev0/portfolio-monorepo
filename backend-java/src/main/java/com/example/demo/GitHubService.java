@@ -16,7 +16,7 @@ import java.util.Map;
 public class GitHubService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper(); // Add the manual parser
+    private final ObjectMapper objectMapper = new ObjectMapper(); 
 
     @Cacheable("githubActivity")
     public List<Map<String, String>> getRecentActivity() {
@@ -36,32 +36,43 @@ public class GitHubService {
                         String repoName = event.get("repo").get("name").asText();
                         String date = event.get("created_at").asText();
                         JsonNode payload = event.get("payload");
-                        JsonNode commits = payload.get("commits");
 
                         String message = "Pushed repository update";
                         String hash = "unknown";
+                        String fullSha = null;
 
                         // 1. Extract the Commit Hash (SHA)
                         if (payload.has("head")) {
-                            String fullSha = payload.get("head").asText();
+                            fullSha = payload.get("head").asText();
                             if (fullSha.length() >= 7) {
                                 hash = fullSha.substring(0, 7);
                             }
                         }
 
-                        // 2. Extract the Actual Commit Message
-                        if (commits != null && commits.isArray() && commits.size() > 0) {
-                            JsonNode firstCommit = commits.get(0);
-                            String fullMessage = firstCommit.get("message").asText();
-                            // Grab only the first line of the commit message
-                            message = fullMessage.split("\n")[0]; 
-                            
-                            // Double-check the exact commit hash if available
-                            if (firstCommit.has("sha")) {
-                                String fullSha = firstCommit.get("sha").asText();
-                                if (fullSha.length() >= 7) hash = fullSha.substring(0, 7);
+                        // 2. Secondary API Call: Fetch the actual commit message 
+                        // (Required because GitHub removed the 'commits' array from PushEvents in late 2025)
+                        boolean messageFound = false;
+                        if (fullSha != null) {
+                            try {
+                                String commitUrl = "https://api.github.com/repos/" + repoName + "/commits/" + fullSha;
+                                String commitJson = restTemplate.getForObject(commitUrl, String.class);
+                                
+                                if (commitJson != null) {
+                                    JsonNode commitRoot = objectMapper.readTree(commitJson);
+                                    if (commitRoot.has("commit") && commitRoot.get("commit").has("message")) {
+                                        String fullMessage = commitRoot.get("commit").get("message").asText();
+                                        message = fullMessage.split("\n")[0]; // Grab just the first line
+                                        messageFound = true;
+                                    }
+                                }
+                            } catch (Exception e) {
+                                // If we hit a rate limit, fail silently and rely on the fallback
+                                System.err.println("Rate limit hit or commit missing for hash: " + hash);
                             }
-                        } else if (payload.has("ref")) {
+                        }
+
+                        // 3. Fallback (If secondary fetch failed or rate limit exceeded)
+                        if (!messageFound && payload.has("ref")) {
                             String ref = payload.get("ref").asText();
                             message = "Pushed updates to branch: " + ref.replace("refs/heads/", "");
                         }
