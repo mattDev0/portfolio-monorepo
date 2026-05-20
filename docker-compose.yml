@@ -13,8 +13,7 @@ services:
     build:
       context: ./backend-rust
     env_file:
-      - path: ./backend-rust/.env
-        required: false
+      - ./backend-rust/.env
     environment:
       APP_ENV: ${APP_ENV:-production}
     ports:
