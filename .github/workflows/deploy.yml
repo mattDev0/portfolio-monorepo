@@ -1,10 +1,10 @@
 name: Production Deployment
 
-# Trigger the workflow only when pushing to the infra-setup branch
+# Trigger the workflow only when pushing to the main branch
 on:
   push:
     branches:
-      - infra-setup
+      - main
 
 jobs:
   deploy:
@@ -28,9 +28,9 @@ jobs:
             cd ~/portfolio-monorepo
             
             # Ensure the server is locked to the correct branch and fetch the latest code
-            git fetch origin infra-setup
-            git checkout infra-setup
-            git reset --hard origin/infra-setup
+            git fetch origin main
+            git checkout main
+            git reset --hard origin/main
             
             # 1. THE PERMANENT FIX: Always wipe the slate clean to prevent zombie ports
             sudo docker-compose down
