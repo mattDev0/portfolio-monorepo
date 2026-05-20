@@ -1,18 +1,22 @@
-version: '3.8'
-
 services:
   frontend:
     build: 
       context: ./frontend-react
     ports:
-      - "3000:80" # Maps local port 5173 to Nginx port 80 inside the container
+      - "3000:80"
     depends_on:
       - rust-api
       - java-api
+    restart: unless-stopped
 
   rust-api:
     build:
       context: ./backend-rust
+    env_file:
+      - path: ./backend-rust/.env
+        required: false
+    environment:
+      APP_ENV: ${APP_ENV:-production}
     ports:
       - "8080:8080"
     restart: unless-stopped

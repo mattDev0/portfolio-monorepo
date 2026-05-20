@@ -7,6 +7,16 @@ use sysinfo::System;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
+fn is_local_runtime() -> bool {
+    let app_env = env::var("APP_ENV")
+        .or_else(|_| env::var("RUST_ENV"))
+        .unwrap_or_default()
+        .to_lowercase();
+
+    matches!(app_env.as_str(), "local" | "development" | "dev")
+        || (cfg!(debug_assertions) && app_env != "production")
+}
+
 // Existing Hardware Struct
 #[derive(Serialize)]
 struct SystemMetrics {
@@ -66,9 +76,34 @@ async fn get_system_status() -> Json<SystemMetrics> {
 
 // The core Spotify logic
 async fn get_spotify_status() -> Json<SpotifyStatus> {
-    let client_id = env::var("SPOTIFY_CLIENT_ID").expect("Missing CLIENT_ID");
-    let client_secret = env::var("SPOTIFY_CLIENT_SECRET").expect("Missing CLIENT_SECRET");
-    let refresh_token = env::var("SPOTIFY_REFRESH_TOKEN").expect("Missing REFRESH_TOKEN");
+    let spotify_credentials = (
+        env::var("SPOTIFY_CLIENT_ID"),
+        env::var("SPOTIFY_CLIENT_SECRET"),
+        env::var("SPOTIFY_REFRESH_TOKEN"),
+    );
+
+    let (client_id, client_secret, refresh_token) = match spotify_credentials {
+        (Ok(client_id), Ok(client_secret), Ok(refresh_token)) => {
+            (client_id, client_secret, refresh_token)
+        }
+        _ if is_local_runtime() => {
+            return Json(SpotifyStatus {
+                is_playing: false,
+                title: "Local Mode".to_string(),
+                artist: "Spotify credentials not configured".to_string(),
+                album_art: "".to_string(),
+            });
+        }
+        _ => {
+            println!("Missing Spotify credentials");
+            return Json(SpotifyStatus {
+                is_playing: false,
+                title: "Offline".to_string(),
+                artist: "Spotify credentials unavailable".to_string(),
+                album_art: "".to_string(),
+            });
+        }
+    };
 
     let client = Client::new();
 

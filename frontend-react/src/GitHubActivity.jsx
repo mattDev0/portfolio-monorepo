@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiUrl } from './api';
 
 const GitHubActivity = () => {
   const [commits, setCommits] = useState([]);
@@ -6,11 +7,11 @@ const GitHubActivity = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const apiUrl = 'https://mattdev0.tech/api/github/activity';
+    const activityUrl = apiUrl('java', '/api/github/activity');
 
     const fetchCommits = async () => {
       try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(activityUrl);
         if (!response.ok) throw new Error('Failed to fetch activity');
         const data = await response.json();
         setCommits(data);

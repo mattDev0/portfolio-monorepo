@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
+import { apiUrl } from './api';
 
 function App() {
   const [rustStatus, setRustStatus] = useState(null);
@@ -9,7 +10,7 @@ function App() {
 
   // Fetch Rust Hardware Metrics
   useEffect(() => {
-    fetch('https://mattdev0.tech/api/status')
+    fetch(apiUrl('rust', '/api/status'))
       .then(response => response.json())
       .then(data => setRustStatus(data))
       .catch(error => console.error("Error fetching from Rust API:", error));
@@ -17,7 +18,7 @@ function App() {
 
   // Fetch Java JVM Metrics
   useEffect(() => {
-    fetch('https://mattdev0.tech/api/infrastructure/metrics')
+    fetch(apiUrl('java', '/api/infrastructure/metrics'))
       .then(response => response.json())
       .then(data => setJavaStatus(data))
       .catch(error => console.error("Error fetching from Java API:", error));
@@ -25,7 +26,7 @@ function App() {
 
   // Fetch Live Spotify Session via Rust
   useEffect(() => {
-    fetch('https://mattdev0.tech/api/spotify')
+    fetch(apiUrl('rust', '/api/spotify'))
       .then(response => response.json())
       .then(data => setSpotifyData(data))
       .catch(error => console.error("Error fetching Spotify API:", error));

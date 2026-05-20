@@ -150,6 +150,46 @@ Pushes to the deployment branch automatically:
 
 ---
 
+## Local Runtime Flag
+
+The React frontend now detects local runtime automatically when it is served by Vite dev mode or opened from `localhost`, `127.0.0.1`, `::1`, or `0.0.0.0`.
+
+When local mode is active, frontend API calls use:
+
+* Rust API: `http://localhost:8080`
+* Java API: `http://localhost:8081`
+
+To force or customize local mode, copy `frontend-react/.env.example` to `frontend-react/.env.local` and adjust the values:
+
+```bash
+VITE_LOCAL_DEV=true
+VITE_LOCAL_RUST_API_BASE_URL=http://localhost:8080
+VITE_LOCAL_JAVA_API_BASE_URL=http://localhost:8081
+VITE_PRODUCTION_API_BASE_URL=https://mattdev0.tech
+```
+
+For the Rust service, `cargo run` is treated as local automatically. If you run a release build locally without Spotify credentials, set:
+
+```bash
+APP_ENV=local
+```
+
+For local Docker, use the local Compose override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+The main `docker-compose.yml` keeps `APP_ENV=production` by default for Azure deployments.
+
+---
+
 ## 1. Start the Frontend
 
 ```bash

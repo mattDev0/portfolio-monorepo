@@ -13,8 +13,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 # Copy the compiled binary from the builder
 COPY --from=builder /usr/src/app/target/release/backend-rust .
-# Copy the .env file so the API keys are available
-COPY .env .
 
 EXPOSE 8080
 CMD ["./backend-rust"]

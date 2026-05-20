@@ -1,0 +1,4 @@
+services:
+  rust-api:
+    environment:
+      APP_ENV: local
