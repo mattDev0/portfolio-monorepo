@@ -39,9 +39,9 @@ jobs:
             sudo docker build -t portfolio-rust-api:latest ./backend-rust
             
             echo "Importing images into K3s..."
-            sudo docker save portfolio-frontend:latest -o /tmp/portfolio-frontend.tar && sudo k3s ctr images import /tmp/portfolio-frontend.tar && rm /tmp/portfolio-frontend.tar
-            sudo docker save portfolio-java-api:latest -o /tmp/portfolio-java-api.tar && sudo k3s ctr images import /tmp/portfolio-java-api.tar && rm /tmp/portfolio-java-api.tar
-            sudo docker save portfolio-rust-api:latest -o /tmp/portfolio-rust-api.tar && sudo k3s ctr images import /tmp/portfolio-rust-api.tar && rm /tmp/portfolio-rust-api.tar
+            sudo docker save portfolio-frontend:latest -o /tmp/portfolio-frontend.tar && sudo k3s ctr images import /tmp/portfolio-frontend.tar && sudo rm -f /tmp/portfolio-frontend.tar
+            sudo docker save portfolio-java-api:latest -o /tmp/portfolio-java-api.tar && sudo k3s ctr images import /tmp/portfolio-java-api.tar && sudo rm -f /tmp/portfolio-java-api.tar
+            sudo docker save portfolio-rust-api:latest -o /tmp/portfolio-rust-api.tar && sudo k3s ctr images import /tmp/portfolio-rust-api.tar && sudo rm -f /tmp/portfolio-rust-api.tar
             
             echo "Applying namespaces..."
             sudo kubectl apply -f k8s/namespace.yaml
