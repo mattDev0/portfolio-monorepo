@@ -48,10 +48,10 @@ Hosted on an Azure Virtual Machine.
 
 Infrastructure stack includes:
 
-* Docker Compose orchestration
-* Nginx reverse proxy
-* Isolated microservice containers
-* Automated deployment pipeline
+* Kubernetes (K3s) cluster orchestration (namespace `portfolio`)
+* Host Nginx reverse proxy routing to K3s NodePorts
+* Isolated microservice pods with strict resource limits
+* Automated CI/CD deployment pipeline deploying to K8s
 
 ---
 
@@ -62,6 +62,12 @@ portfolio-monorepo/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml
+│
+├── k8s/                        # Kubernetes Manifests ☸️
+│   ├── namespace.yaml
+│   ├── frontend.yaml
+│   ├── java-api.yaml
+│   └── rust-api.yaml
 │
 ├── frontend-react/
 │   ├── public/
@@ -239,11 +245,11 @@ http://localhost:8080
 
 # 🚀 Production Deployment
 
-This project utilizes a Trunk-Based CI/CD deployment workflow.
+This project utilizes a Trunk-Based CI/CD deployment workflow deploying directly to Kubernetes.
 
 ## Required GitHub Secrets
 
-Configure the following repository secrets:
+Configure the following repository secrets in GitHub:
 
 * `AZURE_HOST`
 * `AZURE_USER`
@@ -251,19 +257,24 @@ Configure the following repository secrets:
 
 ## Deployment Flow
 
-Push code to the deployment branch (`main` or `infra-setup`).
+Push code to the deployment branch (`main`).
 
 GitHub Actions will automatically:
 
 1. Connect to the Azure VM via SSH
 2. Pull the latest repository changes
-3. Execute:
-
-```bash
-docker-compose up -d --build
-```
-
-4. Rebuild and restart all containers
+3. Build the Docker images locally on the VM:
+   - `portfolio-frontend`
+   - `portfolio-java-api`
+   - `portfolio-rust-api`
+4. Import the built images into K3s:
+   - `sudo k3s ctr images import`
+5. Dynamically configure K8s environment Secrets from the `.env` file
+6. Apply the Kubernetes manifests in the `k8s/` folder
+7. Trigger a zero-downtime rolling update:
+   ```bash
+   sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
+   ```
 
 ---
 
