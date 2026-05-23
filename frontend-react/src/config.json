@@ -6,18 +6,13 @@
   "email": "amatthew642@gmail.com",
   "githubUrl": "https://github.com/mattDev0",
   "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
-  "about": "I am a Software Developer and DevOps Engineer. I specialize in systems-level programming, having spent years building and maintaining custom Android ROMs like StatixOS and helluvaOS. Whether I am writing high-performance Rust services or Debugging Java projects, I thrive on understanding how systems work under the hood. When I'm not compiling kernels, you can usually find me deep in Tolkien's lore, catching up on the latest anime episode, or fine-tuning network latency for competitive gaming.",
+  "about": "I am a Software Developer and DevOps Engineer specializing in systems-level engineering, high-performance backends, and cloud infrastructure. With hands-on experience developing custom Android operating systems like StatixOS and helluvaOS, I bring deep expertise in Linux environments, build systems, and performance optimization. I am passionate about architecting reliable, scalable software using Rust, Java, Docker, and modern cloud platforms. By integrating DevOps practices with robust deployment workflows, I consistently drive system reliability and efficiency. My technical foundation is built on a profound curiosity for how systems operate at their core, empowering me to design comprehensive solutions spanning from networking fundamentals to distributed Infrastructure as Code.",
   "education": {
     "degree": "BSc. Computer Science",
     "institution": "Federal University Oye-Ekiti",
     "year": "2024"
   },
   "experience": [
-    {
-      "role": "Networking Tutor",
-      "company": "KHEMSAFE(NYSC)",
-      "description": "Instructing students on basic and core networking fundamentals and infrastructure."
-    },
     {
       "role": "Software Developer",
       "company": "GitHub Octernship",
@@ -27,6 +22,11 @@
       "role": "Android OS Developer",
       "company": "Open Source (StatixOS, helluvaOS)",
       "description": "Maintained custom ROMs for Pixel devices, resolving device-specific bugs and merging monthly AOSP security patches."
+    },
+    {
+      "role": "Networking Tutor",
+      "company": "KHEMSAFE(NYSC)",
+      "description": "Instructing students on basic and core networking fundamentals and infrastructure."
     }
   ],
   "projects": [
