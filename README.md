@@ -12,7 +12,30 @@ A high-performance, microservice-backed personal portfolio demonstrating full-st
 
 # 🏗️ System Architecture
 
-This monorepo houses three distinct microservices operating behind an Nginx reverse proxy, orchestrated via Docker Compose and automatically deployed via GitHub Actions.
+This monorepo houses three distinct microservices operating behind an Nginx reverse proxy, orchestrated via Kubernetes (K3s) and automatically deployed via GitHub Actions.
+
+```mermaid
+graph TD
+    Client[Client Browser] -->|HTTPS 443| Nginx[Host Nginx Reverse Proxy]
+    
+    subgraph "Azure Virtual Machine (Host)"
+        Nginx -->|Proxy to Port 30000| K8sFE[Service: frontend NodePort]
+        Nginx -->|Proxy to Port 30080| K8sRust[Service: rust-api NodePort]
+        Nginx -->|Proxy to Port 30081| K8sJava[Service: java-api NodePort]
+
+        subgraph "Namespace: portfolio"
+            K8sFE --> FE[frontend-react Pod]
+            K8sRust --> Rust[backend-rust Pod]
+            K8sJava --> Java[backend-java Pod]
+        end
+    end
+
+    Rust -->|Spotify API| Spotify[Spotify Web Services]
+    Java -->|GitHub API| GitHub[GitHub REST API]
+
+    classDef portfolio fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
+    class FE,Rust,Java portfolio;
+```
 
 ## 1. Frontend Gateway (React / Vite)
 
@@ -246,6 +269,28 @@ http://localhost:8080
 # 🚀 Production Deployment
 
 This project utilizes a Trunk-Based CI/CD deployment workflow deploying directly to Kubernetes.
+
+```mermaid
+sequenceDiagram
+    actor Developer
+    participant GitHub as GitHub Repository (portfolio-monorepo)
+    participant Runner as GitHub Actions Runner
+    participant VM as Azure VM Host
+    participant K3s as K3s Cluster
+
+    Developer->>GitHub: git push origin main
+    GitHub->>Runner: Trigger Production Deployment Workflow
+    Runner->>VM: SSH Connection (using AZURE_SSH_KEY)
+    Note over VM: Pulls latest commits<br/>git reset --hard origin/main
+    VM->>VM: Build Docker images locally:<br/>- portfolio-frontend<br/>- portfolio-java-api<br/>- portfolio-rust-api
+    VM->>K3s: Save images & Import to containerd store
+    VM->>K3s: Apply environment Secrets (rust-api-secret)
+    VM->>K3s: Apply manifests in k8s/ folder
+    VM->>K3s: Trigger zero-downtime rolling update (rollout restart)
+    K3s-->>VM: Rollout Complete
+    VM-->>Runner: Pipeline Complete
+    Runner-->>GitHub: Update Status to Green
+```
 
 ## Required GitHub Secrets
 
