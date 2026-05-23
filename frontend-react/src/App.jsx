@@ -24,13 +24,55 @@ function App() {
       .catch(error => console.error("Error fetching from Java API:", error));
   }, []);
 
-  // Fetch Live Spotify Session via Rust
+  const [localProgressMs, setLocalProgressMs] = useState(0);
+
+  // Fetch Live Spotify Session via Rust (with 10s polling)
   useEffect(() => {
-    fetch(apiUrl('rust', '/api/spotify'))
-      .then(response => response.json())
-      .then(data => setSpotifyData(data))
-      .catch(error => console.error("Error fetching Spotify API:", error));
+    const fetchSpotify = () => {
+      fetch(apiUrl('rust', '/api/spotify'))
+        .then(response => response.json())
+        .then(data => setSpotifyData(data))
+        .catch(error => console.error("Error fetching Spotify API:", error));
+    };
+
+    fetchSpotify();
+    const interval = setInterval(fetchSpotify, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  // Sync local progress when new data is fetched
+  useEffect(() => {
+    if (spotifyData) {
+      setLocalProgressMs(spotifyData.progress_ms || 0);
+    }
+  }, [spotifyData]);
+
+  // Tick the progress bar locally every second if a song is playing
+  useEffect(() => {
+    if (!spotifyData || !spotifyData.is_playing) return;
+
+    const interval = setInterval(() => {
+      setLocalProgressMs(prev => {
+        const next = prev + 1000;
+        return next > spotifyData.duration_ms ? spotifyData.duration_ms : next;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [spotifyData]);
+
+  // Helper to format milliseconds to M:SS
+  const formatTime = (ms) => {
+    if (!ms) return "0:00";
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  const progressPercent = spotifyData?.duration_ms
+    ? (localProgressMs / spotifyData.duration_ms) * 100
+    : 0;
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8">
@@ -237,21 +279,38 @@ function App() {
               </h3>
               
               {spotifyData ? (
-                <div className="flex items-center space-x-4 mt-2">
-                  <div className="w-16 h-16 bg-gray-700 rounded-md flex-shrink-0 shadow-md overflow-hidden relative">
-                    {spotifyData.album_art ? (
-                      <img src={spotifyData.album_art} alt="Album Art" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-tr from-[#1DB954] to-gray-900 opacity-50"></div>
-                    )}
+                <div>
+                  <div className="flex items-center space-x-4 mt-2">
+                    <div className="w-16 h-16 bg-gray-700 rounded-md flex-shrink-0 shadow-md overflow-hidden relative">
+                      {spotifyData.album_art ? (
+                        <img src={spotifyData.album_art} alt="Album Art" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-tr from-[#1DB954] to-gray-900 opacity-50"></div>
+                      )}
+                    </div>
+                    <div className="overflow-hidden flex-grow">
+                      <p className="text-gray-200 font-bold truncate">{spotifyData.title}</p>
+                      <p className="text-gray-400 text-sm truncate">{spotifyData.artist}</p>
+                      <p className={`text-xs mt-1 font-mono tracking-wider uppercase ${spotifyData.is_playing ? 'text-[#1DB954]' : 'text-gray-500'}`}>
+                        {spotifyData.is_playing ? 'Live Sync Active' : 'Offline'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="overflow-hidden">
-                    <p className="text-gray-200 font-bold truncate">{spotifyData.title}</p>
-                    <p className="text-gray-400 text-sm truncate">{spotifyData.artist}</p>
-                    <p className={`text-xs mt-1 font-mono tracking-wider uppercase ${spotifyData.is_playing ? 'text-[#1DB954]' : 'text-gray-500'}`}>
-                      {spotifyData.is_playing ? 'Live Sync Active' : 'Offline'}
-                    </p>
-                  </div>
+                  
+                  {spotifyData.duration_ms > 0 && (
+                    <div className="mt-4">
+                      <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-[#1DB954] transition-all duration-1000 ease-linear"
+                          style={{ width: `${progressPercent}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-gray-400 mt-1 font-mono">
+                        <span>{formatTime(localProgressMs)}</span>
+                        <span>{formatTime(spotifyData.duration_ms)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Connecting to Spotify Web API...</p>

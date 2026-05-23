@@ -33,6 +33,8 @@ struct SpotifyStatus {
     title: String,
     artist: String,
     album_art: String,
+    progress_ms: u64,
+    duration_ms: u64,
 }
 
 #[derive(Deserialize)]
@@ -92,6 +94,8 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
                 title: "Local Mode".to_string(),
                 artist: "Spotify credentials not configured".to_string(),
                 album_art: "".to_string(),
+                progress_ms: 0,
+                duration_ms: 0,
             });
         }
         _ => {
@@ -101,6 +105,8 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
                 title: "Offline".to_string(),
                 artist: "Spotify credentials unavailable".to_string(),
                 album_art: "".to_string(),
+                progress_ms: 0,
+                duration_ms: 0,
             });
         }
     };
@@ -141,6 +147,8 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
                 title: "Auth Error".to_string(),
                 artist: "Check Rust Terminal".to_string(),
                 album_art: "".to_string(),
+                progress_ms: 0,
+                duration_ms: 0,
             });
         }
     };
@@ -160,6 +168,8 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
              title: "Offline".to_string(),
              artist: "No active session".to_string(),
              album_art: "".to_string(),
+             progress_ms: 0,
+             duration_ms: 0,
          });
     }
 
@@ -170,11 +180,16 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
     let title = track_data["item"]["name"].as_str().unwrap_or("Unknown").to_string();
     let artist = track_data["item"]["artists"][0]["name"].as_str().unwrap_or("Unknown").to_string();
     let album_art = track_data["item"]["album"]["images"][0]["url"].as_str().unwrap_or("").to_string();
+    
+    let progress_ms = track_data["progress_ms"].as_u64().unwrap_or(0);
+    let duration_ms = track_data["item"]["duration_ms"].as_u64().unwrap_or(0);
 
     Json(SpotifyStatus {
         is_playing,
         title,
         artist,
         album_art,
+        progress_ms,
+        duration_ms,
     })
 }
