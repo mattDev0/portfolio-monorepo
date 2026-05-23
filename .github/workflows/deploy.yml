@@ -33,28 +33,36 @@ jobs:
             git checkout main
             git reset --hard origin/main
             
-            # Detect docker-compose command (V1 vs V2)
-            if command -v docker-compose >/dev/null 2>&1; then
-              DOCKER_COMPOSE="sudo docker-compose"
-            else
-              DOCKER_COMPOSE="sudo docker compose"
+            echo "Building Docker images locally..."
+            sudo docker build -t portfolio-frontend:latest ./frontend-react
+            sudo docker build -t portfolio-java-api:latest ./backend-java
+            sudo docker build -t portfolio-rust-api:latest ./backend-rust
+            
+            echo "Importing images into K3s..."
+            sudo docker save portfolio-frontend:latest -o /tmp/portfolio-frontend.tar && sudo k3s ctr images import /tmp/portfolio-frontend.tar && rm /tmp/portfolio-frontend.tar
+            sudo docker save portfolio-java-api:latest -o /tmp/portfolio-java-api.tar && sudo k3s ctr images import /tmp/portfolio-java-api.tar && rm /tmp/portfolio-java-api.tar
+            sudo docker save portfolio-rust-api:latest -o /tmp/portfolio-rust-api.tar && sudo k3s ctr images import /tmp/portfolio-rust-api.tar && rm /tmp/portfolio-rust-api.tar
+            
+            echo "Applying namespaces..."
+            sudo kubectl apply -f k8s/namespace.yaml
+            
+            echo "Configuring environment secrets..."
+            if [ -f ./backend-rust/.env ]; then
+              sudo kubectl create secret generic rust-api-secret \
+                --from-env-file=./backend-rust/.env \
+                -n portfolio \
+                --dry-run=client -o yaml | sudo kubectl apply -f -
             fi
             
-            echo "Using Docker Compose command: $DOCKER_COMPOSE"
+            echo "Deploying applications to K3s..."
+            sudo kubectl apply -f k8s/frontend.yaml
+            sudo kubectl apply -f k8s/java-api.yaml
+            sudo kubectl apply -f k8s/rust-api.yaml
             
-            # 1. THE PERMANENT FIX: Always wipe the slate clean to prevent zombie ports
-            $DOCKER_COMPOSE down || true
+            echo "Triggering rolling restart to pick up new images..."
+            sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
             
-            # 2. FORCE KILL any lingering processes on the microservice ports 
-            # (Prevents port-binding failures that leave old code running)
-            echo "Checking for zombie processes on ports 8080 and 8081..."
-            sudo fuser -k 8080/tcp || true
-            sudo fuser -k 8081/tcp || true
-            
-            # 3. Boot the new cluster with forced build
-            $DOCKER_COMPOSE up -d --build
-            
-            # Prune dangling layers to prevent the server disk from filling up over time
+            # Prune docker images to save space
             sudo docker image prune -f
             
-            echo "Deployment successfully executed!"
+            echo "K8s Deployment successfully executed!"
