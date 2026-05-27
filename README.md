@@ -300,6 +300,9 @@ Configure the following repository secrets in GitHub:
 * `AZURE_USER`
 * `AZURE_SSH_KEY`
 
+### Optional Configurations
+* `GITHUB_TOKEN`: Add this to `backend-rust/.env` on the host to authenticate requests to GitHub APIs, elevating your rate limits from 60 to 5,000 requests/hr.
+
 ## Deployment Flow
 
 Push code to the deployment branch (`main`).
@@ -329,8 +332,8 @@ GitHub Actions will automatically:
 | ------ | ----------------------------- | ------------ | ---------------------------------------------- |
 | GET    | `/api/github/activity`        | Java         | Returns top 4 recent code pushes               |
 | GET    | `/api/infrastructure/metrics` | Java         | Returns JVM memory allocation and thread count |
-| GET    | `/api/status`                 | Rust         | Returns host OS telemetry                      |
-| GET    | `/api/spotify`                | Rust         | Returns current Spotify listening session      |
+| GET    | `/api/status`                 | Rust         | Returns host OS telemetry (OS, CPU, Memory)    |
+| GET    | `/api/spotify`                | Rust         | Returns current Spotify session with track URL |
 
 ---
 
