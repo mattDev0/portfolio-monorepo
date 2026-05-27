@@ -7,6 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +22,30 @@ public class GitHubService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper(); 
 
+    private String fetchUrl(String url) {
+        String token = System.getenv("GITHUB_TOKEN");
+        if (token != null && !token.trim().isEmpty()) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token.trim());
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+                return response.getBody();
+            } catch (Exception e) {
+                System.err.println("Authenticated request failed for url: " + url + ". Error: " + e.getMessage() + ". Retrying unauthenticated.");
+            }
+        }
+        // Fallback or default to unauthenticated request
+        return restTemplate.getForObject(url, String.class);
+    }
+
     @Cacheable("githubActivity")
     public List<Map<String, String>> getRecentActivity() {
         List<Map<String, String>> recentCommits = new ArrayList<>();
         String url = "https://api.github.com/users/mattDev0/events/public";
 
         try {
-            String rawJson = restTemplate.getForObject(url, String.class);
+            String rawJson = fetchUrl(url);
 
             if (rawJson != null) {
                 JsonNode rootNode = objectMapper.readTree(rawJson);
@@ -55,7 +76,7 @@ public class GitHubService {
                         if (fullSha != null) {
                             try {
                                 String commitUrl = "https://api.github.com/repos/" + repoName + "/commits/" + fullSha;
-                                String commitJson = restTemplate.getForObject(commitUrl, String.class);
+                                String commitJson = fetchUrl(commitUrl);
                                 
                                 if (commitJson != null) {
                                     JsonNode commitRoot = objectMapper.readTree(commitJson);

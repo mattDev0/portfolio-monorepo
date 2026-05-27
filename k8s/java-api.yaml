@@ -24,6 +24,12 @@ spec:
         env:
         - name: JAVA_TOOL_OPTIONS
           value: "-Xms128m -Xmx256m"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: rust-api-secret
+              key: GITHUB_TOKEN
+              optional: true
         resources:
           requests:
             memory: "192Mi"
