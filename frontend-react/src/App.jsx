@@ -8,6 +8,16 @@ function App() {
   const [javaStatus, setJavaStatus] = useState(null);
   const [spotifyData, setSpotifyData] = useState(null);
   const [localProgressMs, setLocalProgressMs] = useState(0);
+  const [selectedTech, setSelectedTech] = useState(null);
+
+  // Extract all unique technology tags from projects
+  const allTechTags = Array.from(
+    new Set(portfolioConfig.projects.flatMap(p => p.tech))
+  );
+
+  const filteredProjects = selectedTech
+    ? portfolioConfig.projects.filter(p => p.tech.includes(selectedTech))
+    : portfolioConfig.projects;
 
   // Fetch Rust Hardware Metrics (with 5s polling)
   useEffect(() => {
@@ -196,10 +206,32 @@ function App() {
  
         {/* Featured Projects Section */}
         <section className="space-y-6">
-          <h3 className="text-2xl font-extrabold text-white border-b border-white/5 pb-3 tracking-wide">Featured Architecture & Code</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {portfolioConfig.projects.map((project, index) => (
-              <div key={index} className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border border-white/5 hover:border-indigo-500/30 transition-all duration-300 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-3">
+            <h3 className="text-2xl font-extrabold text-white tracking-wide">Featured Architecture & Code</h3>
+            
+            {/* Project Filter Controls */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedTech(null)}
+                className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${!selectedTech ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_8px_#6366f1]' : 'bg-slate-800/60 border-white/5 text-gray-400 hover:text-white'}`}
+              >
+                All
+              </button>
+              {allTechTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTech(tag === selectedTech ? null : tag)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${tag === selectedTech ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_8px_#6366f1]' : 'bg-slate-800/60 border-white/5 text-gray-400 hover:text-white hover:border-white/10'}`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500">
+            {filteredProjects.map((project, index) => (
+              <div key={index} className={`bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.05)]' : 'border-white/5 hover:border-indigo-500/30'}`}>
                 <div>
                   <h4 className="text-lg font-bold text-gray-200 mb-2 group-hover:text-indigo-400 transition-colors tracking-wide">{project.title}</h4>
                   <p className="text-gray-400 text-sm leading-relaxed mb-6">{project.description}</p>
@@ -207,7 +239,13 @@ function App() {
                 <div>
                   <div className="flex flex-wrap gap-1.5 mb-5">
                     {project.tech.map((tech, i) => (
-                      <span key={i} className="bg-slate-800/60 border border-white/5 text-gray-300 text-[10px] px-2.5 py-0.5 rounded-md font-medium tracking-wide">{tech}</span>
+                      <span 
+                        key={i} 
+                        onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
+                        className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
+                      >
+                        {tech}
+                      </span>
                     ))}
                   </div>
                   <a 
@@ -231,13 +269,20 @@ function App() {
             
             {/* Rust Engine */}
             <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
-              <div className="absolute top-0 right-0 p-4">
+              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
                 <span className="flex h-3 w-3 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 shadow-[0_0_8px_#f97316]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/40 opacity-40 delay-300"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-slate-900 shadow-[0_0_8px_#f97316]"></span>
                 </span>
+                {/* Custom Tooltip */}
+                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-orange-500/20 p-2 text-center text-[10px] text-orange-400 font-mono shadow-xl z-20">
+                  Live Axum Service
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-orange-400 mb-5 border-b border-white/5 pb-2.5 tracking-wide">Rust Engine</h3>
+              <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide">Rust Engine</h3>
+              <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
+              
               {rustStatus ? (
                 <div className="font-mono text-xs space-y-4 mt-2">
                   <div className="flex justify-between border-b border-white/5 pb-2">
@@ -275,13 +320,20 @@ function App() {
  
             {/* Java Infrastructure */}
             <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
-              <div className="absolute top-0 right-0 p-4">
+              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
                 <span className="flex h-3 w-3 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
                 </span>
+                {/* Custom Tooltip */}
+                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
+                  Live Spring Service
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-emerald-400 mb-5 border-b border-white/5 pb-2.5 tracking-wide">Java Infrastructure</h3>
+              <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide">Java Infrastructure</h3>
+              <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
+              
               {javaStatus ? (
                 <div className="font-mono text-xs space-y-4 mt-2">
                   <div className="flex justify-between border-b border-white/5 pb-2">
@@ -335,21 +387,23 @@ function renderSpotifyInner(spotifyData, progressPercent, localProgressMs, forma
   const isPlaying = spotifyData?.is_playing;
   return (
     <>
-      {isPlaying && (
-        <div className="absolute top-0 right-0 p-4 flex items-center space-x-2">
-          <span className="text-[9px] text-emerald-400 font-bold tracking-widest animate-pulse uppercase">Sync Active</span>
-          <div className="flex space-x-0.5 items-end h-3">
-            <div className="w-0.5 bg-emerald-500 animate-[bounce_0.8s_infinite_0ms] h-full shadow-[0_0_8px_#10b981]"></div>
-            <div className="w-0.5 bg-emerald-500 animate-[bounce_0.8s_infinite_200ms] h-2/3 shadow-[0_0_8px_#10b981]"></div>
-            <div className="w-0.5 bg-emerald-500 animate-[bounce_0.8s_infinite_400ms] h-5/6 shadow-[0_0_8px_#10b981]"></div>
-          </div>
+      <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+        <span className="flex h-3 w-3 relative">
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPlaying ? 'bg-emerald-400' : 'bg-gray-500'}`}></span>
+          {isPlaying && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>}
+          <span className={`relative inline-flex rounded-full h-3 w-3 ${isPlaying ? 'bg-emerald-500' : 'bg-gray-500'} shadow-[0_0_8px_#10b981]`}></span>
+        </span>
+        {/* Custom Tooltip */}
+        <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
+          {isPlaying ? 'Live playback' : 'Playback idle'}
         </div>
-      )}
+      </div>
       
-      <h3 className="text-lg font-bold text-emerald-400 mb-5 border-b border-white/5 pb-2.5 tracking-wide flex items-center">
+      <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide flex items-center">
         <svg className="w-5 h-5 mr-2 text-emerald-400 group-hover:animate-spin" style={{ animationDuration: isPlaying ? '6s' : '0s' }} fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.54.659.3 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.84.241 1.2zM20.4 9.06C16.8 6.9 9.72 6.72 5.64 8.04c-.6.18-1.2-.12-1.38-.72-.18-.6.12-1.2.72-1.38 4.68-1.44 12.48-1.2 16.68 1.32.54.3.72.96.42 1.5-.24.54-.84.72-1.68.3z"/></svg>
         Spotify Session
       </h3>
+      <p className="text-[10px] text-gray-500 font-medium mb-5">Web API sync via Rust token auth</p>
       
       {spotifyData ? (
         <div>
