@@ -5,16 +5,19 @@ COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 # Make the wrapper executable (just in case)
 RUN chmod +x mvnw
-# Download dependencies
-RUN ./mvnw dependency:go-offline
-# Copy the source code and package it
+
+# Copy the source code
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+
+# Build and package the application using BuildKit cache mount
+RUN --mount=type=cache,target=/root/.m2 \
+    ./mvnw package -DskipTests && \
+    cp target/*.jar /app/app.jar
 
 # Stage 2: Create the lightweight runner image
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/app.jar app.jar
 
 EXPOSE 8081
 CMD ["java", "-jar", "app.jar"]
