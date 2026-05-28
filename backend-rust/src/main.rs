@@ -9,6 +9,7 @@ use sysinfo::System;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
+// Cache speed test change
 fn is_local_runtime() -> bool {
     let app_env = env::var("APP_ENV")
         .or_else(|_| env::var("RUST_ENV"))
