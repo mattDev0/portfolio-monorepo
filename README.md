@@ -275,19 +275,20 @@ sequenceDiagram
     actor Developer
     participant GitHub as GitHub Repository (portfolio-monorepo)
     participant Runner as GitHub Actions Runner
+    participant GHCR as GitHub Container Registry (ghcr.io)
     participant VM as Azure VM Host
     participant K3s as K3s Cluster
 
     Developer->>GitHub: git push origin main
     GitHub->>Runner: Trigger Production Deployment Workflow
+    Runner->>Runner: Build Docker images using Buildx & GHA Cache
+    Runner->>GHCR: Push built images: portfolio-frontend, portfolio-java-api, portfolio-rust-api
     Runner->>VM: SSH Connection (using AZURE_SSH_KEY)
     Note over VM: Pulls latest commits<br/>git reset --hard origin/main
-    VM->>VM: Build Docker images locally:<br/>- portfolio-frontend<br/>- portfolio-java-api<br/>- portfolio-rust-api
-    VM->>K3s: Save images & Import to containerd store
     VM->>K3s: Apply environment Secrets (rust-api-secret)
-    VM->>K3s: Apply manifests in k8s/ folder
+    VM->>K3s: Apply manifests in k8s/ folder (pulls from GHCR)
     VM->>K3s: Trigger zero-downtime rolling update (rollout restart)
-    K3s-->>VM: Rollout Complete
+    K3s-->>VM: Pull new images & Rollout Complete
     VM-->>Runner: Pipeline Complete
     Runner-->>GitHub: Update Status to Green
 ```
@@ -309,16 +310,12 @@ Push code to the deployment branch (`main`).
 
 GitHub Actions will automatically:
 
-1. Connect to the Azure VM via SSH
-2. Pull the latest repository changes
-3. Build the Docker images locally on the VM:
-   - `portfolio-frontend`
-   - `portfolio-java-api`
-   - `portfolio-rust-api`
-4. Import the built images into K3s:
-   - `sudo k3s ctr images import`
-5. Dynamically configure K8s environment Secrets from the `.env` file
-6. Apply the Kubernetes manifests in the `k8s/` folder
+1. Build the Docker images on the GitHub Actions runner using Docker Buildx and GHA caching.
+2. Push the built images to GitHub Container Registry (GHCR) at `ghcr.io/mattdev0/portfolio-monorepo/...`.
+3. Connect to the Azure VM via SSH.
+4. Pull the latest code changes (specifically updating the Kubernetes manifests).
+5. Dynamically configure K8s environment Secrets from the `.env` file on the VM.
+6. Apply the Kubernetes manifests in the `k8s/` folder, instructing K3s to pull the pre-built images from GHCR.
 7. Trigger a zero-downtime rolling update:
    ```bash
    sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
