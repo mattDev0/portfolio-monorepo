@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: portfolio-frontend:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         resources:

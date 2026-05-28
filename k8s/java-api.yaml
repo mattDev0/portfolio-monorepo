@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: java-api
-        image: portfolio-java-api:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
         env:
