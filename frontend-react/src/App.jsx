@@ -389,17 +389,18 @@ function App() {
 // Separate helper function to render Spotify internals to keep code clean and readable
 function renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime) {
   const isPlaying = spotifyData?.is_playing;
+  const isRecentlyPlayed = spotifyData?.is_recently_played;
   return (
     <>
       <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
         <span className="flex h-3 w-3 relative">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPlaying ? 'bg-emerald-400' : 'bg-gray-500'}`}></span>
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPlaying ? 'bg-emerald-400' : isRecentlyPlayed ? 'bg-amber-400' : 'bg-gray-500'}`}></span>
           {isPlaying && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>}
-          <span className={`relative inline-flex rounded-full h-3 w-3 ${isPlaying ? 'bg-emerald-500' : 'bg-gray-500'} shadow-[0_0_8px_#10b981]`}></span>
+          <span className={`relative inline-flex rounded-full h-3 w-3 ${isPlaying ? 'bg-emerald-500' : isRecentlyPlayed ? 'bg-amber-500' : 'bg-gray-500'} ${isPlaying ? 'shadow-[0_0_8px_#10b981]' : isRecentlyPlayed ? 'shadow-[0_0_8px_#f59e0b]' : ''}`}></span>
         </span>
         {/* Custom Tooltip */}
         <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
-          {isPlaying ? 'Live playback' : 'Playback idle'}
+          {isPlaying ? 'Live playback' : isRecentlyPlayed ? 'Playback idle' : 'Offline'}
         </div>
       </div>
       
@@ -414,7 +415,7 @@ function renderSpotifyInner(spotifyData, progressPercent, localProgressMs, forma
           <div className="flex items-center space-x-4 mt-2">
             <div className={`w-16 h-16 bg-slate-800 rounded-lg flex-shrink-0 shadow-md overflow-hidden relative border border-white/5 transition-transform duration-500 ${isPlaying ? 'group-hover:rotate-12 group-hover:scale-105' : ''}`}>
               {spotifyData.album_art ? (
-                <img src={spotifyData.album_art} alt="Album Art" className="w-full h-full object-cover" />
+                <img src={spotifyData.album_art} alt="Album Art" className={`w-full h-full object-cover transition-all duration-500 ${isPlaying ? '' : 'grayscale opacity-60'}`} />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500 to-slate-900 opacity-50"></div>
               )}
@@ -422,13 +423,13 @@ function renderSpotifyInner(spotifyData, progressPercent, localProgressMs, forma
             <div className="overflow-hidden flex-grow">
               <p className="text-gray-100 font-bold truncate group-hover:text-emerald-400 transition-colors">{spotifyData.title}</p>
               <p className="text-gray-400 text-sm truncate">{spotifyData.artist}</p>
-              <p className={`text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold ${isPlaying ? 'text-emerald-400' : 'text-gray-500'}`}>
-                {isPlaying ? 'Now Playing' : 'Offline'}
+              <p className={`text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold ${isPlaying ? 'text-emerald-400' : isRecentlyPlayed ? 'text-amber-500/80' : 'text-gray-500'}`}>
+                {isPlaying ? 'Now Playing' : isRecentlyPlayed ? 'Recently Played' : 'Offline'}
               </p>
             </div>
           </div>
           
-          {spotifyData.duration_ms > 0 && (
+          {isPlaying && spotifyData.duration_ms > 0 && (
             <div className="mt-5">
               <div className="w-full h-1 bg-slate-950 rounded-full overflow-hidden">
                 <div 

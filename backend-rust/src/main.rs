@@ -8,6 +8,7 @@ use tokio::sync::RwLock;
 use sysinfo::System;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
+use base64::Engine;
 
 // Cache speed test change
 fn is_local_runtime() -> bool {
@@ -34,6 +35,7 @@ struct SystemMetrics {
 #[derive(Serialize)]
 struct SpotifyStatus {
     is_playing: bool,
+    is_recently_played: bool,
     title: String,
     artist: String,
     album_art: String,
@@ -129,6 +131,7 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
         _ if is_local_runtime() => {
             return Json(SpotifyStatus {
                 is_playing: false,
+                is_recently_played: false,
                 title: "Local Mode".to_string(),
                 artist: "Spotify credentials not configured".to_string(),
                 album_art: "".to_string(),
@@ -141,6 +144,7 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
             println!("Missing Spotify credentials");
             return Json(SpotifyStatus {
                 is_playing: false,
+                is_recently_played: false,
                 title: "Offline".to_string(),
                 artist: "Spotify credentials unavailable".to_string(),
                 album_art: "".to_string(),
@@ -156,7 +160,7 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
     // 1. Trade the refresh token for a live access token
     let auth_header = format!(
         "Basic {}",
-        base64::encode(format!("{}:{}", client_id, client_secret))
+        base64::prelude::BASE64_STANDARD.encode(format!("{}:{}", client_id, client_secret))
     );
 
     let token_request = client
@@ -183,6 +187,7 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
             // Return a safe "Offline" state to React so the UI doesn't crash
             return Json(SpotifyStatus {
                 is_playing: false,
+                is_recently_played: false,
                 title: "Auth Error".to_string(),
                 artist: "Check Rust Terminal".to_string(),
                 album_art: "".to_string(),
@@ -201,17 +206,50 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
         .await
         .unwrap();
 
-    // 3. Parse the data. If nothing is playing, return a default state.
+    // 3. Parse the data. If nothing is playing, check recently played.
     if playing_res.status() == 204 || playing_res.status() == 202 {
-         return Json(SpotifyStatus {
-             is_playing: false,
-             title: "Offline".to_string(),
-             artist: "No active session".to_string(),
-             album_art: "".to_string(),
-             progress_ms: 0,
-             duration_ms: 0,
-             track_url: "".to_string(),
-         });
+        let recently_played_res = client
+            .get("https://api.spotify.com/v1/me/player/recently-played?limit=1")
+            .header("Authorization", format!("Bearer {}", token_res.access_token))
+            .send()
+            .await;
+
+        if let Ok(res) = recently_played_res {
+            if res.status() == 200 {
+                if let Ok(recent_data) = res.json::<serde_json::Value>().await {
+                    if let Some(item) = recent_data["items"].get(0) {
+                        let track = &item["track"];
+                        let title = track["name"].as_str().unwrap_or("Unknown").to_string();
+                        let artist = track["artists"][0]["name"].as_str().unwrap_or("Unknown").to_string();
+                        let album_art = track["album"]["images"][0]["url"].as_str().unwrap_or("").to_string();
+                        let track_url = track["external_urls"]["spotify"].as_str().unwrap_or("").to_string();
+                        let duration_ms = track["duration_ms"].as_u64().unwrap_or(0);
+
+                        return Json(SpotifyStatus {
+                            is_playing: false,
+                            is_recently_played: true,
+                            title,
+                            artist,
+                            album_art,
+                            progress_ms: 0,
+                            duration_ms,
+                            track_url,
+                        });
+                    }
+                }
+            }
+        }
+
+        return Json(SpotifyStatus {
+            is_playing: false,
+            is_recently_played: false,
+            title: "Offline".to_string(),
+            artist: "No active session".to_string(),
+            album_art: "".to_string(),
+            progress_ms: 0,
+            duration_ms: 0,
+            track_url: "".to_string(),
+        });
     }
 
     let track_data: serde_json::Value = playing_res.json().await.unwrap();
@@ -228,6 +266,7 @@ async fn get_spotify_status() -> Json<SpotifyStatus> {
 
     Json(SpotifyStatus {
         is_playing,
+        is_recently_played: !is_playing,
         title,
         artist,
         album_art,
