@@ -106,6 +106,65 @@ function TerminalSimulator({ active }) {
   );
 }
 
+const TOPOLOGY_INFO = {
+  client: {
+    title: "Client Browser",
+    tech: "React 19 + Vite + Tailwind CSS",
+    protocol: "HTTPS (Port 443)",
+    description: "The interactive UI dashboard running in the visitor's browser. It polls the microservice APIs periodically (Telemetry every 5s, JVM every 10s, Spotify every 10s) and updates the layout reactively.",
+    badge: "Frontend"
+  },
+  nginx: {
+    title: "Nginx Reverse Proxy",
+    tech: "Nginx Gateway Config",
+    protocol: "HTTPS -> NodePorts",
+    description: "Operates as the entry point on the Azure VM. It terminates SSL (Let's Encrypt), resolves CORS by hosting services on the same domain, and routes paths: / to Port 30000, /api/status & /api/spotify to Port 30080, and /api/github to Port 30081.",
+    badge: "Gateway"
+  },
+  k8s: {
+    title: "K3s Kubernetes Namespace",
+    tech: "K3s Cluster (Orchestration)",
+    protocol: "K8s Service DNS",
+    description: "A lightweight, secure Kubernetes namespace ('portfolio') hosting isolated container pods. Manages scaling, self-healing, rolling updates, and enforces strict resource limits (limits: memory: 32Mi, cpu: 100m).",
+    badge: "Infrastructure"
+  },
+  frontend: {
+    title: "frontend-react Pod",
+    tech: "Docker + Nginx Server",
+    protocol: "HTTP (Container Port 80)",
+    description: "Containerized deployment serving the static built React application bundle. Managed via rolling zero-downtime restarts in Kubernetes (K3s NodePort 30000).",
+    badge: "Deployment Pod"
+  },
+  rust: {
+    title: "backend-rust Pod",
+    tech: "Rust + Axum Engine",
+    protocol: "HTTP (Container Port 8080)",
+    description: "High-performance Axum web server compiled to native machine code. Refreshes host CPU/Memory telemetry in a thread-safe background task and acts as the Spotify authentication token manager.",
+    badge: "Deployment Pod"
+  },
+  java: {
+    title: "backend-java Pod",
+    tech: "Java 21 + Spring Boot 4",
+    protocol: "HTTP (Container Port 8081)",
+    description: "Enterprise-grade Spring Boot microservice. Manages caching abstractions using Spring Cache (@Cacheable) to bypass public rate boundaries, pulling recent commit payloads from the GitHub API.",
+    badge: "Deployment Pod"
+  },
+  spotify: {
+    title: "Spotify Web API",
+    tech: "OAuth 2.0 REST Web Services",
+    protocol: "External API Calls",
+    description: "Third-party audio streaming REST API. Authenticated securely via OAuth 2.0 client-credentials and token refresh flows executed from the Rust backend to fetch current/recent tracks.",
+    badge: "External Service"
+  },
+  github: {
+    title: "GitHub REST API",
+    tech: "GitHub Public REST API",
+    protocol: "External API Calls",
+    description: "Third-party platform API queried by the Java backend to fetch live repository events. Spring Cache limits API calls to prevent IP rate-limiting blocks.",
+    badge: "External Service"
+  }
+};
+
 function App() {
   const [rustStatus, setRustStatus] = useState(null);
   const [javaStatus, setJavaStatus] = useState(null);
@@ -114,6 +173,55 @@ function App() {
   const [selectedTech, setSelectedTech] = useState(null);
   const [telemetryHistory, setTelemetryHistory] = useState([]);
   const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
+  const [hoveredTopologyNode, setHoveredTopologyNode] = useState(null);
+
+  const renderNode = (id, icon, title, tech) => {
+    const isHovered = hoveredTopologyNode === id;
+    
+    let accentBorder = "border-white/5";
+    let accentBg = "bg-slate-950/20 hover:border-indigo-500/20";
+    let accentText = "text-gray-300";
+    
+    if (isHovered) {
+      if (id === 'rust') {
+        accentBorder = "border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.15)] animate-pulse";
+        accentBg = "bg-orange-500/5";
+        accentText = "text-orange-400";
+      } else if (id === 'java') {
+        accentBorder = "border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.15)] animate-pulse";
+        accentBg = "bg-emerald-500/5";
+        accentText = "text-emerald-400";
+      } else if (id === 'frontend' || id === 'client') {
+        accentBorder = "border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.15)] animate-pulse";
+        accentBg = "bg-blue-500/5";
+        accentText = "text-blue-400";
+      } else if (id === 'nginx') {
+        accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)] animate-pulse";
+        accentBg = "bg-indigo-500/5";
+        accentText = "text-indigo-400";
+      } else if (id === 'k8s') {
+        accentBorder = "border-blue-400/50 shadow-[0_0_12px_rgba(96,165,250,0.2)]";
+        accentBg = "bg-blue-400/5";
+        accentText = "text-blue-400";
+      } else {
+        accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)]";
+        accentBg = "bg-indigo-500/5";
+        accentText = "text-indigo-400";
+      }
+    }
+
+    return (
+      <div
+        onMouseEnter={() => setHoveredTopologyNode(id)}
+        onMouseLeave={() => setHoveredTopologyNode(null)}
+        className={`p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-help select-none ${accentBorder} ${accentBg} ${isHovered ? 'scale-[1.02]' : ''}`}
+      >
+        <span className="text-lg md:text-xl mb-0.5">{icon}</span>
+        <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${accentText}`}>{title}</span>
+        <span className="text-[8px] md:text-[9px] text-gray-500 font-mono mt-0.5">{tech}</span>
+      </div>
+    );
+  };
 
   // Extract all unique technology tags from projects
   const allTechTags = Array.from(
@@ -473,6 +581,156 @@ function App() {
           {/* --- END RIGHT COLUMN --- */}
           
         </div>
+
+        {/* System Architecture & Topology Diagram Section */}
+        <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+          <div className="border-b border-white/5 pb-3 mb-6">
+            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Observability & System Design</span>
+            <h3 className="text-2xl font-extrabold text-white tracking-wide mt-1">Production System Architecture</h3>
+            <p className="text-xs text-gray-400 mt-1">Interactive layout mapping the client-to-cloud microservices network running on Azure. Hover over any node to inspect.</p>
+          </div>
+
+          {/* Topology diagram wrapper */}
+          <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-stretch">
+            
+            {/* Left/Main column: The diagram */}
+            <div className="flex-grow w-full max-w-3xl flex flex-col gap-6 justify-center">
+              
+              <div className="flex flex-col md:flex-row items-center md:items-stretch gap-4 justify-between">
+                
+                {/* 1. Client Card */}
+                <div className="flex-1 w-full flex flex-col justify-center">
+                  {renderNode('client', '🌐', 'Client Browser', 'React 19 + Vite')}
+                </div>
+
+                {/* Arrow Client -> Nginx */}
+                <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
+                  <span className="md:hidden">⬇️</span>
+                  <span className="hidden md:inline text-indigo-400/40">── HTTPS ──▶</span>
+                </div>
+
+                {/* 2. Nginx Card */}
+                <div className="flex-1 w-full flex flex-col justify-center">
+                  {renderNode('nginx', '🛡️', 'Nginx Proxy', 'Port 443 SSL')}
+                </div>
+
+                {/* Arrow Nginx -> K8s Namespace */}
+                <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
+                  <span className="md:hidden">⬇️</span>
+                  <span className="hidden md:inline text-indigo-400/40">── Proxy ──▶</span>
+                </div>
+
+                {/* 3. K3s Kubernetes Namespace (Acts as a container for internal pods) */}
+                <div 
+                  onMouseEnter={() => setHoveredTopologyNode('k8s')}
+                  onMouseLeave={() => setHoveredTopologyNode(null)}
+                  className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-blue-400 bg-blue-500/2 shadow-[0_0_15px_rgba(96,165,250,0.1)]' : 'border-white/10 bg-slate-950/10'}`}
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">K8s Namespace: portfolio</span>
+                    <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 px-1 py-0.5 rounded">☸️ K3s Cluster</span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Pod 1: Frontend */}
+                    {renderNode('frontend', '⚛️', 'Frontend Pod', 'NodePort 30000')}
+                    {/* Pod 2: Rust API */}
+                    {renderNode('rust', '🦀', 'Rust Pod', 'NodePort 30080')}
+                    {/* Pod 3: Java API */}
+                    {renderNode('java', '☕', 'Java Pod', 'NodePort 30081')}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Connections from K8s to external services (Horizontal flow below) */}
+              <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch">
+                
+                {/* Arrow Rust -> Spotify */}
+                <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-orange-500/30 transition-all duration-300">
+                  <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
+                    <span>Rust Gateway</span>
+                    <span className="text-orange-400 font-mono">Axum Outbound</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-gray-300">Rust API</span>
+                    <span className="text-orange-400 font-mono text-[10px]">── OAuth ──▶</span>
+                    {renderNode('spotify', '🎵', 'Spotify API', 'v1 Player Web Service')}
+                  </div>
+                </div>
+
+                {/* Arrow Java -> GitHub */}
+                <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-300">
+                  <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
+                    <span>Java Caching</span>
+                    <span className="text-emerald-400 font-mono">Spring cacheable</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-gray-300">Java API</span>
+                    <span className="text-emerald-400 font-mono text-[10px]">── REST ──▶</span>
+                    {renderNode('github', '🐙', 'GitHub API', 'v3 Public REST')}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Right/Inspector column: The Topology Inspector */}
+            <div className="w-full lg:w-80 flex-shrink-0 bg-slate-950/40 border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
+              
+              <div>
+                <div className="flex items-center space-x-2 border-b border-white/5 pb-2 mb-3">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                  </span>
+                  <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Topology Inspector</h4>
+                </div>
+
+                {hoveredTopologyNode ? (
+                  <div className="space-y-3.5 animate-fadeIn">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-indigo-400">{TOPOLOGY_INFO[hoveredTopologyNode].title}</span>
+                      <span className="bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-[8px] px-1.5 py-0.5 rounded font-mono uppercase tracking-widest">
+                        {TOPOLOGY_INFO[hoveredTopologyNode].badge}
+                      </span>
+                    </div>
+
+                    <div className="font-mono text-[10px] space-y-1 bg-slate-950/60 p-2 rounded-lg border border-white/5">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">ENGINE:</span>
+                        <span className="text-gray-300">{TOPOLOGY_INFO[hoveredTopologyNode].tech}</span>
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-gray-500">PORT/PROTO:</span>
+                        <span className="text-indigo-300 font-semibold">{TOPOLOGY_INFO[hoveredTopologyNode].protocol}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-400 text-xs leading-relaxed">
+                      {TOPOLOGY_INFO[hoveredTopologyNode].description}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-10 flex flex-col items-center justify-center space-y-3">
+                    <span className="text-2xl opacity-40 animate-bounce">🔍</span>
+                    <p className="text-gray-500 text-xs leading-relaxed font-mono">
+                      Hover over any node or container in the diagram to inspect microservice details, proxy routes, and deployment states.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 pt-3 border-t border-white/5 text-[9px] text-gray-500 font-mono flex items-center justify-between">
+                <span>DEPLOYMENT: live</span>
+                <span>VM: azure-standard-b1s</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
  
         {/* Featured Projects Section */}
         <section className="space-y-6">
