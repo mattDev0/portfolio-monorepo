@@ -430,7 +430,7 @@ function App() {
         {/* Profile, Experience & Telemetry Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* --- LEFT COLUMN: About & GitHub Activity (Spans 2 of 3 columns) --- */}
+          {/* --- LEFT COLUMN: About, Experience & GitHub Activity (Spans 2 of 3 columns) --- */}
           <div className="lg:col-span-2 flex flex-col gap-8">
             
             {/* About the Developer */}
@@ -451,148 +451,147 @@ function App() {
               </div>
             </section>
  
-            {/* Live GitHub Activity */}
-            <GitHubActivity />
+            {/* Nested Grid for Experience & GitHub Activity */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Recent Roles (Experience) */}
+              <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+                <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Recent Roles</h3>
+                <div className="space-y-8">
+                  {portfolioConfig.experience.map((exp, index) => (
+                    <div key={index} className="relative pl-6 border-l-2 border-indigo-500/30 hover:border-indigo-400 transition-colors duration-300">
+                      <div className="absolute w-3 h-3 bg-indigo-500 rounded-full -left-[7px] top-1.5 border border-slate-900 shadow-[0_0_8px_#6366f1]"></div>
+                      <h4 className="text-gray-100 font-bold text-sm tracking-wide">{exp.role}</h4>
+                      <p className="text-indigo-400 text-xs font-medium mb-2">{exp.company}</p>
+                      <p className="text-gray-400 text-xs leading-relaxed">{exp.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Live GitHub Activity */}
+              <GitHubActivity />
+            </div>
             
           </div>
           {/* --- END LEFT COLUMN --- */}
  
-          {/* --- RIGHT COLUMN: Experience & Telemetry (Spans 1 of 3 columns) --- */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
+          {/* --- RIGHT COLUMN: Telemetry Stack (Spans 1 of 3 columns) --- */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            <h3 className="text-xl font-bold text-white mb-2 border-b border-white/5 pb-3 tracking-wide">Live Systems & Telemetry</h3>
             
-            {/* Recent Roles (Experience) */}
-            <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-              <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Recent Roles</h3>
-              <div className="space-y-8">
-                {portfolioConfig.experience.map((exp, index) => (
-                  <div key={index} className="relative pl-6 border-l-2 border-indigo-500/30 hover:border-indigo-400 transition-colors duration-300">
-                    <div className="absolute w-3 h-3 bg-indigo-500 rounded-full -left-[7px] top-1.5 border border-slate-900 shadow-[0_0_8px_#6366f1]"></div>
-                    <h4 className="text-gray-100 font-bold text-sm tracking-wide">{exp.role}</h4>
-                    <p className="text-indigo-400 text-xs font-medium mb-2">{exp.company}</p>
-                    <p className="text-gray-400 text-xs leading-relaxed">{exp.description}</p>
-                  </div>
-                ))}
+            {/* Rust Engine */}
+            <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
+              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+                <span className="flex h-3 w-3 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/40 opacity-40 delay-300"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-slate-900 shadow-[0_0_8px_#f97316]"></span>
+                </span>
+                {/* Custom Tooltip */}
+                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-orange-500/20 p-2 text-center text-[10px] text-orange-400 font-mono shadow-xl z-20">
+                  Live Axum Service
+                </div>
               </div>
-            </section>
-
-            {/* Live Telemetry Stack */}
-            <div className="flex flex-col gap-6">
-              <h3 className="text-xl font-bold text-white mb-2 border-b border-white/5 pb-3 tracking-wide">Live Systems & Telemetry</h3>
+              <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide">Rust Engine</h3>
+              <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
               
-              {/* Rust Engine */}
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
-                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                  <span className="flex h-3 w-3 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/40 opacity-40 delay-300"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-slate-900 shadow-[0_0_8px_#f97316]"></span>
-                  </span>
-                  {/* Custom Tooltip */}
-                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-orange-500/20 p-2 text-center text-[10px] text-orange-400 font-mono shadow-xl z-20">
-                    Live Axum Service
+              {rustStatus ? (
+                <div className="font-mono text-xs space-y-4 mt-2">
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-gray-500 uppercase text-[10px]">OS</span>
+                    <span className="text-gray-200 font-medium">{rustStatus.os_info}</span>
                   </div>
-                </div>
-                <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide">Rust Engine</h3>
-                <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
-                
-                {rustStatus ? (
-                  <div className="font-mono text-xs space-y-4 mt-2">
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">OS</span>
-                      <span className="text-gray-200 font-medium">{rustStatus.os_info}</span>
-                    </div>
-                    
-                    {/* Real-time CPU Usage bar */}
-                    <div className="border-b border-white/5 pb-2">
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
-                        <div className="flex items-center space-x-3">
-                          <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" />
-                          <span className="text-orange-400 font-semibold">{rustStatus.cpu_usage || "0%"}</span>
-                        </div>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
-                          style={{ width: `${getCpuPercentage(rustStatus.cpu_usage)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Threads</span>
-                      <span className="text-orange-400 font-semibold">{rustStatus.cpu_cores}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 uppercase text-[10px]">Memory</span>
+                  
+                  {/* Real-time CPU Usage bar */}
+                  <div className="border-b border-white/5 pb-2">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
                       <div className="flex items-center space-x-3">
-                        <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" />
-                        <span className="text-amber-500 font-semibold">{rustStatus.memory_usage}</span>
+                        <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" />
+                        <span className="text-orange-400 font-semibold">{rustStatus.cpu_usage || "0%"}</span>
                       </div>
                     </div>
+                    <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
+                        style={{ width: `${getCpuPercentage(rustStatus.cpu_usage)}%` }}
+                      ></div>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
-                )}
-              </section>
-   
-              {/* Java Infrastructure */}
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
-                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                  <span className="flex h-3 w-3 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-                  </span>
-                  {/* Custom Tooltip */}
-                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
-                    Live Spring Service
+
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-gray-500 uppercase text-[10px]">Threads</span>
+                    <span className="text-orange-400 font-semibold">{rustStatus.cpu_cores}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 uppercase text-[10px]">Memory</span>
+                    <div className="flex items-center space-x-3">
+                      <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" />
+                      <span className="text-amber-500 font-semibold">{rustStatus.memory_usage}</span>
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide">Java Infrastructure</h3>
-                <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
-                
-                {javaStatus ? (
-                  <div className="font-mono text-xs space-y-4 mt-2">
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Version</span>
-                      <span className="text-gray-200 font-medium">{javaStatus.engine}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Uptime</span>
-                      <span className="text-emerald-400 font-semibold">{javaStatus.uptime}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Active Threads</span>
-                      <span className="text-emerald-400 font-semibold">{javaStatus.active_threads}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 uppercase text-[10px]">JVM Memory</span>
-                      <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
-                )}
-              </section>
-   
-              {/* Live Spotify Session via Rust */}
-              {spotifyData?.track_url ? (
-                <a 
-                  href={spotifyData.track_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5 flex flex-col justify-center cursor-pointer"
-                >
-                  {renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime)}
-                </a>
               ) : (
-                <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden transition-all duration-300 flex flex-col justify-center">
-                  {renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime)}
-                </section>
+                <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
               )}
+            </section>
+ 
+            {/* Java Infrastructure */}
+            <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
+              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+                <span className="flex h-3 w-3 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                </span>
+                {/* Custom Tooltip */}
+                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
+                  Live Spring Service
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide">Java Infrastructure</h3>
+              <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
               
-            </div>
+              {javaStatus ? (
+                <div className="font-mono text-xs space-y-4 mt-2">
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-gray-500 uppercase text-[10px]">Version</span>
+                    <span className="text-gray-200 font-medium">{javaStatus.engine}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-gray-500 uppercase text-[10px]">Uptime</span>
+                    <span className="text-emerald-400 font-semibold">{javaStatus.uptime}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-gray-500 uppercase text-[10px]">Active Threads</span>
+                    <span className="text-emerald-400 font-semibold">{javaStatus.active_threads}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 uppercase text-[10px]">JVM Memory</span>
+                    <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
+              )}
+            </section>
+ 
+            {/* Live Spotify Session via Rust */}
+            {spotifyData?.track_url ? (
+              <a 
+                href={spotifyData.track_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5 flex flex-col justify-center cursor-pointer"
+              >
+                {renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime)}
+              </a>
+            ) : (
+              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden transition-all duration-300 flex flex-col justify-center">
+                {renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime)}
+              </section>
+            )}
+            
           </div>
           {/* --- END RIGHT COLUMN --- */}
           
