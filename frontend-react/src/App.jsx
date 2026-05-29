@@ -174,6 +174,18 @@ function App() {
   const [telemetryHistory, setTelemetryHistory] = useState([]);
   const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
   const [hoveredTopologyNode, setHoveredTopologyNode] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Monitor tab/window visibility state
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === 'visible');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const renderNode = (id, icon, title, tech) => {
     const isHovered = hoveredTopologyNode === id;
@@ -232,8 +244,9 @@ function App() {
     ? portfolioConfig.projects.filter(p => p.tech.includes(selectedTech))
     : portfolioConfig.projects;
 
-  // Fetch Rust Hardware Metrics (with 5s polling)
+  // Fetch Rust Hardware Metrics (with 5s polling, only when tab is visible)
   useEffect(() => {
+    if (!isVisible) return;
     const fetchRust = () => {
       fetch(apiUrl('rust', '/api/status'))
         .then(response => response.json())
@@ -244,19 +257,20 @@ function App() {
     fetchRust();
     const interval = setInterval(fetchRust, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isVisible]);
 
-  // Fetch Rust Telemetry History on mount
+  // Fetch Rust Telemetry History on mount (and on regaining visibility if history was blank)
   useEffect(() => {
+    if (!isVisible) return;
     fetch(apiUrl('rust', '/api/status/history'))
       .then(response => response.json())
       .then(data => setTelemetryHistory(data))
       .catch(error => console.error("Error fetching telemetry history:", error));
-  }, []);
+  }, [isVisible]);
 
   // Sync polled metrics with history buffer
   useEffect(() => {
-    if (!rustStatus) return;
+    if (!rustStatus || !isVisible) return;
 
     const cpu = getCpuPercentage(rustStatus.cpu_usage);
 
@@ -285,10 +299,11 @@ function App() {
       }
       return newHistory;
     });
-  }, [rustStatus]);
+  }, [rustStatus, isVisible]);
 
-  // Fetch Java JVM Metrics (with 10s polling)
+  // Fetch Java JVM Metrics (with 10s polling, only when tab is visible)
   useEffect(() => {
+    if (!isVisible) return;
     const fetchJava = () => {
       fetch(apiUrl('java', '/api/infrastructure/metrics'))
         .then(response => response.json())
@@ -299,10 +314,11 @@ function App() {
     fetchJava();
     const interval = setInterval(fetchJava, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isVisible]);
 
-  // Fetch Live Spotify Session via Rust (with 10s polling)
+  // Fetch Live Spotify Session via Rust (with 10s polling, only when tab is visible)
   useEffect(() => {
+    if (!isVisible) return;
     const fetchSpotify = () => {
       fetch(apiUrl('rust', '/api/spotify'))
         .then(response => response.json())
@@ -313,7 +329,7 @@ function App() {
     fetchSpotify();
     const interval = setInterval(fetchSpotify, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isVisible]);
 
   // Sync local progress when new data is fetched
   useEffect(() => {
@@ -322,9 +338,9 @@ function App() {
     }
   }, [spotifyData]);
 
-  // Tick the progress bar locally every second if a song is playing
+  // Tick the progress bar locally every second if a song is playing (only when tab is visible)
   useEffect(() => {
-    if (!spotifyData || !spotifyData.is_playing) return;
+    if (!spotifyData || !spotifyData.is_playing || !isVisible) return;
 
     const interval = setInterval(() => {
       setLocalProgressMs(prev => {
@@ -334,7 +350,7 @@ function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [spotifyData]);
+  }, [spotifyData, isVisible]);
 
   // Helper to format milliseconds to M:SS
   const formatTime = (ms) => {
