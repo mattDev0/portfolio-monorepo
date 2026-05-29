@@ -39,6 +39,73 @@ function Sparkline({ data, color }) {
   );
 }
 
+function TerminalSimulator({ active }) {
+  const [lines, setLines] = useState([]);
+  
+  const terminalSequence = [
+    { text: "guest@mattdev0.tech:~$ initialize_telemetry", delay: 200 },
+    { text: "[INFO] Establishing WebSocket handshake with rust-agent...", delay: 600 },
+    { text: "[INFO] Client handshake accepted. Handshaking Spring orchestrator...", delay: 500 },
+    { text: "[INFO] Session validated via JWT authority claims (ROLE_GUEST).", delay: 400 },
+    { text: "[SUCCESS] Bidirectional PTY bridge established.", delay: 300 },
+    { text: "guest@mattdev0.tech:~$ kubectl get pods -n devops", delay: 500 },
+    { text: "NAME                                READY   STATUS    RESTARTS   AGE", delay: 300 },
+    { text: "devops-frontend-6b4d5b6c-8x2p       1/1     Running   0          45d", delay: 100 },
+    { text: "devops-orchestrator-9c4d5b6-7y1q    1/1     Running   2          45d", delay: 100 },
+    { text: "devops-agent-8b3d4a5-9z0p           1/1     Running   0          45d", delay: 100 },
+    { text: "guest@mattdev0.tech:~$ sysinfo --telemetry", delay: 600 },
+    { text: "[OS] Linux 6.1.0-azure-amd64 | [Telemetry Mode] Active SSE Streams", delay: 400 },
+    { text: "[Cluster metrics] Prometheus Node Exporter DaemonSet operational.", delay: 200 },
+    { text: "guest@mattdev0.tech:~$ █", delay: 800 }
+  ];
+
+  useEffect(() => {
+    if (!active) {
+      setLines([]);
+      return;
+    }
+
+    let isMounted = true;
+    let currentLineIndex = 0;
+    
+    const runSequence = async () => {
+      for (const step of terminalSequence) {
+        if (!isMounted) break;
+        await new Promise(resolve => setTimeout(resolve, step.delay));
+        if (!isMounted) break;
+        setLines(prev => [...prev, step.text]);
+      }
+    };
+
+    runSequence();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [active]);
+
+  return (
+    <div className="bg-[#050811] border border-white/5 rounded-xl p-4 font-mono text-[11px] text-indigo-300 leading-relaxed shadow-inner h-60 overflow-y-auto custom-scrollbar select-none">
+      {lines.map((line, idx) => {
+        if (line.startsWith("guest@")) {
+          return (
+            <div key={idx} className="text-gray-400 mt-2">
+              <span className="text-emerald-400">guest@mattdev0.tech</span>:<span className="text-blue-400">~</span>$ {line.substring(23)}
+            </div>
+          );
+        }
+        if (line.startsWith("[SUCCESS]")) {
+          return <div key={idx} className="text-emerald-400 font-semibold">{line}</div>;
+        }
+        if (line.startsWith("[INFO]")) {
+          return <div key={idx} className="text-gray-500">{line}</div>;
+        }
+        return <div key={idx} className="text-gray-200">{line}</div>;
+      })}
+    </div>
+  );
+}
+
 function App() {
   const [rustStatus, setRustStatus] = useState(null);
   const [javaStatus, setJavaStatus] = useState(null);
@@ -46,6 +113,7 @@ function App() {
   const [localProgressMs, setLocalProgressMs] = useState(0);
   const [selectedTech, setSelectedTech] = useState(null);
   const [telemetryHistory, setTelemetryHistory] = useState([]);
+  const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
 
   // Extract all unique technology tags from projects
   const allTechTags = Array.from(
@@ -432,40 +500,170 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500">
-            {filteredProjects.map((project, index) => (
-              <div key={index} className={`bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.05)]' : 'border-white/5 hover:border-indigo-500/30'}`}>
-                <div>
-                  <h4 className="text-lg font-bold text-gray-200 mb-2 group-hover:text-indigo-400 transition-colors tracking-wide">{project.title}</h4>
-                  <p className="text-gray-400 text-sm leading-relaxed mb-6">{project.description}</p>
-                </div>
-                <div>
-                  <div className="flex flex-wrap gap-1.5 mb-5">
-                    {project.tech.map((tech, i) => (
-                      <span 
-                        key={i} 
-                        onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
-                        className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
+            {filteredProjects.map((project, index) => {
+              const isDevOpsControlCenter = project.title === "DevOps Control Center";
+              return (
+                <div key={index} className={`bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.05)]' : 'border-white/5 hover:border-indigo-500/30'}`}>
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-200 mb-2 group-hover:text-indigo-400 transition-colors tracking-wide">{project.title}</h4>
+                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{project.description}</p>
+                    
+                    {isDevOpsControlCenter && (
+                      <button 
+                        onClick={() => setShowDevOpsCaseStudy(true)}
+                        className="mb-6 px-4 py-2 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-600/20 hover:text-indigo-300 hover:border-indigo-500/60 rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5"
                       >
-                        {tech}
-                      </span>
-                    ))}
+                        <span>⚙️</span>
+                        <span>System Design & Demo</span>
+                      </button>
+                    )}
                   </div>
-                  <a 
-                    href={project.link} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-400 text-xs font-bold hover:text-indigo-300 flex items-center transition-colors group/link"
-                  >
-                    View Repository <span className="ml-1 group-hover/link:translate-x-1 transition-transform">→</span>
-                  </a>
+                  <div>
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {project.tech.map((tech, i) => (
+                        <span 
+                          key={i} 
+                          onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
+                          className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                    <a 
+                      href={project.link} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-400 text-xs font-bold hover:text-indigo-300 flex items-center transition-colors group/link"
+                    >
+                      View Repository <span className="ml-1 group-hover/link:translate-x-1 transition-transform">→</span>
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
  
- 
       </main>
+
+      {/* DevOps Control Center Case Study Modal */}
+      {showDevOpsCaseStudy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 overflow-y-auto">
+          <div className="relative bg-[#0d1321] border border-white/10 rounded-2xl w-full max-w-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
+            
+            {/* Background glowing design elements */}
+            <div className="absolute top-0 left-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl -z-10"></div>
+            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-emerald-600/5 rounded-full blur-3xl -z-10"></div>
+
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-white/5 pb-4 mb-6">
+              <div>
+                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Case Study & Architecture</span>
+                <h3 className="text-2xl font-extrabold text-white mt-1">DevOps Control Center</h3>
+                <p className="text-xs text-gray-400 mt-1">A custom end-to-end telemetry and K8s orchestration dashboard.</p>
+              </div>
+              <button 
+                onClick={() => setShowDevOpsCaseStudy(false)}
+                className="text-gray-400 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content Body */}
+            <div className="space-y-6">
+              
+              {/* Overview */}
+              <div>
+                <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Platform Overview</h4>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  This custom dashboard unifies server monitoring, remote terminal execution, Kubernetes deployment management, and CI/CD tracking into a single view. By proxying WebSocket traffic and stream channels securely, it allows remote administration from any browser interface.
+                </p>
+              </div>
+
+              {/* Terminal Simulator Showcase */}
+              <div>
+                <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Simulated Interactive PTY Terminal</h4>
+                <p className="text-gray-400 text-[11px] mb-3 leading-relaxed">
+                  Below is a visual simulation of the live PTY console connection which streams raw shell sessions over secure WebSockets directly proxied from the Spring gateway to the Rust systems agent.
+                </p>
+                <TerminalSimulator active={showDevOpsCaseStudy} />
+              </div>
+
+              {/* System Architecture Diagram */}
+              <div>
+                <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Microservices Topology</h4>
+                <p className="text-gray-400 text-[11px] mb-4 leading-relaxed">
+                  The infrastructure operates inside the K3s namespace <code className="text-indigo-400 font-mono text-[10px] bg-indigo-950/40 px-1 py-0.5 rounded">devops</code> behind an Nginx reverse proxy.
+                </p>
+
+                {/* Architecture Visual Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch justify-center my-4 py-4 px-3 border border-white/5 bg-white/2 rounded-xl">
+                  {/* Client */}
+                  <div className="flex flex-col items-center justify-between bg-slate-950/40 p-3 rounded-lg border border-white/5 text-center shadow-md">
+                    <span className="text-xl">🌐</span>
+                    <span className="text-[10px] font-bold text-gray-200 uppercase tracking-widest mt-1">Client Dashboard</span>
+                    <span className="text-[9px] text-gray-500 mt-1">Vite + React UI Client</span>
+                  </div>
+                  {/* Spring Gateway */}
+                  <div className="flex flex-col items-center justify-between bg-emerald-950/20 p-3 rounded-lg border border-emerald-500/20 text-center shadow-md">
+                    <span className="text-xl">☕</span>
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">Spring Gateway</span>
+                    <span className="text-[9px] text-gray-400 mt-1">JWT Security Auth & WebSockets Proxy</span>
+                  </div>
+                  {/* Rust Agent */}
+                  <div className="flex flex-col items-center justify-between bg-orange-950/20 p-3 rounded-lg border border-orange-500/20 text-center shadow-md">
+                    <span className="text-xl">🦀</span>
+                    <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mt-1">Rust Agent</span>
+                    <span className="text-[9px] text-gray-400 mt-1">kube-rs Client & Shell PTY Bridge</span>
+                  </div>
+                  {/* K3s API */}
+                  <div className="flex flex-col items-center justify-between bg-blue-950/20 p-3 rounded-lg border border-blue-500/20 text-center shadow-md">
+                    <span className="text-xl">☸️</span>
+                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">K3s Cluster API</span>
+                    <span className="text-[9px] text-gray-400 mt-1">Pod Logs / Replicas & Status control</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="mt-8 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3 justify-end items-center">
+              <a 
+                href="https://mattdev0.tech/devops/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs text-center transition-colors shadow-lg shadow-indigo-900/20 cursor-pointer flex items-center justify-center space-x-1.5"
+              >
+                <span>🚀</span>
+                <span>Launch Live Demo (Guest Mode)</span>
+              </a>
+              <a 
+                href="https://github.com/mattDev0/devops-control-center" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-full sm:w-auto px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-gray-300 hover:text-white font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
+              >
+                View Repository Code
+              </a>
+              <button 
+                onClick={() => setShowDevOpsCaseStudy(false)}
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white font-semibold rounded-xl text-xs cursor-pointer"
+              >
+                Close Case Study
+              </button>
+            </div>
+            
+            <p className="text-[9px] text-gray-500 text-center mt-4">
+              💡 Tip: On the live dashboard, you can bypass JWT login by clicking the "Guest Login" button to explore in read-only mode.
+            </p>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
