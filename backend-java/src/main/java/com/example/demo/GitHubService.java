@@ -19,8 +19,16 @@ import java.util.Map;
 @Service
 public class GitHubService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper(); 
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    public record CommitInfo(String message) {}
+    public record CommitResponse(CommitInfo commit) {}
+
+    public GitHubService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     private String fetchUrl(String url) {
         String token = System.getenv("GITHUB_TOKEN");
@@ -79,9 +87,9 @@ public class GitHubService {
                                 String commitJson = fetchUrl(commitUrl);
                                 
                                 if (commitJson != null) {
-                                    JsonNode commitRoot = objectMapper.readTree(commitJson);
-                                    if (commitRoot.has("commit") && commitRoot.get("commit").has("message")) {
-                                        String fullMessage = commitRoot.get("commit").get("message").asText();
+                                    CommitResponse commitRes = objectMapper.readValue(commitJson, CommitResponse.class);
+                                    if (commitRes != null && commitRes.commit() != null && commitRes.commit().message() != null) {
+                                        String fullMessage = commitRes.commit().message();
                                         message = fullMessage.split("\n")[0]; // Grab just the first line
                                         messageFound = true;
                                     }
