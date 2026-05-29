@@ -3,12 +3,49 @@ import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
 import { apiUrl } from './api';
 
+function Sparkline({ data, color }) {
+  if (!data || data.length < 2) {
+    return (
+      <div className="h-4 flex items-center justify-center text-[8px] text-gray-600 font-mono tracking-wider opacity-50">
+        syncing...
+      </div>
+    );
+  }
+
+  const height = 18;
+  const width = 80;
+  const padding = 1;
+
+  const minVal = 0;
+  const maxVal = 100;
+
+  const points = data.map((val, index) => {
+    const x = padding + (index / (data.length - 1)) * (width - 2 * padding);
+    const y = padding + (1 - (val - minVal) / (maxVal - minVal || 1)) * (height - 2 * padding);
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg className="w-[80px] h-[18px] opacity-85" viewBox={`0 0 ${width} ${height}`}>
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
+}
+
 function App() {
   const [rustStatus, setRustStatus] = useState(null);
   const [javaStatus, setJavaStatus] = useState(null);
   const [spotifyData, setSpotifyData] = useState(null);
   const [localProgressMs, setLocalProgressMs] = useState(0);
   const [selectedTech, setSelectedTech] = useState(null);
+  const [telemetryHistory, setTelemetryHistory] = useState([]);
 
   // Extract all unique technology tags from projects
   const allTechTags = Array.from(
@@ -32,6 +69,47 @@ function App() {
     const interval = setInterval(fetchRust, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch Rust Telemetry History on mount
+  useEffect(() => {
+    fetch(apiUrl('rust', '/api/status/history'))
+      .then(response => response.json())
+      .then(data => setTelemetryHistory(data))
+      .catch(error => console.error("Error fetching telemetry history:", error));
+  }, []);
+
+  // Sync polled metrics with history buffer
+  useEffect(() => {
+    if (!rustStatus) return;
+
+    const cpu = getCpuPercentage(rustStatus.cpu_usage);
+
+    // Parse memory percentage from "used MB / total MB"
+    let memory = 0;
+    if (rustStatus.memory_usage) {
+      const parts = rustStatus.memory_usage.split('/');
+      if (parts.length === 2) {
+        const used = parseFloat(parts[0].replace('MB', '').trim());
+        const total = parseFloat(parts[1].replace('MB', '').trim());
+        if (total > 0) {
+          memory = (used / total) * 100;
+        }
+      }
+    }
+
+    setTelemetryHistory(prev => {
+      // Check if this new data point is already the latest point in history to prevent duplicate entries
+      const lastPoint = prev[prev.length - 1];
+      if (lastPoint && lastPoint.cpu === cpu && lastPoint.memory === memory) {
+        return prev;
+      }
+      const newHistory = [...prev, { cpu, memory }];
+      if (newHistory.length > 20) {
+        newHistory.shift();
+      }
+      return newHistory;
+    });
+  }, [rustStatus]);
 
   // Fetch Java JVM Metrics (with 10s polling)
   useEffect(() => {
@@ -234,9 +312,12 @@ function App() {
                     
                     {/* Real-time CPU Usage bar */}
                     <div className="border-b border-white/5 pb-2">
-                      <div className="flex justify-between mb-1.5">
+                      <div className="flex justify-between items-center mb-1.5">
                         <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
-                        <span className="text-orange-400 font-semibold">{rustStatus.cpu_usage || "0%"}</span>
+                        <div className="flex items-center space-x-3">
+                          <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" />
+                          <span className="text-orange-400 font-semibold">{rustStatus.cpu_usage || "0%"}</span>
+                        </div>
                       </div>
                       <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
                         <div 
@@ -250,9 +331,12 @@ function App() {
                       <span className="text-gray-500 uppercase text-[10px]">Threads</span>
                       <span className="text-orange-400 font-semibold">{rustStatus.cpu_cores}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500 uppercase text-[10px]">Memory</span>
-                      <span className="text-amber-500 font-semibold">{rustStatus.memory_usage}</span>
+                      <div className="flex items-center space-x-3">
+                        <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" />
+                        <span className="text-amber-500 font-semibold">{rustStatus.memory_usage}</span>
+                      </div>
                     </div>
                   </div>
                 ) : (

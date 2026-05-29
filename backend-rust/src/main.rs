@@ -49,10 +49,17 @@ struct SpotifyTokenResponse {
     access_token: String,
 }
 
+#[derive(Serialize, Clone, Default)]
+struct TelemetryPoint {
+    cpu: f32,
+    memory: f32,
+}
+
 // AppState to hold the shared system metrics
 #[derive(Clone)]
 struct AppState {
     metrics: Arc<RwLock<SystemMetrics>>,
+    history: Arc<RwLock<Vec<TelemetryPoint>>>,
 }
 
 #[tokio::main]
@@ -62,10 +69,12 @@ async fn main() {
     // 1. Initialize thread-safe shared state for hardware telemetry
     let metrics_state = AppState {
         metrics: Arc::new(RwLock::new(SystemMetrics::default())),
+        history: Arc::new(RwLock::new(Vec::new())),
     };
 
     // 2. Spawn a background task to refresh telemetry periodically
     let metrics_clone = metrics_state.metrics.clone();
+    let history_clone = metrics_state.history.clone();
     tokio::spawn(async move {
         let mut sys = System::new_all();
         // Warm up the CPU readings
@@ -81,6 +90,11 @@ async fn main() {
             let os_name = System::name().unwrap_or_else(|| "Unknown OS".to_string());
             let cpu_count = sys.cpus().len();
             let cpu_usage = sys.global_cpu_usage();
+            let memory_pct = if sys.total_memory() > 0 {
+                (sys.used_memory() as f64 / sys.total_memory() as f64 * 100.0) as f32
+            } else {
+                0.0
+            };
 
             {
                 let mut guard = metrics_clone.write().await;
@@ -93,6 +107,17 @@ async fn main() {
                 };
             }
 
+            {
+                let mut history_guard = history_clone.write().await;
+                history_guard.push(TelemetryPoint {
+                    cpu: cpu_usage,
+                    memory: memory_pct,
+                });
+                if history_guard.len() > 20 {
+                    history_guard.remove(0);
+                }
+            }
+
             tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
         }
     });
@@ -101,6 +126,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/api/status", get(get_system_status))
+        .route("/api/status/history", get(get_system_history))
         .route("/api/spotify", get(get_spotify_status))
         .layer(cors)
         .with_state(metrics_state);
@@ -113,6 +139,11 @@ async fn main() {
 
 async fn get_system_status(State(state): State<AppState>) -> Json<SystemMetrics> {
     let guard = state.metrics.read().await;
+    Json(guard.clone())
+}
+
+async fn get_system_history(State(state): State<AppState>) -> Json<Vec<TelemetryPoint>> {
+    let guard = state.history.read().await;
     Json(guard.clone())
 }
 
