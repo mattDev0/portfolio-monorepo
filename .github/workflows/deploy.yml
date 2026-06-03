@@ -95,6 +95,7 @@ jobs:
             sudo kubectl apply -f k8s/frontend.yaml
             sudo kubectl apply -f k8s/java-api.yaml
             sudo kubectl apply -f k8s/rust-api.yaml
+            sudo kubectl apply -f k8s/blackbox-exporter.yaml
             
             echo "Triggering rolling restart to pick up new images..."
             sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
