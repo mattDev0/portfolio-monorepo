@@ -3,7 +3,7 @@ import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
 import { apiUrl } from './api';
 
-function Sparkline({ data, color }) {
+function Sparkline({ data, color, max }) {
   if (!data || data.length < 2) {
     return (
       <div className="h-4 flex items-center justify-center text-[8px] text-gray-600 font-mono tracking-wider opacity-50">
@@ -17,7 +17,7 @@ function Sparkline({ data, color }) {
   const padding = 1;
 
   const minVal = 0;
-  const maxVal = 100;
+  const maxVal = max !== undefined ? max : Math.max(Math.max(...data) * 1.1, 10);
 
   const points = data.map((val, index) => {
     const x = padding + (index / (data.length - 1)) * (width - 2 * padding);
@@ -172,6 +172,8 @@ function App() {
   const [localProgressMs, setLocalProgressMs] = useState(0);
   const [selectedTech, setSelectedTech] = useState(null);
   const [telemetryHistory, setTelemetryHistory] = useState([]);
+  const [networkStatus, setNetworkStatus] = useState(null);
+  const [networkHistory, setNetworkHistory] = useState([]);
   const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
   const [hoveredTopologyNode, setHoveredTopologyNode] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
@@ -300,6 +302,51 @@ function App() {
       return newHistory;
     });
   }, [rustStatus, isVisible]);
+  
+  // Fetch Rust Network Metrics (with 5s polling, only when tab is visible)
+  useEffect(() => {
+    if (!isVisible) return;
+    const fetchNetwork = () => {
+      fetch(apiUrl('rust', '/api/status/network'))
+        .then(response => response.json())
+        .then(data => setNetworkStatus(data))
+        .catch(error => console.error("Error fetching from Rust Network API:", error));
+    };
+
+    fetchNetwork();
+    const interval = setInterval(fetchNetwork, 5000);
+    return () => clearInterval(interval);
+  }, [isVisible]);
+
+  // Fetch Rust Network History on mount (and on regaining visibility)
+  useEffect(() => {
+    if (!isVisible) return;
+    fetch(apiUrl('rust', '/api/status/network/history'))
+      .then(response => response.json())
+      .then(data => setNetworkHistory(data))
+      .catch(error => console.error("Error fetching network history:", error));
+  }, [isVisible]);
+
+  // Sync polled network metrics with history buffer
+  useEffect(() => {
+    if (!networkStatus || !isVisible) return;
+
+    const google = networkStatus.google_dns.latency_ms;
+    const cloudflare = networkStatus.cloudflare_dns.latency_ms;
+    const riot = networkStatus.riot_games.latency_ms;
+
+    setNetworkHistory(prev => {
+      const lastPoint = prev[prev.length - 1];
+      if (lastPoint && lastPoint.google_dns === google && lastPoint.cloudflare_dns === cloudflare && lastPoint.riot_games === riot) {
+        return prev;
+      }
+      const newHistory = [...prev, { google_dns: google, cloudflare_dns: cloudflare, riot_games: riot }];
+      if (newHistory.length > 20) {
+        newHistory.shift();
+      }
+      return newHistory;
+    });
+  }, [networkStatus, isVisible]);
 
   // Fetch Java JVM Metrics (with 10s polling, only when tab is visible)
   useEffect(() => {
@@ -507,7 +554,7 @@ function App() {
                     <div className="flex justify-between items-center mb-1.5">
                       <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
                       <div className="flex items-center space-x-3">
-                        <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" />
+                        <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" max={100} />
                         <span className="text-orange-400 font-semibold">{rustStatus.cpu_usage || "0%"}</span>
                       </div>
                     </div>
@@ -526,7 +573,7 @@ function App() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 uppercase text-[10px]">Memory</span>
                     <div className="flex items-center space-x-3">
-                      <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" />
+                      <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" max={100} />
                       <span className="text-amber-500 font-semibold">{rustStatus.memory_usage}</span>
                     </div>
                   </div>
@@ -576,6 +623,68 @@ function App() {
               )}
             </section>
  
+            {/* Network Telemetry */}
+            <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-indigo-500/10 hover:border-indigo-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-indigo-950/5">
+              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+                <span className="flex h-3 w-3 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400/40 opacity-40 delay-300"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500 shadow-[0_0_8px_#6366f1]"></span>
+                </span>
+                {/* Custom Tooltip */}
+                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-indigo-500/20 p-2 text-center text-[10px] text-indigo-400 font-mono shadow-xl z-20">
+                  Blackbox Exporter
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-indigo-400 mb-0 tracking-wide">Network Telemetry</h3>
+              <p className="text-[10px] text-gray-500 font-medium mb-5">Synthetic latency probes via ICMP (Ping)</p>
+
+              {networkStatus ? (
+                <div className="font-mono text-xs space-y-4 mt-2">
+                  {/* Google DNS */}
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.google_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
+                      <span className="text-gray-200">{networkStatus.google_dns.name}</span>
+                      <span className="text-[9px] text-gray-500">({networkStatus.google_dns.target})</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Sparkline data={networkHistory.map(h => h.google_dns)} color="#6366f1" />
+                      <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.google_dns.latency_ms} ms</span>
+                    </div>
+                  </div>
+
+                  {/* Cloudflare DNS */}
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.cloudflare_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
+                      <span className="text-gray-200">{networkStatus.cloudflare_dns.name}</span>
+                      <span className="text-[9px] text-gray-500">({networkStatus.cloudflare_dns.target})</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Sparkline data={networkHistory.map(h => h.cloudflare_dns)} color="#6366f1" />
+                      <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.cloudflare_dns.latency_ms} ms</span>
+                    </div>
+                  </div>
+
+                  {/* Riot Games NA */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.riot_games.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
+                      <span className="text-gray-200">{networkStatus.riot_games.name}</span>
+                      <span className="text-[9px] text-gray-500">({networkStatus.riot_games.target})</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Sparkline data={networkHistory.map(h => h.riot_games)} color="#6366f1" />
+                      <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.riot_games.latency_ms} ms</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Ping diagnostics pending...</p>
+              )}
+            </section>
+
             {/* Live Spotify Session via Rust */}
             {spotifyData?.track_url ? (
               <a 
