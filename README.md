@@ -27,14 +27,22 @@ graph TD
             K8sFE --> FE[frontend-react Pod]
             K8sRust --> Rust[backend-rust Pod]
             K8sJava --> Java[backend-java Pod]
+            K8sBlackbox[Service: blackbox-exporter] --> Blackbox[blackbox-exporter Pod]
+        end
+
+        subgraph "Namespace: devops"
+            Prometheus[prometheus Pod]
         end
     end
 
     Rust -->|Spotify API| Spotify[Spotify Web Services]
     Java -->|GitHub API| GitHub[GitHub REST API]
+    Rust -->|Queries Network Latency| Prometheus
+    Prometheus -->|Scrapes ICMP Probes| K8sBlackbox
+    Blackbox -->|Pings ICMP| Internet[External Internet: Google / Cloudflare / Riot Games]
 
     classDef portfolio fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
-    class FE,Rust,Java portfolio;
+    class FE,Rust,Java,Blackbox portfolio;
 ```
 
 ## 1. Frontend Gateway (React / Vite)
@@ -53,12 +61,14 @@ Features include:
 * Graceful API rate-limit handling
 * Safe parsing for missing metadata
 
-## 3. Rust Engine (Actix/Tokio)
+## 3. Rust Engine (Axum/Tokio)
 
-Provides low-level system telemetry.
+Provides low-level system telemetry and external connectivity metrics.
 
 Features include:
 
+* Real-time network telemetry (ICMP ping latency, availability) queried from Prometheus
+* Fallback mock network telemetry generator for local developer mode
 * CPU usage metrics
 * Memory monitoring
 * Thread monitoring
@@ -90,7 +100,8 @@ portfolio-monorepo/
 │   ├── namespace.yaml
 │   ├── frontend.yaml
 │   ├── java-api.yaml
-│   └── rust-api.yaml
+│   ├── rust-api.yaml
+│   └── blackbox-exporter.yaml  # [NEW] ICMP Probe Exporter
 │
 ├── frontend-react/
 │   ├── public/
@@ -330,6 +341,8 @@ GitHub Actions will automatically:
 | GET    | `/api/github/activity`        | Java         | Returns top 4 recent code pushes               |
 | GET    | `/api/infrastructure/metrics` | Java         | Returns JVM memory allocation and thread count |
 | GET    | `/api/status`                 | Rust         | Returns host OS telemetry (OS, CPU, Memory)    |
+| GET    | `/api/status/network`         | Rust         | Returns live ICMP latency & status for pings   |
+| GET    | `/api/status/network/history` | Rust         | Returns rolling 20-point network ping history  |
 | GET    | `/api/spotify`                | Rust         | Returns current Spotify session with track URL |
 
 ---
@@ -345,7 +358,7 @@ GitHub Actions will automatically:
 ## Backend
 
 * Java Spring Boot
-* Rust (Actix/Tokio)
+* Rust (Axum/Tokio)
 
 ## Infrastructure
 
@@ -353,6 +366,8 @@ GitHub Actions will automatically:
 * Docker Compose
 * Nginx
 * Azure VM
+* Kubernetes (K3s)
+* Prometheus Blackbox Exporter
 * GitHub Actions
 
 ---
