@@ -6,9 +6,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
+# Stage 2: Serve with Nginx (Unprivileged)
+FROM nginxinc/nginx-unprivileged:alpine
 # Copy the built assets from the builder stage to Nginx's web folder
 COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

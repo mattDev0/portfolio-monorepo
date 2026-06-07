@@ -17,7 +17,15 @@ RUN --mount=type=cache,target=/root/.m2 \
 # Stage 2: Create the lightweight runner image
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-COPY --from=builder /app/app.jar app.jar
+
+# Create a non-root user and group
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Copy the built jar and assign ownership to appuser
+COPY --from=builder --chown=appuser:appuser /app/app.jar app.jar
+
+# Switch to the non-root user
+USER appuser
 
 EXPOSE 8081
 CMD ["java", "-jar", "app.jar"]

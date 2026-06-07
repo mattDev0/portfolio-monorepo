@@ -15,10 +15,18 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 # Stage 2: Create the minimal runner image
 FROM debian:bookworm-slim
 WORKDIR /app
+
+# Create a non-root user and group
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 # Install OpenSSL certificates (required for the Spotify reqwest calls)
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-# Copy the compiled binary from the builder
-COPY --from=builder /usr/local/bin/backend-rust .
+
+# Copy the compiled binary from the builder and set ownership
+COPY --from=builder --chown=appuser:appuser /usr/local/bin/backend-rust .
+
+# Switch to the non-root user
+USER appuser
 
 EXPOSE 8080
 CMD ["./backend-rust"]
