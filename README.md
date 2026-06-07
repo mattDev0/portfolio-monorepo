@@ -83,7 +83,7 @@ Infrastructure stack includes:
 
 * Kubernetes (K3s) cluster orchestration (namespace `portfolio`)
 * Host Nginx reverse proxy routing to K3s NodePorts
-* Isolated microservice pods with strict resource limits
+* Isolated microservice pods with strict resource limits running securely as non-root users
 * Automated CI/CD deployment pipeline deploying to K8s
 
 ---
@@ -95,6 +95,11 @@ portfolio-monorepo/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml
+│
+├── infrastructure/             # Reverse Proxy Configurations 🌐
+│   └── nginx/
+│       ├── mattdev0.tech.conf
+│       └── portfolio-locations.conf
 │
 ├── k8s/                        # Kubernetes Manifests ☸️
 │   ├── namespace.yaml
@@ -326,8 +331,9 @@ GitHub Actions will automatically:
 3. Connect to the Azure VM via SSH.
 4. Pull the latest code changes (specifically updating the Kubernetes manifests).
 5. Dynamically configure K8s environment Secrets from the `.env` file on the VM.
-6. Apply the Kubernetes manifests in the `k8s/` folder, instructing K3s to pull the pre-built images from GHCR.
-7. Trigger a zero-downtime rolling update:
+6. Inject the exact Git Commit SHA into the Kubernetes manifests using `sed` to replace `latest` tags.
+7. Apply the Kubernetes manifests in the `k8s/` folder, instructing K3s to pull the pre-built specific images from GHCR.
+8. Trigger a zero-downtime rolling update:
    ```bash
    sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
    ```
