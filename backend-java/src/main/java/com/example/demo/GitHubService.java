@@ -2,10 +2,10 @@ package com.example.demo;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -40,15 +40,25 @@ public class GitHubService {
                 ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
                 return response.getBody();
             } catch (Exception e) {
-                System.err.println("Authenticated request failed for url: " + url + ". Error: " + e.getMessage() + ". Retrying unauthenticated.");
+                System.err.println("Authenticated request failed for url: " + url + ". Error: " + e.getMessage());
+                return null;
             }
         }
         // Fallback or default to unauthenticated request
-        return restTemplate.getForObject(url, String.class);
+        try {
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            System.err.println("Unauthenticated request failed for url: " + url + ". Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @Cacheable("githubActivity")
     public List<Map<String, String>> getRecentActivity() {
+        return fetchRecentActivity();
+    }
+
+    private List<Map<String, String>> fetchRecentActivity() {
         List<Map<String, String>> recentCommits = new ArrayList<>();
         String url = "https://api.github.com/users/mattDev0/events/public";
 
@@ -124,10 +134,11 @@ public class GitHubService {
         return recentCommits;
     }
 
-    // AUTOMATIC CACHE CLEAR: Runs every 10 minutes to fetch fresh commits
-    @CacheEvict(value = "githubActivity", allEntries = true)
+    // AUTOMATIC CACHE PRE-WARMING: Runs every 10 minutes to fetch fresh commits and update cache
+    @CachePut(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
     @Scheduled(fixedRate = 600000) 
-    public void emptyGitHubCache() {
-        System.out.println("Flushing GitHub cache for fresh commits...");
+    public List<Map<String, String>> refreshGitHubCache() {
+        System.out.println("Pre-warming GitHub cache with fresh commits...");
+        return fetchRecentActivity();
     }
 }
