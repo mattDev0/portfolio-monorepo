@@ -39,7 +39,9 @@ jobs:
         with:
           context: ./frontend-react
           push: true
-          tags: ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:latest
+          tags: |
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -48,7 +50,9 @@ jobs:
         with:
           context: ./backend-java
           push: true
-          tags: ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:latest
+          tags: |
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -57,7 +61,9 @@ jobs:
         with:
           context: ./backend-rust
           push: true
-          tags: ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:latest
+          tags: |
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -92,10 +98,15 @@ jobs:
             fi
             
             echo "Deploying applications to K3s..."
+            sed -i "s/:latest/:${{ github.sha }}/g" k8s/frontend.yaml k8s/java-api.yaml k8s/rust-api.yaml
+            
             sudo kubectl apply -f k8s/frontend.yaml
             sudo kubectl apply -f k8s/java-api.yaml
             sudo kubectl apply -f k8s/rust-api.yaml
             sudo kubectl apply -f k8s/blackbox-exporter.yaml
+            
+            # Revert the sed changes so git isn't dirty
+            git checkout k8s/
             
             echo "Triggering rolling restart to pick up new images..."
             sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
