@@ -106,15 +106,25 @@ portfolio-monorepo/
 │   ├── frontend.yaml
 │   ├── java-api.yaml
 │   ├── rust-api.yaml
-│   └── blackbox-exporter.yaml  # [NEW] ICMP Probe Exporter
+│   └── blackbox-exporter.yaml  # ICMP Probe Exporter
 │
 ├── frontend-react/
 │   ├── public/
 │   │   └── favicon.png
 │   ├── src/
+│   │   ├── components/
+│   │   │   ├── Sparkline.jsx
+│   │   │   ├── SpotifyPlayer.jsx
+│   │   │   ├── TerminalSimulator.jsx
+│   │   │   └── TopologyNode.jsx
+│   │   ├── hooks/
+│   │   │   ├── useSpotify.js
+│   │   │   └── useTelemetry.js
 │   │   ├── App.jsx
 │   │   ├── GitHubActivity.jsx
+│   │   ├── api.js
 │   │   ├── config.json
+│   │   ├── constants.js
 │   │   ├── main.jsx
 │   │   └── index.css
 │   ├── package.json
@@ -122,7 +132,8 @@ portfolio-monorepo/
 │   └── Dockerfile
 │
 ├── backend-java/
-│   ├── src/main/java/com/example/demo/
+│   ├── src/main/java/com/matt/portfolio/
+│   │   ├── AppConfig.java
 │   │   ├── DemoApplication.java
 │   │   ├── InfrastructureController.java
 │   │   ├── GitHubController.java
@@ -132,7 +143,15 @@ portfolio-monorepo/
 │
 ├── backend-rust/
 │   ├── src/
-│   │   └── main.rs
+│   │   ├── services/
+│   │   │   ├── mod.rs
+│   │   │   ├── network_monitor.rs
+│   │   │   ├── spotify_client.rs
+│   │   │   └── system_monitor.rs
+│   │   ├── handlers.rs
+│   │   ├── main.rs
+│   │   ├── models.rs
+│   │   └── utils.rs
 │   ├── Cargo.toml
 │   └── Dockerfile
 │
