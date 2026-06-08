@@ -111,6 +111,11 @@ jobs:
             echo "Triggering rolling restart to pick up new images..."
             sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
             
+            echo "Waiting for rollouts to complete..."
+            sudo kubectl rollout status deployment/frontend -n portfolio --timeout=300s
+            sudo kubectl rollout status deployment/java-api -n portfolio --timeout=300s
+            sudo kubectl rollout status deployment/rust-api -n portfolio --timeout=300s
+            
             # Prune docker images to save space
             sudo docker image prune -f
             
