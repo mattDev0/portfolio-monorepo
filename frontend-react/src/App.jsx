@@ -3,177 +3,21 @@ import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
 import { apiUrl } from './api';
 
-function Sparkline({ data, color, max }) {
-  if (!data || data.length < 2) {
-    return (
-      <div className="h-4 flex items-center justify-center text-[8px] text-gray-600 font-mono tracking-wider opacity-50">
-        syncing...
-      </div>
-    );
-  }
+// Components
+import Sparkline from './components/Sparkline';
+import TerminalSimulator from './components/TerminalSimulator';
+import TopologyNode from './components/TopologyNode';
+import SpotifyPlayer from './components/SpotifyPlayer';
 
-  const height = 18;
-  const width = 80;
-  const padding = 1;
+// Hooks
+import useTelemetry from './hooks/useTelemetry';
+import useSpotify from './hooks/useSpotify';
 
-  const minVal = 0;
-  const maxVal = max !== undefined ? max : Math.max(Math.max(...data) * 1.1, 10);
-
-  const points = data.map((val, index) => {
-    const x = padding + (index / (data.length - 1)) * (width - 2 * padding);
-    const y = padding + (1 - (val - minVal) / (maxVal - minVal || 1)) * (height - 2 * padding);
-    return `${x},${y}`;
-  }).join(' ');
-
-  return (
-    <svg className="w-[80px] h-[18px] opacity-85" viewBox={`0 0 ${width} ${height}`}>
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={points}
-      />
-    </svg>
-  );
-}
-
-function TerminalSimulator({ active }) {
-  const [lines, setLines] = useState([]);
-  
-  const terminalSequence = [
-    { text: "guest@mattdev0.tech:~$ initialize_telemetry", delay: 200 },
-    { text: "[INFO] Establishing WebSocket handshake with rust-agent...", delay: 600 },
-    { text: "[INFO] Client handshake accepted. Handshaking Spring orchestrator...", delay: 500 },
-    { text: "[INFO] Session validated via JWT authority claims (ROLE_GUEST).", delay: 400 },
-    { text: "[SUCCESS] Bidirectional PTY bridge established.", delay: 300 },
-    { text: "guest@mattdev0.tech:~$ kubectl get pods -n devops", delay: 500 },
-    { text: "NAME                                READY   STATUS    RESTARTS   AGE", delay: 300 },
-    { text: "devops-frontend-6b4d5b6c-8x2p       1/1     Running   0          45d", delay: 100 },
-    { text: "devops-orchestrator-9c4d5b6-7y1q    1/1     Running   2          45d", delay: 100 },
-    { text: "devops-agent-8b3d4a5-9z0p           1/1     Running   0          45d", delay: 100 },
-    { text: "guest@mattdev0.tech:~$ sysinfo --telemetry", delay: 600 },
-    { text: "[OS] Linux 6.1.0-azure-amd64 | [Telemetry Mode] Active SSE Streams", delay: 400 },
-    { text: "[Cluster metrics] Prometheus Node Exporter DaemonSet operational.", delay: 200 },
-    { text: "guest@mattdev0.tech:~$ █", delay: 800 }
-  ];
-
-  useEffect(() => {
-    if (!active) {
-      setLines([]);
-      return;
-    }
-
-    let isMounted = true;
-    let currentLineIndex = 0;
-    
-    const runSequence = async () => {
-      for (const step of terminalSequence) {
-        if (!isMounted) break;
-        await new Promise(resolve => setTimeout(resolve, step.delay));
-        if (!isMounted) break;
-        setLines(prev => [...prev, step.text]);
-      }
-    };
-
-    runSequence();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [active]);
-
-  return (
-    <div className="bg-[#050811] border border-white/5 rounded-xl p-4 font-mono text-[11px] text-indigo-300 leading-relaxed shadow-inner h-60 overflow-y-auto custom-scrollbar select-none">
-      {lines.map((line, idx) => {
-        if (line.startsWith("guest@")) {
-          return (
-            <div key={idx} className="text-gray-400 mt-2">
-              <span className="text-emerald-400">guest@mattdev0.tech</span>:<span className="text-blue-400">~</span>$ {line.substring(23)}
-            </div>
-          );
-        }
-        if (line.startsWith("[SUCCESS]")) {
-          return <div key={idx} className="text-emerald-400 font-semibold">{line}</div>;
-        }
-        if (line.startsWith("[INFO]")) {
-          return <div key={idx} className="text-gray-500">{line}</div>;
-        }
-        return <div key={idx} className="text-gray-200">{line}</div>;
-      })}
-    </div>
-  );
-}
-
-const TOPOLOGY_INFO = {
-  client: {
-    title: "Client Browser",
-    tech: "React 19 + Vite + Tailwind CSS",
-    protocol: "HTTPS (Port 443)",
-    description: "The interactive UI dashboard running in the visitor's browser. It polls the microservice APIs periodically (Telemetry every 5s, JVM every 10s, Spotify every 10s) and updates the layout reactively.",
-    badge: "Frontend"
-  },
-  nginx: {
-    title: "Nginx Reverse Proxy",
-    tech: "Nginx Gateway Config",
-    protocol: "HTTPS -> NodePorts",
-    description: "Operates as the entry point on the Azure VM. It terminates SSL (Let's Encrypt), resolves CORS by hosting services on the same domain, and routes paths: / to Port 30000, /api/status & /api/spotify to Port 30080, and /api/github to Port 30081.",
-    badge: "Gateway"
-  },
-  k8s: {
-    title: "K3s Kubernetes Namespace",
-    tech: "K3s Cluster (Orchestration)",
-    protocol: "K8s Service DNS",
-    description: "A lightweight, secure Kubernetes namespace ('portfolio') hosting isolated container pods. Manages scaling, self-healing, rolling updates, and enforces strict resource limits (limits: memory: 32Mi, cpu: 100m).",
-    badge: "Infrastructure"
-  },
-  frontend: {
-    title: "frontend-react Pod",
-    tech: "Docker + Nginx Server",
-    protocol: "HTTP (Container Port 80)",
-    description: "Containerized deployment serving the static built React application bundle. Managed via rolling zero-downtime restarts in Kubernetes (K3s NodePort 30000).",
-    badge: "Deployment Pod"
-  },
-  rust: {
-    title: "backend-rust Pod",
-    tech: "Rust + Axum Engine",
-    protocol: "HTTP (Container Port 8080)",
-    description: "High-performance Axum web server compiled to native machine code. Refreshes host CPU/Memory telemetry in a thread-safe background task and acts as the Spotify authentication token manager.",
-    badge: "Deployment Pod"
-  },
-  java: {
-    title: "backend-java Pod",
-    tech: "Java 21 + Spring Boot 4",
-    protocol: "HTTP (Container Port 8081)",
-    description: "Enterprise-grade Spring Boot microservice. Manages caching abstractions using Spring Cache (@Cacheable) to bypass public rate boundaries, pulling recent commit payloads from the GitHub API.",
-    badge: "Deployment Pod"
-  },
-  spotify: {
-    title: "Spotify Web API",
-    tech: "OAuth 2.0 REST Web Services",
-    protocol: "External API Calls",
-    description: "Third-party audio streaming REST API. Authenticated securely via OAuth 2.0 client-credentials and token refresh flows executed from the Rust backend to fetch current/recent tracks.",
-    badge: "External Service"
-  },
-  github: {
-    title: "GitHub REST API",
-    tech: "GitHub Public REST API",
-    protocol: "External API Calls",
-    description: "Third-party platform API queried by the Java backend to fetch live repository events. Spring Cache limits API calls to prevent IP rate-limiting blocks.",
-    badge: "External Service"
-  }
-};
+// Constants
+import { TOPOLOGY_INFO } from './constants';
 
 function App() {
-  const [rustStatus, setRustStatus] = useState(null);
-  const [javaStatus, setJavaStatus] = useState(null);
-  const [spotifyData, setSpotifyData] = useState(null);
-  const [localProgressMs, setLocalProgressMs] = useState(0);
   const [selectedTech, setSelectedTech] = useState(null);
-  const [telemetryHistory, setTelemetryHistory] = useState([]);
-  const [networkStatus, setNetworkStatus] = useState(null);
-  const [networkHistory, setNetworkHistory] = useState([]);
   const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
   const [hoveredTopologyNode, setHoveredTopologyNode] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
@@ -189,53 +33,21 @@ function App() {
     };
   }, []);
 
-  const renderNode = (id, icon, title, tech) => {
-    const isHovered = hoveredTopologyNode === id;
-    
-    let accentBorder = "border-white/5";
-    let accentBg = "bg-slate-950/20 hover:border-indigo-500/20";
-    let accentText = "text-gray-300";
-    
-    if (isHovered) {
-      if (id === 'rust') {
-        accentBorder = "border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.15)] animate-pulse";
-        accentBg = "bg-orange-500/5";
-        accentText = "text-orange-400";
-      } else if (id === 'java') {
-        accentBorder = "border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.15)] animate-pulse";
-        accentBg = "bg-emerald-500/5";
-        accentText = "text-emerald-400";
-      } else if (id === 'frontend' || id === 'client') {
-        accentBorder = "border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.15)] animate-pulse";
-        accentBg = "bg-blue-500/5";
-        accentText = "text-blue-400";
-      } else if (id === 'nginx') {
-        accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)] animate-pulse";
-        accentBg = "bg-indigo-500/5";
-        accentText = "text-indigo-400";
-      } else if (id === 'k8s') {
-        accentBorder = "border-blue-400/50 shadow-[0_0_12px_rgba(96,165,250,0.2)]";
-        accentBg = "bg-blue-400/5";
-        accentText = "text-blue-400";
-      } else {
-        accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)]";
-        accentBg = "bg-indigo-500/5";
-        accentText = "text-indigo-400";
-      }
-    }
+  const {
+    rustStatus,
+    javaStatus,
+    telemetryHistory,
+    networkStatus,
+    networkHistory,
+    getCpuPercentage
+  } = useTelemetry(isVisible);
 
-    return (
-      <div
-        onMouseEnter={() => setHoveredTopologyNode(id)}
-        onMouseLeave={() => setHoveredTopologyNode(null)}
-        className={`p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-help select-none ${accentBorder} ${accentBg} ${isHovered ? 'scale-[1.02]' : ''}`}
-      >
-        <span className="text-lg md:text-xl mb-0.5">{icon}</span>
-        <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${accentText}`}>{title}</span>
-        <span className="text-[8px] md:text-[9px] text-gray-500 font-mono mt-0.5">{tech}</span>
-      </div>
-    );
-  };
+  const {
+    spotifyData,
+    localProgressMs,
+    progressPercent,
+    formatTime
+  } = useSpotify(isVisible);
 
   // Extract all unique technology tags from projects
   const allTechTags = Array.from(
@@ -245,178 +57,6 @@ function App() {
   const filteredProjects = selectedTech
     ? portfolioConfig.projects.filter(p => p.tech.includes(selectedTech))
     : portfolioConfig.projects;
-
-  // Fetch Rust Hardware Metrics (with 5s polling, only when tab is visible)
-  useEffect(() => {
-    if (!isVisible) return;
-    const fetchRust = () => {
-      fetch(apiUrl('rust', '/api/status'))
-        .then(response => response.json())
-        .then(data => setRustStatus(data))
-        .catch(error => console.error("Error fetching from Rust API:", error));
-    };
-
-    fetchRust();
-    const interval = setInterval(fetchRust, 5000);
-    return () => clearInterval(interval);
-  }, [isVisible]);
-
-  // Fetch Rust Telemetry History on mount (and on regaining visibility if history was blank)
-  useEffect(() => {
-    if (!isVisible) return;
-    fetch(apiUrl('rust', '/api/status/history'))
-      .then(response => response.json())
-      .then(data => setTelemetryHistory(data))
-      .catch(error => console.error("Error fetching telemetry history:", error));
-  }, [isVisible]);
-
-  // Sync polled metrics with history buffer
-  useEffect(() => {
-    if (!rustStatus || !isVisible) return;
-
-    const cpu = getCpuPercentage(rustStatus.cpu_usage);
-
-    // Parse memory percentage from "used MB / total MB"
-    let memory = 0;
-    if (rustStatus.memory_usage) {
-      const parts = rustStatus.memory_usage.split('/');
-      if (parts.length === 2) {
-        const used = parseFloat(parts[0].replace('MB', '').trim());
-        const total = parseFloat(parts[1].replace('MB', '').trim());
-        if (total > 0) {
-          memory = (used / total) * 100;
-        }
-      }
-    }
-
-    setTelemetryHistory(prev => {
-      // Check if this new data point is already the latest point in history to prevent duplicate entries
-      const lastPoint = prev[prev.length - 1];
-      if (lastPoint && lastPoint.cpu === cpu && lastPoint.memory === memory) {
-        return prev;
-      }
-      const newHistory = [...prev, { cpu, memory }];
-      if (newHistory.length > 20) {
-        newHistory.shift();
-      }
-      return newHistory;
-    });
-  }, [rustStatus, isVisible]);
-  
-  // Fetch Rust Network Metrics (with 5s polling, only when tab is visible)
-  useEffect(() => {
-    if (!isVisible) return;
-    const fetchNetwork = () => {
-      fetch(apiUrl('rust', '/api/status/network'))
-        .then(response => response.json())
-        .then(data => setNetworkStatus(data))
-        .catch(error => console.error("Error fetching from Rust Network API:", error));
-    };
-
-    fetchNetwork();
-    const interval = setInterval(fetchNetwork, 5000);
-    return () => clearInterval(interval);
-  }, [isVisible]);
-
-  // Fetch Rust Network History on mount (and on regaining visibility)
-  useEffect(() => {
-    if (!isVisible) return;
-    fetch(apiUrl('rust', '/api/status/network/history'))
-      .then(response => response.json())
-      .then(data => setNetworkHistory(data))
-      .catch(error => console.error("Error fetching network history:", error));
-  }, [isVisible]);
-
-  // Sync polled network metrics with history buffer
-  useEffect(() => {
-    if (!networkStatus || !isVisible) return;
-
-    const google = networkStatus.google_dns.latency_ms;
-    const cloudflare = networkStatus.cloudflare_dns.latency_ms;
-    const riot = networkStatus.riot_games.latency_ms;
-
-    setNetworkHistory(prev => {
-      const lastPoint = prev[prev.length - 1];
-      if (lastPoint && lastPoint.google_dns === google && lastPoint.cloudflare_dns === cloudflare && lastPoint.riot_games === riot) {
-        return prev;
-      }
-      const newHistory = [...prev, { google_dns: google, cloudflare_dns: cloudflare, riot_games: riot }];
-      if (newHistory.length > 20) {
-        newHistory.shift();
-      }
-      return newHistory;
-    });
-  }, [networkStatus, isVisible]);
-
-  // Fetch Java JVM Metrics (with 10s polling, only when tab is visible)
-  useEffect(() => {
-    if (!isVisible) return;
-    const fetchJava = () => {
-      fetch(apiUrl('java', '/api/infrastructure/metrics'))
-        .then(response => response.json())
-        .then(data => setJavaStatus(data))
-        .catch(error => console.error("Error fetching from Java API:", error));
-    };
-
-    fetchJava();
-    const interval = setInterval(fetchJava, 10000);
-    return () => clearInterval(interval);
-  }, [isVisible]);
-
-  // Fetch Live Spotify Session via Rust (with 10s polling, only when tab is visible)
-  useEffect(() => {
-    if (!isVisible) return;
-    const fetchSpotify = () => {
-      fetch(apiUrl('rust', '/api/spotify'))
-        .then(response => response.json())
-        .then(data => setSpotifyData(data))
-        .catch(error => console.error("Error fetching Spotify API:", error));
-    };
-
-    fetchSpotify();
-    const interval = setInterval(fetchSpotify, 10000);
-    return () => clearInterval(interval);
-  }, [isVisible]);
-
-  // Sync local progress when new data is fetched
-  useEffect(() => {
-    if (spotifyData) {
-      setLocalProgressMs(spotifyData.progress_ms || 0);
-    }
-  }, [spotifyData]);
-
-  // Tick the progress bar locally every second if a song is playing (only when tab is visible)
-  useEffect(() => {
-    if (!spotifyData || !spotifyData.is_playing || !isVisible) return;
-
-    const interval = setInterval(() => {
-      setLocalProgressMs(prev => {
-        const next = prev + 1000;
-        return next > spotifyData.duration_ms ? spotifyData.duration_ms : next;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [spotifyData, isVisible]);
-
-  // Helper to format milliseconds to M:SS
-  const formatTime = (ms) => {
-    if (!ms) return "0:00";
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
-
-  const getCpuPercentage = (cpuUsageStr) => {
-    if (!cpuUsageStr) return 0;
-    const parsed = parseFloat(cpuUsageStr.replace('%', ''));
-    return isNaN(parsed) ? 0 : parsed;
-  };
-
-  const progressPercent = spotifyData?.duration_ms
-    ? (localProgressMs / spotifyData.duration_ms) * 100
-    : 0;
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col items-center py-16 px-4 sm:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/20 via-[#0b0f19] to-[#0b0f19]">
@@ -686,20 +326,12 @@ function App() {
             </section>
 
             {/* Live Spotify Session via Rust */}
-            {spotifyData?.track_url ? (
-              <a 
-                href={spotifyData.track_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5 flex flex-col justify-center cursor-pointer"
-              >
-                {renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime)}
-              </a>
-            ) : (
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden transition-all duration-300 flex flex-col justify-center">
-                {renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime)}
-              </section>
-            )}
+            <SpotifyPlayer
+              spotifyData={spotifyData}
+              progressPercent={progressPercent}
+              localProgressMs={localProgressMs}
+              formatTime={formatTime}
+            />
             
           </div>
           {/* --- END RIGHT COLUMN --- */}
@@ -724,7 +356,7 @@ function App() {
                 
                 {/* 1. Client Card */}
                 <div className="flex-1 w-full flex flex-col justify-center">
-                  {renderNode('client', '🌐', 'Client Browser', 'React 19 + Vite')}
+                  <TopologyNode id="client" icon="🌐" title="Client Browser" tech="React 19 + Vite" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                 </div>
 
                 {/* Arrow Client -> Nginx */}
@@ -735,7 +367,7 @@ function App() {
 
                 {/* 2. Nginx Card */}
                 <div className="flex-1 w-full flex flex-col justify-center">
-                  {renderNode('nginx', '🛡️', 'Nginx Proxy', 'Port 443 SSL')}
+                  <TopologyNode id="nginx" icon="🛡️" title="Nginx Proxy" tech="Port 443 SSL" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                 </div>
 
                 {/* Arrow Nginx -> K8s Namespace */}
@@ -757,11 +389,11 @@ function App() {
 
                   <div className="grid grid-cols-3 gap-2">
                     {/* Pod 1: Frontend */}
-                    {renderNode('frontend', '⚛️', 'Frontend Pod', 'NodePort 30000')}
+                    <TopologyNode id="frontend" icon="⚛️" title="Frontend Pod" tech="NodePort 30000" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                     {/* Pod 2: Rust API */}
-                    {renderNode('rust', '🦀', 'Rust Pod', 'NodePort 30080')}
+                    <TopologyNode id="rust" icon="🦀" title="Rust Pod" tech="NodePort 30080" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                     {/* Pod 3: Java API */}
-                    {renderNode('java', '☕', 'Java Pod', 'NodePort 30081')}
+                    <TopologyNode id="java" icon="☕" title="Java Pod" tech="NodePort 30081" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                   </div>
                 </div>
 
@@ -779,7 +411,7 @@ function App() {
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-gray-300">Rust API</span>
                     <span className="text-orange-400 font-mono text-[10px]">── OAuth ──▶</span>
-                    {renderNode('spotify', '🎵', 'Spotify API', 'v1 Player Web Service')}
+                    <TopologyNode id="spotify" icon="🎵" title="Spotify API" tech="v1 Player Web Service" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                   </div>
                 </div>
 
@@ -792,7 +424,7 @@ function App() {
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-gray-300">Java API</span>
                     <span className="text-emerald-400 font-mono text-[10px]">── REST ──▶</span>
-                    {renderNode('github', '🐙', 'GitHub API', 'v3 Public REST')}
+                    <TopologyNode id="github" icon="🐙" title="GitHub API" tech="v3 Public REST" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                   </div>
                 </div>
 
@@ -1047,71 +679,6 @@ function App() {
         </div>
       )}
     </div>
-  );
-}
-
-// Separate helper function to render Spotify internals to keep code clean and readable
-function renderSpotifyInner(spotifyData, progressPercent, localProgressMs, formatTime) {
-  const isPlaying = spotifyData?.is_playing;
-  const isRecentlyPlayed = spotifyData?.is_recently_played;
-  return (
-    <>
-      <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-        <span className="flex h-3 w-3 relative">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPlaying ? 'bg-emerald-400' : isRecentlyPlayed ? 'bg-amber-400' : 'bg-gray-500'}`}></span>
-          {isPlaying && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>}
-          <span className={`relative inline-flex rounded-full h-3 w-3 ${isPlaying ? 'bg-emerald-500' : isRecentlyPlayed ? 'bg-amber-500' : 'bg-gray-500'} ${isPlaying ? 'shadow-[0_0_8px_#10b981]' : isRecentlyPlayed ? 'shadow-[0_0_8px_#f59e0b]' : ''}`}></span>
-        </span>
-        {/* Custom Tooltip */}
-        <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
-          {isPlaying ? 'Live playback' : isRecentlyPlayed ? 'Playback idle' : 'Offline'}
-        </div>
-      </div>
-      
-      <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide flex items-center">
-        <svg className="w-5 h-5 mr-2 text-emerald-400 group-hover:animate-spin" style={{ animationDuration: isPlaying ? '6s' : '0s' }} fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.54.659.3 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.84.241 1.2zM20.4 9.06C16.8 6.9 9.72 6.72 5.64 8.04c-.6.18-1.2-.12-1.38-.72-.18-.6.12-1.2.72-1.38 4.68-1.44 12.48-1.2 16.68 1.32.54.3.72.96.42 1.5-.24.54-.84.72-1.68.3z"/></svg>
-        Spotify Session
-      </h3>
-      <p className="text-[10px] text-gray-500 font-medium mb-5">Web API sync via Rust token auth</p>
-      
-      {spotifyData ? (
-        <div>
-          <div className="flex items-center space-x-4 mt-2">
-            <div className={`w-16 h-16 bg-slate-800 rounded-lg flex-shrink-0 shadow-md overflow-hidden relative border border-white/5 transition-transform duration-500 ${isPlaying ? 'group-hover:rotate-12 group-hover:scale-105' : ''}`}>
-              {spotifyData.album_art ? (
-                <img src={spotifyData.album_art} alt="Album Art" className={`w-full h-full object-cover transition-all duration-500 ${isPlaying ? '' : 'grayscale opacity-60'}`} />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500 to-slate-900 opacity-50"></div>
-              )}
-            </div>
-            <div className="overflow-hidden flex-grow">
-              <p className="text-gray-100 font-bold truncate group-hover:text-emerald-400 transition-colors">{spotifyData.title}</p>
-              <p className="text-gray-400 text-sm truncate">{spotifyData.artist}</p>
-              <p className={`text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold ${isPlaying ? 'text-emerald-400' : isRecentlyPlayed ? 'text-amber-500/80' : 'text-gray-500'}`}>
-                {isPlaying ? 'Now Playing' : isRecentlyPlayed ? 'Recently Played' : 'Offline'}
-              </p>
-            </div>
-          </div>
-          
-          {isPlaying && spotifyData.duration_ms > 0 && (
-            <div className="mt-5">
-              <div className="w-full h-1 bg-slate-950 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-500 transition-all duration-1000 ease-linear shadow-[0_0_8px_#10b981]"
-                  style={{ width: `${progressPercent}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between text-[9px] text-gray-500 mt-1.5 font-mono">
-                <span>{formatTime(localProgressMs)}</span>
-                <span>{formatTime(spotifyData.duration_ms)}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Connecting to Spotify Web API...</p>
-      )}
-    </>
   );
 }
 
