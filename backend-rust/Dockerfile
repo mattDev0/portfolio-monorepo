@@ -16,8 +16,8 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 FROM debian:bookworm-slim
 WORKDIR /app
 
-# Create a non-root user and group
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Create a non-root user and group with numeric UID/GID
+RUN groupadd -g 10001 -r appuser && useradd -u 10001 -m -r -g appuser appuser
 
 # Install OpenSSL certificates (required for the Spotify reqwest calls)
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 # Copy the compiled binary from the builder and set ownership
 COPY --from=builder --chown=appuser:appuser /usr/local/bin/backend-rust .
 
-# Switch to the non-root user
-USER appuser
+# Switch to the non-root user (using numeric ID for Kubernetes runAsNonRoot verification)
+USER 10001
 
 EXPOSE 8080
 CMD ["./backend-rust"]

@@ -18,14 +18,14 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Create a non-root user and group
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Create a non-root user and group with numeric UID/GID
+RUN groupadd -g 10001 -r appuser && useradd -u 10001 -m -r -g appuser appuser
 
 # Copy the built jar and assign ownership to appuser
 COPY --from=builder --chown=appuser:appuser /app/app.jar app.jar
 
-# Switch to the non-root user
-USER appuser
+# Switch to the non-root user (using numeric ID for Kubernetes runAsNonRoot verification)
+USER 10001
 
 EXPOSE 8081
 CMD ["java", "-jar", "app.jar"]
