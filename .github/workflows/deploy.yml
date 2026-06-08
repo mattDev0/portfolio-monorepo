@@ -87,7 +87,7 @@ jobs:
             git reset --hard origin/main
             
             echo "Applying namespaces..."
-            sudo kubectl apply -f k8s/namespace.yaml
+            sudo kubectl apply -f infrastructure/k8s/namespace.yaml
             
             echo "Configuring environment secrets..."
             if [ -f ./backend-rust/.env ]; then
@@ -98,15 +98,15 @@ jobs:
             fi
             
             echo "Deploying applications to K3s..."
-            sed -i "s/:latest/:${{ github.sha }}/g" k8s/frontend.yaml k8s/java-api.yaml k8s/rust-api.yaml
+            sed -i "s/:latest/:${{ github.sha }}/g" infrastructure/k8s/frontend.yaml infrastructure/k8s/java-api.yaml infrastructure/k8s/rust-api.yaml
             
-            sudo kubectl apply -f k8s/frontend.yaml
-            sudo kubectl apply -f k8s/java-api.yaml
-            sudo kubectl apply -f k8s/rust-api.yaml
-            sudo kubectl apply -f k8s/blackbox-exporter.yaml
+            sudo kubectl apply -f infrastructure/k8s/frontend.yaml
+            sudo kubectl apply -f infrastructure/k8s/java-api.yaml
+            sudo kubectl apply -f infrastructure/k8s/rust-api.yaml
+            sudo kubectl apply -f infrastructure/k8s/blackbox-exporter.yaml
             
             # Revert the sed changes so git isn't dirty
-            git checkout k8s/
+            git checkout infrastructure/k8s/
             
             echo "Triggering rolling restart to pick up new images..."
             sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio

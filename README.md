@@ -321,7 +321,7 @@ sequenceDiagram
     Runner->>VM: SSH Connection (using AZURE_SSH_KEY)
     Note over VM: Pulls latest commits<br/>git reset --hard origin/main
     VM->>K3s: Apply environment Secrets (rust-api-secret)
-    VM->>K3s: Apply manifests in k8s/ folder (pulls from GHCR)
+    VM->>>K3s: Apply manifests in infrastructure/k8s/ folder (pulls from GHCR)
     VM->>K3s: Trigger zero-downtime rolling update (rollout restart)
     K3s-->>VM: Pull new images & Rollout Complete
     VM-->>Runner: Pipeline Complete
@@ -351,7 +351,7 @@ GitHub Actions will automatically:
 4. Pull the latest code changes (specifically updating the Kubernetes manifests).
 5. Dynamically configure K8s environment Secrets from the `.env` file on the VM.
 6. Inject the exact Git Commit SHA into the Kubernetes manifests using `sed` to replace `latest` tags.
-7. Apply the Kubernetes manifests in the `k8s/` folder, instructing K3s to pull the pre-built specific images from GHCR.
+7. Apply the Kubernetes manifests in the `infrastructure/k8s/` folder, instructing K3s to pull the pre-built specific images from GHCR.
 8. Trigger a zero-downtime rolling update:
    ```bash
    sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
