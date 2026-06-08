@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.matt.portfolio;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
