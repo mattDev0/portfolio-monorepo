@@ -96,17 +96,17 @@ portfolio-monorepo/
 │   └── workflows/
 │       └── deploy.yml
 │
-├── infrastructure/             # Reverse Proxy Configurations 🌐
-│   └── nginx/
-│       ├── mattdev0.tech.conf
-│       └── portfolio-locations.conf
-│
-├── k8s/                        # Kubernetes Manifests ☸️
-│   ├── namespace.yaml
-│   ├── frontend.yaml
-│   ├── java-api.yaml
-│   ├── rust-api.yaml
-│   └── blackbox-exporter.yaml  # ICMP Probe Exporter
+├── infrastructure/             # Reverse Proxy & Orchestration Configurations 🌐
+│   ├── nginx/
+│   │   ├── mattdev0.tech.conf
+│   │   └── portfolio-locations.conf
+│   │
+│   └── k8s/                    # Kubernetes Manifests ☸️
+│       ├── namespace.yaml
+│       ├── frontend.yaml
+│       ├── java-api.yaml
+│       ├── rust-api.yaml
+│       └── blackbox-exporter.yaml
 │
 ├── frontend-react/
 │   ├── public/
