@@ -2,7 +2,6 @@ use reqwest::Client;
 use std::env;
 use tokio::time::{sleep, Duration};
 use crate::models::{AppState, NetworkMetrics, NetworkTarget, NetworkHistoryPoint};
-use crate::utils::url_encode;
 
 pub fn start_network_monitor(state: AppState) {
     let net_metrics_clone = state.network_metrics.clone();
@@ -42,9 +41,10 @@ pub fn start_network_monitor(state: AppState) {
 }
 
 async fn query_prometheus_metric(client: &Client, prometheus_url: &str, query: &str) -> Option<serde_json::Value> {
-    let url = format!("{}/api/v1/query?query={}", prometheus_url, url_encode(query));
+    let url = format!("{}/api/v1/query", prometheus_url);
     let res = client
         .get(&url)
+        .query(&[("query", query)])
         .send()
         .await
         .ok()?;
