@@ -134,7 +134,7 @@ portfolio-monorepo/
 ├── backend-java/
 │   ├── src/main/java/com/matt/portfolio/
 │   │   ├── AppConfig.java
-│   │   ├── DemoApplication.java
+│   │   ├── PortfolioApiApplication.java
 │   │   ├── InfrastructureController.java
 │   │   ├── GitHubController.java
 │   │   └── GitHubService.java
