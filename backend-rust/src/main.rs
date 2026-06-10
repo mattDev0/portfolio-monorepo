@@ -21,9 +21,9 @@ async fn main() {
     // 1. Initialize thread-safe shared state for hardware and network telemetry
     let metrics_state = AppState {
         metrics: Arc::new(RwLock::new(SystemMetrics::default())),
-        history: Arc::new(RwLock::new(Vec::new())),
+        history: Arc::new(RwLock::new(std::collections::VecDeque::new())),
         network_metrics: Arc::new(RwLock::new(NetworkMetrics::default())),
-        network_history: Arc::new(RwLock::new(Vec::new())),
+        network_history: Arc::new(RwLock::new(std::collections::VecDeque::new())),
     };
 
     // 2. Spawn background tasks to refresh telemetry periodically

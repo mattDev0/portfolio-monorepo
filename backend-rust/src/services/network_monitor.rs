@@ -25,13 +25,13 @@ pub fn start_network_monitor(state: AppState) {
 
             {
                 let mut history_guard = net_history_clone.write().await;
-                history_guard.push(NetworkHistoryPoint {
+                history_guard.push_back(NetworkHistoryPoint {
                     google_dns: net_metrics.google_dns.latency_ms,
                     cloudflare_dns: net_metrics.cloudflare_dns.latency_ms,
                     riot_games: net_metrics.riot_games.latency_ms,
                 });
                 if history_guard.len() > 20 {
-                    history_guard.remove(0);
+                    history_guard.pop_front();
                 }
             }
 

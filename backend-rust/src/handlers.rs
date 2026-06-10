@@ -7,7 +7,7 @@ pub async fn get_system_status(State(state): State<AppState>) -> Json<SystemMetr
     Json(guard.clone())
 }
 
-pub async fn get_system_history(State(state): State<AppState>) -> Json<Vec<TelemetryPoint>> {
+pub async fn get_system_history(State(state): State<AppState>) -> Json<std::collections::VecDeque<TelemetryPoint>> {
     let guard = state.history.read().await;
     Json(guard.clone())
 }
@@ -17,7 +17,7 @@ pub async fn get_network_status(State(state): State<AppState>) -> Json<NetworkMe
     Json(guard.clone())
 }
 
-pub async fn get_network_history(State(state): State<AppState>) -> Json<Vec<NetworkHistoryPoint>> {
+pub async fn get_network_history(State(state): State<AppState>) -> Json<std::collections::VecDeque<NetworkHistoryPoint>> {
     let guard = state.network_history.read().await;
     Json(guard.clone())
 }

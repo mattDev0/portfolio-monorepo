@@ -40,12 +40,12 @@ pub fn start_system_monitor(state: AppState) {
 
             {
                 let mut history_guard = history_clone.write().await;
-                history_guard.push(TelemetryPoint {
+                history_guard.push_back(TelemetryPoint {
                     cpu: cpu_usage,
                     memory: memory_pct,
                 });
                 if history_guard.len() > 20 {
-                    history_guard.remove(0);
+                    history_guard.pop_front();
                 }
             }
 

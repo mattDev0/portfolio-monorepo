@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use std::collections::VecDeque;
 
 #[derive(Serialize, Clone, Default)]
 pub struct SystemMetrics {
@@ -59,7 +60,7 @@ pub struct NetworkHistoryPoint {
 #[derive(Clone)]
 pub struct AppState {
     pub metrics: Arc<RwLock<SystemMetrics>>,
-    pub history: Arc<RwLock<Vec<TelemetryPoint>>>,
+    pub history: Arc<RwLock<VecDeque<TelemetryPoint>>>,
     pub network_metrics: Arc<RwLock<NetworkMetrics>>,
-    pub network_history: Arc<RwLock<Vec<NetworkHistoryPoint>>>,
+    pub network_history: Arc<RwLock<VecDeque<NetworkHistoryPoint>>>,
 }
