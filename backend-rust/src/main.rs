@@ -13,7 +13,8 @@ use tower_http::cors::{Any, CorsLayer};
 use models::{AppState, SystemMetrics, NetworkMetrics};
 use services::{system_monitor, network_monitor};
 use handlers::*;
-use tower_http::trace::TraceLayer;
+use tower_http::trace::{TraceLayer, DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse};
+use tracing::Level;
 
 
 #[tokio::main]
@@ -60,6 +61,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .allow_methods(Any)
         .allow_headers(Any);
 
+    let trace_layer = TraceLayer::new_for_http()
+        .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+        .on_request(DefaultOnRequest::new().level(Level::INFO))
+        .on_response(DefaultOnResponse::new().level(Level::INFO));
+
     let app = Router::new()
         .route("/healthz", get(get_health))
         .route("/api/status", get(get_system_status))
@@ -68,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/status/network/history", get(get_network_history))
         .route("/api/spotify", get(get_spotify))
         .layer(cors)
-        .layer(TraceLayer::new_for_http())
+        .layer(trace_layer)
         .with_state(metrics_state);
 
     let listener = TcpListener::bind("0.0.0.0:8080").await?;
