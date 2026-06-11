@@ -86,7 +86,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Paths Filter
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend-react/**'
+              - 'infrastructure/k8s/frontend.yaml'
+            java:
+              - 'backend-java/**'
+              - 'infrastructure/k8s/java-api.yaml'
+            rust:
+              - 'backend-rust/**'
+              - 'infrastructure/k8s/rust-api.yaml'
+
       - name: Build and Push Portfolio Frontend
+        if: steps.filter.outputs.frontend == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./frontend-react
@@ -97,7 +113,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan Portfolio Frontend Image
+        if: steps.filter.outputs.frontend == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
+
       - name: Build and Push Portfolio Java API
+        if: steps.filter.outputs.java == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./backend-java
@@ -108,7 +135,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan Portfolio Java Image
+        if: steps.filter.outputs.java == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
+
       - name: Build and Push Portfolio Rust API
+        if: steps.filter.outputs.rust == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./backend-rust
@@ -118,6 +156,16 @@ jobs:
             ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Scan Portfolio Rust Image
+        if: steps.filter.outputs.rust == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
 
       - name: Executing Remote SSH Commands to Deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -149,24 +197,24 @@ jobs:
                 --dry-run=client -o yaml | sudo kubectl apply -f -
             fi
             
-            echo "Deploying applications to K3s..."
-            sed -i "s/:latest/:${{ github.sha }}/g" infrastructure/k8s/frontend.yaml infrastructure/k8s/java-api.yaml infrastructure/k8s/rust-api.yaml
+            echo "Deploying applications with Kustomize..."
+            if ! command -v kustomize &> /dev/null; then
+                echo "Installing kustomize..."
+                curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+                sudo mv kustomize /usr/local/bin/
+            fi
             
-            sudo kubectl apply -f infrastructure/k8s/frontend.yaml
-            sudo kubectl apply -f infrastructure/k8s/java-api.yaml
-            sudo kubectl apply -f infrastructure/k8s/rust-api.yaml
-            sudo kubectl apply -f infrastructure/k8s/blackbox-exporter.yaml
+            cd infrastructure/k8s
+            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend=ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}
+            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}
+            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}
             
-            # Revert the sed changes so git isn't dirty
-            git checkout infrastructure/k8s/
-            
-            echo "Triggering rolling restart to pick up new images..."
-            sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
+            kustomize build . | sudo kubectl apply -f -
             
             echo "Waiting for rollouts to complete..."
-            sudo kubectl rollout status deployment/frontend -n portfolio --timeout=300s
-            sudo kubectl rollout status deployment/java-api -n portfolio --timeout=300s
-            sudo kubectl rollout status deployment/rust-api -n portfolio --timeout=300s
+            sudo kubectl rollout status deployment/frontend -n portfolio --timeout=300s || (sudo kubectl rollout undo deployment/frontend -n portfolio && exit 1)
+            sudo kubectl rollout status deployment/java-api -n portfolio --timeout=300s || (sudo kubectl rollout undo deployment/java-api -n portfolio && exit 1)
+            sudo kubectl rollout status deployment/rust-api -n portfolio --timeout=300s || (sudo kubectl rollout undo deployment/rust-api -n portfolio && exit 1)
             
             # Prune docker images to save space
             sudo docker image prune -f
