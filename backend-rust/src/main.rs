@@ -30,7 +30,23 @@ async fn main() {
     system_monitor::start_system_monitor(metrics_state.clone());
     network_monitor::start_network_monitor(metrics_state.clone());
 
-    let cors = CorsLayer::new().allow_origin(Any);
+    let allowed_origin_str = std::env::var("CORS_ALLOWED_ORIGIN")
+        .unwrap_or_else(|_| {
+            if utils::is_local_runtime() {
+                "http://localhost:5173".to_string()
+            } else {
+                "https://mattdev0.tech".to_string()
+            }
+        });
+
+    let allowed_origin = allowed_origin_str
+        .parse::<axum::http::HeaderValue>()
+        .expect("Invalid CORS_ALLOWED_ORIGIN");
+
+    let cors = CorsLayer::new()
+        .allow_origin(allowed_origin)
+        .allow_methods(Any)
+        .allow_headers(Any);
 
     let app = Router::new()
         .route("/api/status", get(get_system_status))
