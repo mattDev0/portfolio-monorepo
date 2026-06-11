@@ -115,7 +115,7 @@ jobs:
 
       - name: Scan Portfolio Frontend Image
         if: steps.filter.outputs.frontend == 'true'
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}'
           format: 'table'
@@ -137,7 +137,7 @@ jobs:
 
       - name: Scan Portfolio Java Image
         if: steps.filter.outputs.java == 'true'
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}'
           format: 'table'
@@ -159,7 +159,7 @@ jobs:
 
       - name: Scan Portfolio Rust Image
         if: steps.filter.outputs.rust == 'true'
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}'
           format: 'table'
@@ -205,9 +205,12 @@ jobs:
             
             echo "Deploying applications with Kustomize..."
             if ! command -v kustomize &> /dev/null; then
-                echo "Installing kustomize..."
-                curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+                echo "Installing kustomize v5.4.3..."
+                curl -sLO "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.3/kustomize_v5.4.3_linux_amd64.tar.gz"
+                echo "e189ce4fedff3a3e61ea8f5fae4a7fd079f3e42284c9b91e186ef5a21e4a205e  kustomize_v5.4.3_linux_amd64.tar.gz" | sha256sum -c -
+                tar xzf kustomize_v5.4.3_linux_amd64.tar.gz
                 sudo mv kustomize /usr/local/bin/
+                rm kustomize_v5.4.3_linux_amd64.tar.gz
             fi
             
             cd infrastructure/k8s
