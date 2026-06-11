@@ -13,10 +13,22 @@ use tower_http::cors::{Any, CorsLayer};
 use models::{AppState, SystemMetrics, NetworkMetrics};
 use services::{system_monitor, network_monitor};
 use handlers::*;
+use tower_http::trace::TraceLayer;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok(); // Load .env file
+
+    // Initialize tracing subscriber to emit JSON logs
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .json()
+        .init();
+
 
     // 1. Initialize thread-safe shared state for hardware and network telemetry
     let metrics_state = AppState {
@@ -56,10 +68,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/status/network/history", get(get_network_history))
         .route("/api/spotify", get(get_spotify))
         .layer(cors)
+        .layer(TraceLayer::new_for_http())
         .with_state(metrics_state);
 
     let listener = TcpListener::bind("0.0.0.0:8080").await?;
-    println!("🚀 Rust Engine live on http://localhost:8080");
+    tracing::info!("🚀 Rust Engine live on http://localhost:8080");
     
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
@@ -91,5 +104,5 @@ async fn shutdown_signal() {
         _ = terminate => {},
     }
 
-    println!("Graceful shutdown initiated...");
+    tracing::info!("Graceful shutdown initiated...");
 }
