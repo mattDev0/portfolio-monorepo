@@ -402,5 +402,35 @@ mod tests {
             env::remove_var("SPOTIFY_API_BASE_URL");
         }
     }
+
+    #[tokio::test]
+    async fn test_get_spotify_status_auth_returns_malformed_json() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+        
+        let auth_server = MockServer::start().await;
+
+        unsafe {
+            env::set_var("SPOTIFY_CLIENT_ID", "mock_id");
+            env::set_var("SPOTIFY_CLIENT_SECRET", "mock_secret");
+            env::set_var("SPOTIFY_REFRESH_TOKEN", "mock_refresh");
+            env::set_var("SPOTIFY_AUTH_BASE_URL", auth_server.uri());
+            env::set_var("APP_ENV", "production");
+        }
+
+        Mock::given(method("POST"))
+            .and(path("/api/token"))
+            .respond_with(ResponseTemplate::new(200).set_body_string("not json"))
+            .mount(&auth_server)
+            .await;
+
+        let res = get_spotify_status().await;
+        assert_eq!(res.title, "Auth Error");
+        assert_eq!(res.artist, "Service temporarily unavailable");
+
+        unsafe {
+            env::remove_var("SPOTIFY_AUTH_BASE_URL");
+        }
+    }
 }
 
