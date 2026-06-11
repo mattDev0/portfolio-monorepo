@@ -1,0 +1,62 @@
+name: PR Test Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '**/README.md'
+      - 'HELP.md'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './frontend-react/package-lock.json'
+      
+      - name: Run Frontend Tests
+        working-directory: ./frontend-react
+        run: |
+          npm ci
+          npm run test
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Java Tests
+        working-directory: ./backend-java
+        run: ./mvnw test
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Set up Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./backend-rust
+
+      - name: Run Rust Tests
+        working-directory: ./backend-rust
+        run: cargo test
+
+      - name: Install kubeconform
+        run: |
+          wget https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-amd64.tar.gz
+          tar xf kubeconform-linux-amd64.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Run Kubeconform Validation
+        run: kubeconform -strict infrastructure/k8s/*.yaml
