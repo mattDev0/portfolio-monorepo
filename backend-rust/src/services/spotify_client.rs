@@ -138,7 +138,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
                 is_playing: false,
                 is_recently_played: false,
                 title: "Auth Error".to_string(),
-                artist: "Check Rust Terminal".to_string(),
+                artist: "Service temporarily unavailable".to_string(),
                 album_art: "".to_string(),
                 progress_ms: 0,
                 duration_ms: 0,
