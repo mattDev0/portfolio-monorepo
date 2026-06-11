@@ -26,6 +26,8 @@ spec:
         env:
         - name: JAVA_TOOL_OPTIONS
           value: "-Xms128m -Xmx256m"
+        - name: CORS_ALLOWED_ORIGINS
+          value: "https://mattdev0.tech"
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:

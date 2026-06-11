@@ -28,6 +28,8 @@ spec:
           value: "production"
         - name: PROMETHEUS_URL
           value: "http://devops-prometheus.devops.svc.cluster.local:9090"
+        - name: CORS_ALLOWED_ORIGIN
+          value: "https://mattdev0.tech"
         envFrom:
         - secretRef:
             name: rust-api-secret
