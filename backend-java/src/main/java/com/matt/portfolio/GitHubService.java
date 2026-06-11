@@ -13,6 +13,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.Map;
 
 @Service
 public class GitHubService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GitHubService.class);
 
     @Value("${github.token:}")
     private String githubToken;
@@ -44,7 +48,7 @@ public class GitHubService {
                 ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
                 return response.getBody();
             } catch (Exception e) {
-                System.err.println("Authenticated request failed for url: " + url + ". Error: " + e.getMessage());
+                logger.error("Authenticated request failed for url: {}. Error: {}", url, e.getMessage(), e);
                 return null;
             }
         }
@@ -52,7 +56,7 @@ public class GitHubService {
         try {
             return restTemplate.getForObject(url, String.class);
         } catch (Exception e) {
-            System.err.println("Unauthenticated request failed for url: " + url + ". Error: " + e.getMessage());
+            logger.error("Unauthenticated request failed for url: {}. Error: {}", url, e.getMessage(), e);
             return null;
         }
     }
@@ -110,7 +114,7 @@ public class GitHubService {
                                 }
                             } catch (Exception e) {
                                 // If we hit a rate limit, fail silently and rely on the fallback
-                                System.err.println("Rate limit hit or commit missing for hash: " + hash);
+                                logger.warn("Rate limit hit or commit missing for hash: {}", hash);
                             }
                         }
 
@@ -132,7 +136,7 @@ public class GitHubService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Failed to fetch GitHub activity: " + e.getMessage());
+            logger.error("Failed to fetch GitHub activity: {}", e.getMessage(), e);
         }
 
         return recentCommits;
@@ -142,7 +146,7 @@ public class GitHubService {
     @CachePut(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
     @Scheduled(fixedRate = 600000) 
     public List<GitHubCommitActivity> refreshGitHubCache() {
-        System.out.println("Pre-warming GitHub cache with fresh commits...");
+        logger.info("Pre-warming GitHub cache with fresh commits...");
         return fetchRecentActivity();
     }
 }
