@@ -38,8 +38,7 @@ function App() {
     javaStatus,
     telemetryHistory,
     networkStatus,
-    networkHistory,
-    getCpuPercentage
+    networkHistory
   } = useTelemetry(isVisible);
 
   const {
@@ -195,26 +194,30 @@ function App() {
                       <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
                       <div className="flex items-center space-x-3">
                         <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" max={100} />
-                        <span className="text-orange-400 font-semibold">{rustStatus.cpu_usage || "0%"}</span>
+                        <span className="text-orange-400 font-semibold">
+                          {rustStatus.cpu_usage_percent !== undefined ? `${rustStatus.cpu_usage_percent.toFixed(1)}%` : "0%"}
+                        </span>
                       </div>
                     </div>
                     <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
-                        style={{ width: `${getCpuPercentage(rustStatus.cpu_usage)}%` }}
+                        style={{ width: `${rustStatus.cpu_usage_percent || 0}%` }}
                       ></div>
                     </div>
                   </div>
 
                   <div className="flex justify-between border-b border-white/5 pb-2">
                     <span className="text-gray-500 uppercase text-[10px]">Threads</span>
-                    <span className="text-orange-400 font-semibold">{rustStatus.cpu_cores}</span>
+                    <span className="text-orange-400 font-semibold">{rustStatus.cpu_core_count} Logical Cores</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 uppercase text-[10px]">Memory</span>
                     <div className="flex items-center space-x-3">
                       <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" max={100} />
-                      <span className="text-amber-500 font-semibold">{rustStatus.memory_usage}</span>
+                      <span className="text-amber-500 font-semibold">
+                        {rustStatus.memory_used_mb} MB / {rustStatus.memory_total_mb} MB
+                      </span>
                     </div>
                   </div>
                 </div>

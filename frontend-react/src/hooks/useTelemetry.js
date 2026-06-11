@@ -8,12 +8,6 @@ export default function useTelemetry(isVisible) {
   const [networkStatus, setNetworkStatus] = useState(null);
   const [networkHistory, setNetworkHistory] = useState([]);
 
-  const getCpuPercentage = (cpuUsageStr) => {
-    if (!cpuUsageStr) return 0;
-    const parsed = parseFloat(cpuUsageStr.replace('%', ''));
-    return isNaN(parsed) ? 0 : parsed;
-  };
-
   // Fetch Rust Hardware Metrics (with 5s polling, only when tab is visible)
   useEffect(() => {
     if (!isVisible) return;
@@ -42,19 +36,12 @@ export default function useTelemetry(isVisible) {
   useEffect(() => {
     if (!rustStatus || !isVisible) return;
 
-    const cpu = getCpuPercentage(rustStatus.cpu_usage);
+    const cpu = rustStatus.cpu_usage_percent ?? 0;
 
-    // Parse memory percentage from "used MB / total MB"
+    // Calculate memory percentage from numeric fields
     let memory = 0;
-    if (rustStatus.memory_usage) {
-      const parts = rustStatus.memory_usage.split('/');
-      if (parts.length === 2) {
-        const used = parseFloat(parts[0].replace('MB', '').trim());
-        const total = parseFloat(parts[1].replace('MB', '').trim());
-        if (total > 0) {
-          memory = (used / total) * 100;
-        }
-      }
+    if (rustStatus.memory_total_mb > 0) {
+      memory = (rustStatus.memory_used_mb / rustStatus.memory_total_mb) * 100;
     }
 
     setTelemetryHistory(prev => {
@@ -136,7 +123,6 @@ export default function useTelemetry(isVisible) {
     javaStatus,
     telemetryHistory,
     networkStatus,
-    networkHistory,
-    getCpuPercentage
+    networkHistory
   };
 }
