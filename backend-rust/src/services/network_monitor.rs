@@ -137,3 +137,118 @@ fn generate_mock_network_metrics() -> NetworkMetrics {
         },
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wiremock::{MockServer, Mock, ResponseTemplate};
+    use wiremock::matchers::{method, path, query_param};
+    use serde_json::json;
+
+    #[test]
+    fn test_generate_mock_network_metrics() {
+        let metrics = generate_mock_network_metrics();
+        assert_eq!(metrics.google_dns.target, "8.8.8.8");
+        assert_eq!(metrics.google_dns.status, "online");
+        assert!(metrics.google_dns.latency_ms > 0.0);
+
+        assert_eq!(metrics.cloudflare_dns.target, "1.1.1.1");
+        assert_eq!(metrics.cloudflare_dns.status, "online");
+        assert!(metrics.cloudflare_dns.latency_ms > 0.0);
+
+        assert_eq!(metrics.riot_games.target, "104.160.131.3");
+        assert_eq!(metrics.riot_games.status, "online");
+        assert!(metrics.riot_games.latency_ms > 0.0);
+    }
+
+    #[test]
+    fn test_get_metric_value_for_instance() {
+        let sample_json = json!({
+            "status": "success",
+            "data": {
+                "resultType": "vector",
+                "result": [
+                    {
+                        "metric": {
+                            "instance": "8.8.8.8",
+                            "job": "network_latency_ping"
+                        },
+                        "value": [1718000000.0, "0.0123"]
+                    },
+                    {
+                        "metric": {
+                            "instance": "1.1.1.1",
+                            "job": "network_latency_ping"
+                        },
+                        "value": [1718000000.0, "0.0085"]
+                    }
+                ]
+            }
+        });
+
+        let val_google = get_metric_value_for_instance(&sample_json, "8.8.8.8");
+        assert_eq!(val_google, Some(0.0123));
+
+        let val_cloudflare = get_metric_value_for_instance(&sample_json, "1.1.1.1");
+        assert_eq!(val_cloudflare, Some(0.0085));
+
+        let val_missing = get_metric_value_for_instance(&sample_json, "8.8.4.4");
+        assert_eq!(val_missing, None);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_network_metrics_mocked() {
+        let mock_server = MockServer::start().await;
+        let client = Client::new();
+
+        let duration_json = json!({
+            "status": "success",
+            "data": {
+                "resultType": "vector",
+                "result": [
+                    { "metric": { "instance": "8.8.8.8" }, "value": [123.0, "0.012"] },
+                    { "metric": { "instance": "1.1.1.1" }, "value": [123.0, "0.008"] },
+                    { "metric": { "instance": "104.160.131.3" }, "value": [123.0, "0.035"] }
+                ]
+            }
+        });
+
+        let success_json = json!({
+            "status": "success",
+            "data": {
+                "resultType": "vector",
+                "result": [
+                    { "metric": { "instance": "8.8.8.8" }, "value": [123.0, "1"] },
+                    { "metric": { "instance": "1.1.1.1" }, "value": [123.0, "1"] },
+                    { "metric": { "instance": "104.160.131.3" }, "value": [123.0, "0"] }
+                ]
+            }
+        });
+
+        Mock::given(method("GET"))
+            .and(path("/api/v1/query"))
+            .and(query_param("query", "probe_duration_seconds{job=\"network_latency_ping\"}"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(duration_json))
+            .mount(&mock_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/api/v1/query"))
+            .and(query_param("query", "probe_success{job=\"network_latency_ping\"}"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(success_json))
+            .mount(&mock_server)
+            .await;
+
+        let metrics = fetch_network_metrics(&client, &mock_server.uri()).await.unwrap();
+
+        assert_eq!(metrics.google_dns.latency_ms, 12.0);
+        assert_eq!(metrics.google_dns.status, "online");
+
+        assert_eq!(metrics.cloudflare_dns.latency_ms, 8.0);
+        assert_eq!(metrics.cloudflare_dns.status, "online");
+
+        assert_eq!(metrics.riot_games.latency_ms, 35.0);
+        assert_eq!(metrics.riot_games.status, "offline");
+    }
+}
+
