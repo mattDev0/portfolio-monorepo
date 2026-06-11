@@ -54,3 +54,36 @@ pub fn start_system_monitor(state: AppState) {
         }
     });
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
+    use std::collections::VecDeque;
+
+    #[tokio::test]
+    async fn test_start_system_monitor() {
+        let metrics_state = AppState {
+            metrics: Arc::new(RwLock::new(SystemMetrics::default())),
+            history: Arc::new(RwLock::new(VecDeque::new())),
+            network_metrics: Arc::new(RwLock::new(crate::models::NetworkMetrics::default())),
+            network_history: Arc::new(RwLock::new(VecDeque::new())),
+        };
+
+        start_system_monitor(metrics_state.clone());
+
+        // Wait for the spawned monitor to run at least one iteration
+        sleep(Duration::from_millis(600)).await;
+
+        let guard = metrics_state.metrics.read().await;
+        assert_eq!(guard.service, "Rust Hardware Monitor");
+        assert!(guard.cpu_core_count > 0);
+        assert!(!guard.os_info.is_empty());
+
+        let history_guard = metrics_state.history.read().await;
+        assert!(!history_guard.is_empty());
+        assert!(history_guard.len() <= 20);
+    }
+}
+
