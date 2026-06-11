@@ -24,6 +24,19 @@ class InfrastructureControllerTest {
         mockMvc.perform(get("/api/infrastructure/metrics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.engine").exists())
-                .andExpect(jsonPath("$.uptime").exists());
+                .andExpect(jsonPath("$.uptime_hours").exists())
+                .andExpect(jsonPath("$.uptime_minutes").exists())
+                .andExpect(jsonPath("$.jvm_memory_used_mb").exists())
+                .andExpect(jsonPath("$.jvm_memory_total_mb").exists())
+                .andExpect(jsonPath("$.active_threads").exists())
+                .andExpect(jsonPath("$.active_threads").isNumber())
+                .andExpect(jsonPath("$.jvm_memory_used_mb").isNumber());
+    }
+
+    @Test
+    void getMetrics_ShouldReturnNonEmptyValues() throws Exception {
+        mockMvc.perform(get("/api/infrastructure/metrics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.engine").isNotEmpty());
     }
 }
