@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: blackbox-exporter
-        image: prom/blackbox-exporter:latest
+        image: prom/blackbox-exporter:v0.25.0
         imagePullPolicy: Always
         ports:
         - containerPort: 9115
