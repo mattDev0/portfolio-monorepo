@@ -15,7 +15,7 @@ use services::{system_monitor, network_monitor};
 use handlers::*;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok(); // Load .env file
 
     // 1. Initialize thread-safe shared state for hardware and network telemetry
@@ -49,6 +49,7 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
+        .route("/healthz", get(get_health))
         .route("/api/status", get(get_system_status))
         .route("/api/status/history", get(get_system_history))
         .route("/api/status/network", get(get_network_status))
@@ -57,8 +58,38 @@ async fn main() {
         .layer(cors)
         .with_state(metrics_state);
 
-    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8080").await?;
     println!("🚀 Rust Engine live on http://localhost:8080");
     
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
+
+    Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    println!("Graceful shutdown initiated...");
 }
