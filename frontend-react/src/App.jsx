@@ -250,15 +250,15 @@ function App() {
                   </div>
                   <div className="flex justify-between border-b border-white/5 pb-2">
                     <span className="text-gray-500 uppercase text-[10px]">Uptime</span>
-                    <span className="text-emerald-400 font-semibold">{javaStatus.uptime}</span>
+                    <span className="text-emerald-400 font-semibold">{javaStatus.uptime_hours}h {javaStatus.uptime_minutes}m</span>
                   </div>
                   <div className="flex justify-between border-b border-white/5 pb-2">
                     <span className="text-gray-500 uppercase text-[10px]">Active Threads</span>
-                    <span className="text-emerald-400 font-semibold">{javaStatus.active_threads}</span>
+                    <span className="text-emerald-400 font-semibold">{javaStatus.active_threads} Threads</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 uppercase text-[10px]">JVM Memory</span>
-                    <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory}</span>
+                    <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory_used_mb} MB / {javaStatus.jvm_memory_total_mb} MB</span>
                   </div>
                 </div>
               ) : (
