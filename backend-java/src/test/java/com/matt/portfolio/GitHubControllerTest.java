@@ -42,4 +42,13 @@ class GitHubControllerTest {
                 .andExpect(jsonPath("$[0].date").value("2023-10-27T10:00:00Z"))
                 .andExpect(jsonPath("$[0].hash").value("abc1234"));
     }
+
+    @Test
+    void getActivity_ShouldReturnEmptyListWhenServiceReturnsEmpty() throws Exception {
+        when(gitHubService.getRecentActivity()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/github/activity"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 }
