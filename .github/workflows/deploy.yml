@@ -169,11 +169,17 @@ jobs:
 
       - name: Executing Remote SSH Commands to Deploy
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          FRONTEND_CHANGED: ${{ steps.filter.outputs.frontend }}
+          JAVA_CHANGED: ${{ steps.filter.outputs.java }}
+          RUST_CHANGED: ${{ steps.filter.outputs.rust }}
+          GITHUB_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
+          envs: FRONTEND_CHANGED,JAVA_CHANGED,RUST_CHANGED,GITHUB_SHA
           script: |
             set -e
             echo "Successfully connected to Azure Production Server."
@@ -205,9 +211,15 @@ jobs:
             fi
             
             cd infrastructure/k8s
-            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend=ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}
-            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}
-            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}
+            if [ "$FRONTEND_CHANGED" == "true" ]; then
+              kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend=ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:$GITHUB_SHA
+            fi
+            if [ "$JAVA_CHANGED" == "true" ]; then
+              kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:$GITHUB_SHA
+            fi
+            if [ "$RUST_CHANGED" == "true" ]; then
+              kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:$GITHUB_SHA
+            fi
             
             kustomize build . | sudo kubectl apply -f -
             
