@@ -12,12 +12,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class GitHubService {
+
+    @Value("${github.token:}")
+    private String githubToken;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -31,10 +36,9 @@ public class GitHubService {
     }
 
     private String fetchUrl(String url) {
-        String token = System.getenv("GITHUB_TOKEN");
-        if (token != null && !token.trim().isEmpty()) {
+        if (githubToken != null && !githubToken.trim().isEmpty()) {
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token.trim());
+            headers.set("Authorization", "Bearer " + githubToken.trim());
             HttpEntity<String> entity = new HttpEntity<>(headers);
             try {
                 ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
