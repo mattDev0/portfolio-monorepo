@@ -12,7 +12,7 @@ import java.util.Map;
 public class InfrastructureController {
 
     @GetMapping("/metrics")
-    public Map<String, Object> getMetrics() {
+    public InfrastructureMetrics getMetrics() {
         // Get Memory Stats
         Runtime runtime = Runtime.getRuntime();
         long totalMem = runtime.totalMemory() / (1024 * 1024);
@@ -27,11 +27,13 @@ public class InfrastructureController {
         // Get Active Threads
         int threadCount = ManagementFactory.getThreadMXBean().getThreadCount();
 
-        return Map.of(
-            "engine", "Spring Boot " + org.springframework.boot.SpringBootVersion.getVersion(),
-            "uptime", String.format("%dh %dm", uptimeHours, uptimeMinutes),
-            "jvm_memory", String.format("%d MB / %d MB", usedMem, totalMem),
-            "active_threads", String.valueOf(threadCount) + " Threads"
+        return new InfrastructureMetrics(
+            "Spring Boot " + org.springframework.boot.SpringBootVersion.getVersion(),
+            uptimeHours,
+            uptimeMinutes,
+            usedMem,
+            totalMem,
+            threadCount
         );
     }
 }
