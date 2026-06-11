@@ -59,4 +59,4 @@ jobs:
           sudo mv kubeconform /usr/local/bin/
 
       - name: Run Kubeconform Validation
-        run: kubeconform -strict infrastructure/k8s/*.yaml
+        run: kubeconform -strict -ignore-filename-pattern kustomization.yaml infrastructure/k8s/*.yaml
