@@ -250,5 +250,17 @@ mod tests {
         assert_eq!(metrics.riot_games.latency_ms, 35.0);
         assert_eq!(metrics.riot_games.status, "offline");
     }
+
+    #[test]
+    fn test_get_metric_value_for_instance_empty_results() {
+        let json = json!({"data": {"resultType": "vector", "result": []}});
+        assert_eq!(get_metric_value_for_instance(&json, "8.8.8.8"), None);
+    }
+
+    #[test]
+    fn test_get_metric_value_for_instance_missing_data() {
+        let json = json!({"status": "error"});
+        assert_eq!(get_metric_value_for_instance(&json, "8.8.8.8"), None);
+    }
 }
 
