@@ -78,7 +78,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
             });
         }
         _ => {
-            println!("Missing Spotify credentials");
+            tracing::warn!("Missing Spotify credentials");
             return Json(SpotifyStatus {
                 is_playing: false,
                 is_recently_played: false,
@@ -112,7 +112,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     {
         Ok(res) => res,
         Err(e) => {
-            println!("❌ SPOTIFY REQ ERROR: {}", e);
+            tracing::error!(error = ?e, "Spotify token request error");
             return Json(spotify_offline_fallback("Network Error"));
         }
     };
@@ -121,7 +121,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     let raw_response = match token_request.text().await {
         Ok(txt) => txt,
         Err(e) => {
-            println!("❌ SPOTIFY TEXT READ ERROR: {}", e);
+            tracing::error!(error = ?e, "Spotify token text read error");
             return Json(spotify_offline_fallback("Text Read Error"));
         }
     };
@@ -130,8 +130,8 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     let token_res: SpotifyTokenResponse = match serde_json::from_str(&raw_response) {
         Ok(parsed) => parsed,
         Err(_) => {
-            // If it fails, print Spotify's exact error to the Linux terminal!
-            println!("❌ SPOTIFY AUTH ERROR: {}", raw_response);
+            // If it fails, print Spotify's exact error
+            tracing::error!(response = %raw_response, "Spotify auth error");
             
             // Return a safe "Offline" state to React so the UI doesn't crash
             return Json(SpotifyStatus {
@@ -156,7 +156,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     {
         Ok(res) => res,
         Err(e) => {
-            println!("❌ SPOTIFY CURRENT REQ ERROR: {}", e);
+            tracing::error!(error = ?e, "Spotify currently playing request error");
             return Json(spotify_offline_fallback("API Error"));
         }
     };
@@ -169,7 +169,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     let track_data: serde_json::Value = match playing_res.json().await {
         Ok(json) => json,
         Err(e) => {
-            println!("❌ SPOTIFY JSON PARSE ERROR: {}", e);
+            tracing::error!(error = ?e, "Spotify currently playing JSON parse error");
             return get_recently_played(&client, &token_res.access_token).await;
         }
     };
