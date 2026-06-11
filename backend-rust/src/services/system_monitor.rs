@@ -32,9 +32,10 @@ pub fn start_system_monitor(state: AppState) {
                 *guard = SystemMetrics {
                     service: "Rust Hardware Monitor".to_string(),
                     os_info: os_name,
-                    cpu_cores: format!("{} Logical Cores", cpu_count),
-                    cpu_usage: format!("{:.1}%", cpu_usage),
-                    memory_usage: format!("{} MB / {} MB", used_mem_mb, total_mem_mb),
+                    cpu_core_count: cpu_count as u32,
+                    cpu_usage_percent: cpu_usage,
+                    memory_used_mb: used_mem_mb,
+                    memory_total_mb: total_mem_mb,
                 };
             }
 

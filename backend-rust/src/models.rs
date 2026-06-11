@@ -7,9 +7,10 @@ use std::collections::VecDeque;
 pub struct SystemMetrics {
     pub service: String,
     pub os_info: String,
-    pub cpu_cores: String,
-    pub cpu_usage: String,
-    pub memory_usage: String,
+    pub cpu_core_count: u32,
+    pub cpu_usage_percent: f32,
+    pub memory_used_mb: u64,
+    pub memory_total_mb: u64,
 }
 
 #[derive(Serialize)]
