@@ -97,4 +97,40 @@ class GitHubServiceTest {
         assertThat(activity).isEmpty();
         mockServer.verify();
     }
+
+    @Test
+    void getRecentActivity_ShouldHandleRateLimitGracefully() {
+        mockServer.reset();
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andRespond(org.springframework.test.web.client.response.MockRestResponseCreators.withStatus(org.springframework.http.HttpStatus.FORBIDDEN));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).isEmpty();
+        mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldHandleMalformedJson() {
+        mockServer.reset();
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andRespond(withSuccess("not json at all", MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).isEmpty();
+        mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldHandleServerError() {
+        mockServer.reset();
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andRespond(withServerError());
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).isEmpty();
+        mockServer.verify();
+    }
 }
