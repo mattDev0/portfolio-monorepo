@@ -1,0 +1,32 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: portfolio
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rust-api-pdb
+  namespace: portfolio
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: rust-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: java-api-pdb
+  namespace: portfolio
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: java-api
