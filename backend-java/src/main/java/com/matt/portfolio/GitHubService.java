@@ -54,12 +54,12 @@ public class GitHubService {
     }
 
     @Cacheable("githubActivity")
-    public List<Map<String, String>> getRecentActivity() {
+    public List<GitHubCommitActivity> getRecentActivity() {
         return fetchRecentActivity();
     }
 
-    private List<Map<String, String>> fetchRecentActivity() {
-        List<Map<String, String>> recentCommits = new ArrayList<>();
+    private List<GitHubCommitActivity> fetchRecentActivity() {
+        List<GitHubCommitActivity> recentCommits = new ArrayList<>();
         String url = "https://api.github.com/users/mattDev0/events/public";
 
         try {
@@ -117,11 +117,11 @@ public class GitHubService {
                         }
 
                         if (!message.startsWith("Merge branch")) {
-                            recentCommits.add(Map.of(
-                                "repo", repoName.replace("mattDev0/", ""), 
-                                "message", message,
-                                "date", date,
-                                "hash", hash
+                            recentCommits.add(new GitHubCommitActivity(
+                                repoName.replace("mattDev0/", ""), 
+                                message,
+                                date,
+                                hash
                             ));
                         }
                     }
@@ -137,7 +137,7 @@ public class GitHubService {
     // AUTOMATIC CACHE PRE-WARMING: Runs every 10 minutes to fetch fresh commits and update cache
     @CachePut(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
     @Scheduled(fixedRate = 600000) 
-    public List<Map<String, String>> refreshGitHubCache() {
+    public List<GitHubCommitActivity> refreshGitHubCache() {
         System.out.println("Pre-warming GitHub cache with fresh commits...");
         return fetchRecentActivity();
     }

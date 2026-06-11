@@ -20,7 +20,7 @@ public class GitHubController {
     }
 
     @GetMapping("/activity")
-    public List<Map<String, String>> getActivity() {
+    public List<GitHubCommitActivity> getActivity() {
         return gitHubService.getRecentActivity();
     }
 }
