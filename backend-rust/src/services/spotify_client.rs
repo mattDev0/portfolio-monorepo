@@ -18,9 +18,18 @@ fn spotify_offline_fallback(reason: &str) -> SpotifyStatus {
     }
 }
 
+fn get_api_base_url() -> String {
+    env::var("SPOTIFY_API_BASE_URL").unwrap_or_else(|_| "https://api.spotify.com".to_string())
+}
+
+fn get_auth_base_url() -> String {
+    env::var("SPOTIFY_AUTH_BASE_URL").unwrap_or_else(|_| "https://accounts.spotify.com".to_string())
+}
+
 async fn get_recently_played(client: &Client, access_token: &str) -> Json<SpotifyStatus> {
+    let url = format!("{}/v1/me/player/recently-played?limit=1", get_api_base_url());
     let recently_played_res = client
-        .get("https://api.spotify.com/v1/me/player/recently-played?limit=1")
+        .get(&url)
         .header("Authorization", format!("Bearer {}", access_token))
         .send()
         .await;
@@ -100,8 +109,9 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
         base64::prelude::BASE64_STANDARD.encode(format!("{}:{}", client_id, client_secret))
     );
 
+    let token_url = format!("{}/api/token", get_auth_base_url());
     let token_request = match client
-        .post("https://accounts.spotify.com/api/token")
+        .post(&token_url)
         .header("Authorization", auth_header)
         .form(&[
             ("grant_type", "refresh_token"),
@@ -148,8 +158,9 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     };
 
     // 2. Query the "Currently Playing" endpoint
+    let playing_url = format!("{}/v1/me/player/currently-playing", get_api_base_url());
     let playing_res = match client
-        .get("https://api.spotify.com/v1/me/player/currently-playing")
+        .get(&playing_url)
         .header("Authorization", format!("Bearer {}", token_res.access_token))
         .send()
         .await
@@ -195,3 +206,201 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
         track_url,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wiremock::{MockServer, Mock, ResponseTemplate};
+    use wiremock::matchers::{method, path};
+    use serde_json::json;
+    use std::sync::Mutex;
+
+    static ENV_MUTEX: Mutex<()> = Mutex::new(());
+
+    fn clear_env() {
+        unsafe {
+            env::remove_var("SPOTIFY_CLIENT_ID");
+            env::remove_var("SPOTIFY_CLIENT_SECRET");
+            env::remove_var("SPOTIFY_REFRESH_TOKEN");
+            env::remove_var("APP_ENV");
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_spotify_status_missing_credentials_prod() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+        unsafe {
+            env::set_var("APP_ENV", "production");
+        }
+
+        let res = get_spotify_status().await;
+        assert_eq!(res.title, "Offline");
+        assert_eq!(res.artist, "Spotify credentials unavailable");
+    }
+
+    #[tokio::test]
+    async fn test_get_spotify_status_missing_credentials_local() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+        unsafe {
+            env::set_var("APP_ENV", "local");
+        }
+
+        let res = get_spotify_status().await;
+        assert_eq!(res.title, "Local Mode");
+        assert_eq!(res.artist, "Spotify credentials not configured");
+    }
+
+    #[tokio::test]
+    async fn test_get_spotify_status_currently_playing_mocked() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+        
+        let auth_server = MockServer::start().await;
+        let api_server = MockServer::start().await;
+
+        unsafe {
+            env::set_var("SPOTIFY_CLIENT_ID", "mock_id");
+            env::set_var("SPOTIFY_CLIENT_SECRET", "mock_secret");
+            env::set_var("SPOTIFY_REFRESH_TOKEN", "mock_refresh");
+            env::set_var("SPOTIFY_AUTH_BASE_URL", auth_server.uri());
+            env::set_var("SPOTIFY_API_BASE_URL", api_server.uri());
+            env::set_var("APP_ENV", "production");
+        }
+
+        // Mock token exchange
+        let token_response = json!({
+            "access_token": "mock_access_token",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "scope": ""
+        });
+        Mock::given(method("POST"))
+            .and(path("/api/token"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(token_response))
+            .mount(&auth_server)
+            .await;
+
+        // Mock currently playing API
+        let currently_playing_response = json!({
+            "is_playing": true,
+            "progress_ms": 5000,
+            "item": {
+                "name": "Mock Track Name",
+                "duration_ms": 180000,
+                "external_urls": {
+                    "spotify": "https://spotify.com/mock-track"
+                },
+                "artists": [
+                    { "name": "Mock Artist Name" }
+                ],
+                "album": {
+                    "images": [
+                        { "url": "https://spotify.com/mock-art.jpg" }
+                    ]
+                }
+            }
+        });
+        Mock::given(method("GET"))
+            .and(path("/v1/me/player/currently-playing"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(currently_playing_response))
+            .mount(&api_server)
+            .await;
+
+        let res = get_spotify_status().await;
+        assert!(res.is_playing);
+        assert_eq!(res.title, "Mock Track Name");
+        assert_eq!(res.artist, "Mock Artist Name");
+        assert_eq!(res.album_art, "https://spotify.com/mock-art.jpg");
+        assert_eq!(res.track_url, "https://spotify.com/mock-track");
+        assert_eq!(res.progress_ms, 5000);
+        assert_eq!(res.duration_ms, 180000);
+
+        unsafe {
+            env::remove_var("SPOTIFY_AUTH_BASE_URL");
+            env::remove_var("SPOTIFY_API_BASE_URL");
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_spotify_status_recently_played_mocked() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+        
+        let auth_server = MockServer::start().await;
+        let api_server = MockServer::start().await;
+
+        unsafe {
+            env::set_var("SPOTIFY_CLIENT_ID", "mock_id");
+            env::set_var("SPOTIFY_CLIENT_SECRET", "mock_secret");
+            env::set_var("SPOTIFY_REFRESH_TOKEN", "mock_refresh");
+            env::set_var("SPOTIFY_AUTH_BASE_URL", auth_server.uri());
+            env::set_var("SPOTIFY_API_BASE_URL", api_server.uri());
+            env::set_var("APP_ENV", "production");
+        }
+
+        // Mock token exchange
+        let token_response = json!({
+            "access_token": "mock_access_token",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "scope": ""
+        });
+        Mock::given(method("POST"))
+            .and(path("/api/token"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(token_response))
+            .mount(&auth_server)
+            .await;
+
+        // Mock currently playing API returns 204 No Content
+        Mock::given(method("GET"))
+            .and(path("/v1/me/player/currently-playing"))
+            .respond_with(ResponseTemplate::new(204))
+            .mount(&api_server)
+            .await;
+
+        // Mock recently played API
+        let recently_played_response = json!({
+            "items": [
+                {
+                    "track": {
+                        "name": "Mock Recent Track",
+                        "duration_ms": 200000,
+                        "external_urls": {
+                            "spotify": "https://spotify.com/mock-recent"
+                        },
+                        "artists": [
+                            { "name": "Mock Recent Artist" }
+                        ],
+                        "album": {
+                            "images": [
+                                { "url": "https://spotify.com/mock-recent-art.jpg" }
+                            ]
+                        }
+                    }
+                }
+            ]
+        });
+        Mock::given(method("GET"))
+            .and(path("/v1/me/player/recently-played"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(recently_played_response))
+            .mount(&api_server)
+            .await;
+
+        let res = get_spotify_status().await;
+        assert!(!res.is_playing);
+        assert!(res.is_recently_played);
+        assert_eq!(res.title, "Mock Recent Track");
+        assert_eq!(res.artist, "Mock Recent Artist");
+        assert_eq!(res.album_art, "https://spotify.com/mock-recent-art.jpg");
+        assert_eq!(res.track_url, "https://spotify.com/mock-recent");
+        assert_eq!(res.duration_ms, 200000);
+
+        unsafe {
+            env::remove_var("SPOTIFY_AUTH_BASE_URL");
+            env::remove_var("SPOTIFY_API_BASE_URL");
+        }
+    }
+}
+
