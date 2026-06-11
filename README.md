@@ -3,14 +3,16 @@
 A high-performance, microservice-backed personal portfolio demonstrating full-stack engineering, system-level telemetry, and automated CI/CD deployment.
 
 **🌐 Live Production Site:** [https://mattdev0.tech](https://mattdev0.tech)
+
 ![Live Status](https://img.shields.io/badge/Status-Live_on_Azure-success)
 ![Frontend](https://img.shields.io/badge/Frontend-React_%2B_Vite-blue)
 ![Backend](https://img.shields.io/badge/Backends-Java_Spring_%7C_Rust-orange)
-![Infra](https://img.shields.io/badge/Infra-Docker_%7C_Nginx-lightgrey)
+![Security](https://img.shields.io/badge/Security-Trivy_Scanned-brightgreen)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions_%2B_Kustomize-blueviolet)
 
 ---
 
-# 🏗️ System Architecture
+## 🏗️ System Architecture
 
 This monorepo houses three distinct microservices operating behind an Nginx reverse proxy, orchestrated via Kubernetes (K3s) and automatically deployed via GitHub Actions.
 
@@ -45,321 +47,169 @@ graph TD
     class FE,Rust,Java,Blackbox portfolio;
 ```
 
-## 1. Frontend Gateway (React / Vite)
+### 1. Frontend Gateway (React / Vite)
+A responsive, dark-themed UI built with Tailwind CSS. It dynamically polls the backend services for real-time telemetry and GitHub activity.
 
-A responsive, dark-themed UI built with Tailwind CSS.
-It dynamically polls the backend services for real-time telemetry and GitHub activity.
-
-## 2. Java Engine (Spring Boot)
-
+### 2. Java Engine (Spring Boot)
 Handles external third-party API integration.
+* Resilient memory-cached JSON parsing bypassing strict rate limits.
+* Live GitHub commit history retrieval.
+* Safe parsing for missing metadata with strongly typed API contracts.
 
-Features include:
-
-* Resilient memory-cached JSON parsing
-* Live GitHub commit history retrieval
-* Graceful API rate-limit handling
-* Safe parsing for missing metadata
-
-## 3. Rust Engine (Axum/Tokio)
-
+### 3. Rust Engine (Axum/Tokio)
 Provides low-level system telemetry and external connectivity metrics.
-
-Features include:
-
-* Real-time network telemetry (ICMP ping latency, availability) queried from Prometheus
-* Fallback mock network telemetry generator for local developer mode
-* CPU usage metrics
-* Memory monitoring
-* Thread monitoring
-* Live Spotify playback status
-* Near-zero overhead performance
-
-## 4. Infrastructure Layer
-
-Hosted on an Azure Virtual Machine.
-
-Infrastructure stack includes:
-
-* Kubernetes (K3s) cluster orchestration (namespace `portfolio`)
-* Host Nginx reverse proxy routing to K3s NodePorts
-* Isolated microservice pods with strict resource limits running securely as non-root users
-* Automated CI/CD deployment pipeline deploying to K8s
+* Real-time network telemetry (ICMP ping latency, availability) queried from Prometheus.
+* CPU, memory, and thread utilization metrics.
+* Live Spotify playback status.
+* Near-zero overhead performance.
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```text
 portfolio-monorepo/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml
+│       ├── deploy.yml              # Production CD with Kustomize & Trivy
+│       └── test.yml                # PR CI Validation Gate
 │
-├── infrastructure/             # Reverse Proxy & Orchestration Configurations 🌐
-│   ├── nginx/
-│   │   ├── mattdev0.tech.conf
-│   │   └── portfolio-locations.conf
-│   │
-│   └── k8s/                    # Kubernetes Manifests ☸️
-│       ├── namespace.yaml
-│       ├── frontend.yaml
-│       ├── java-api.yaml
-│       ├── rust-api.yaml
-│       └── blackbox-exporter.yaml
+├── infrastructure/k8s/             # Kubernetes Manifests ☸️
+│   ├── kustomization.yaml          # Declarative Kustomize Base
+│   ├── frontend.yaml
+│   ├── java-api.yaml
+│   └── rust-api.yaml
 │
-├── frontend-react/
-│   ├── public/
-│   │   └── favicon.png
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Sparkline.jsx
-│   │   │   ├── SpotifyPlayer.jsx
-│   │   │   ├── TerminalSimulator.jsx
-│   │   │   └── TopologyNode.jsx
-│   │   ├── hooks/
-│   │   │   ├── useSpotify.js
-│   │   │   └── useTelemetry.js
-│   │   ├── App.jsx
-│   │   ├── GitHubActivity.jsx
-│   │   ├── api.js
-│   │   ├── config.json
-│   │   ├── constants.js
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── package.json
-│   ├── vite.config.js
-│   └── Dockerfile
+├── frontend-react/                 # React UI ⚛️
+│   ├── src/__tests__/              # Vitest + React Testing Library Suite
+│   └── src/
 │
-├── backend-java/
-│   ├── src/main/java/com/matt/portfolio/
-│   │   ├── AppConfig.java
-│   │   ├── PortfolioApiApplication.java
-│   │   ├── InfrastructureController.java
-│   │   ├── GitHubController.java
-│   │   └── GitHubService.java
-│   ├── pom.xml
-│   └── Dockerfile
+├── backend-java/                   # Spring Boot API ☕
+│   ├── src/test/                   # JUnit + MockMvc Integration Tests
+│   └── src/main/
 │
-├── backend-rust/
-│   ├── src/
-│   │   ├── services/
-│   │   │   ├── mod.rs
-│   │   │   ├── network_monitor.rs
-│   │   │   ├── spotify_client.rs
-│   │   │   └── system_monitor.rs
-│   │   ├── handlers.rs
-│   │   ├── main.rs
-│   │   ├── models.rs
-│   │   └── utils.rs
-│   ├── Cargo.toml
-│   └── Dockerfile
+├── backend-rust/                   # Rust Axum API 🦀
+│   ├── src/                        # Tokio Async Handlers & Services
+│   └── Cargo.toml
 │
-├── docker-compose.yml
 └── README.md
 ```
 
 ---
 
-# ⚙️ Core Engineering Features
+## 🧪 Testing
 
-## Resilient Data Fetching
+The repository maintains rigorous automated testing standards across all microservices.
 
-The Java backend utilizes:
-
-* Spring Cache (`@Cacheable`)
-* Custom Jackson JSON tree mapping
-
-This helps bypass GitHub API strict rate limits while safely parsing unpredictable payloads without throwing Null Pointer Exceptions.
-
-## Live Hardware Telemetry
-
-The Rust backend securely queries the host machine to serve live hardware utilization metrics to the frontend UI.
-
-## CORS & Proxy Routing
-
-Nginx handles domain routing:
-
-* `/api/github`
-* `/api/status`
-
-This removes CORS complexities in production.
-
-Local development uses:
-
-* Vite proxy configuration
-* Spring Boot `@CrossOrigin`
-
-## Automated CI/CD
-
-Fully automated GitHub Actions pipeline.
-
-Pushes to the deployment branch automatically:
-
-* Connect to Azure via SSH
-* Pull latest repository changes
-* Rebuild Docker containers
-* Restart services with minimal downtime
+* **Frontend (React):** Uses `Vitest` and `@testing-library/react`. Tests cover UI component rendering, asynchronous API fetching, and complex polling intervals utilizing mocked native timers (`vi.useFakeTimers()`).
+* **Backend (Java):** Uses `JUnit 5`, `MockMvc`, and `MockRestServiceServer`. Ensures reliable integration with external REST APIs and correct JSON payload serialization.
+* **Backend (Rust):** Unit tests powered by `cargo test` and `mockall`. Validates robust error handling, concurrency states, and mock Prometheus responses.
 
 ---
 
-# 🛠️ Local Development Setup
+## 🔒 Security
 
-## Prerequisites
+All microservices adhere to strict DevSecOps patterns and Kubernetes security best practices:
+* **Trivy Vulnerability Scanning:** Every built Docker container is scanned for OS/library vulnerabilities before deployment. `CRITICAL` vulnerabilities will automatically block deployments.
+* **Kubernetes Hardening:** All pods enforce strict `securityContext` boundaries:
+  * `readOnlyRootFilesystem: true`
+  * `allowPrivilegeEscalation: false`
+  * `runAsNonRoot: true` (e.g., executing as `nobody` user 65534).
+  * `capabilities: drop: ["ALL"]`
+* **Network Isolation:** Workloads operate strictly on required ports and validate environment-injected Secrets.
 
+---
+
+## ☸️ Kubernetes & Reliability
+
+Infrastructure manifests prioritize high availability and automated healing:
+* **Kustomize Declarative Manifests:** Ensures atomic, deterministic cluster configurations.
+* **Health Probes:** Comprehensive `livenessProbe`, `readinessProbe`, and `startupProbe` checks implemented across all APIs to verify endpoints (e.g., `/healthz` and `/actuator/health`) before accepting traffic.
+* **Pod Disruption Budgets (PDB):** Enforces a `minAvailable: 1` requirement during evictions or node drains to maintain zero downtime.
+* **kubeconform Validation:** CI pipelines strictly validate all K8s manifests against official Kubernetes schemas prior to deployment.
+
+---
+
+## 📊 Observability & Logging
+
+Production monitoring is embedded deeply into the application stack:
+* **Structured JSON Logging:** 
+  * Rust utilizes `tracing` and `tracing-subscriber` for hierarchical, machine-readable JSON logs.
+  * Java utilizes `Logback` with `logstash-logback-encoder` to format stdout outputs identically.
+* **Prometheus Telemetry:** `blackbox-exporter` monitors external endpoint health and network latency.
+
+---
+
+## 🚀 CI/CD Modernization
+
+This project utilizes an advanced, Trunk-Based CI/CD workflow executed via GitHub Actions.
+
+```mermaid
+sequenceDiagram
+    actor Developer
+    participant GitHub as GitHub
+    participant TestGate as CI Pipeline (test.yml)
+    participant DeployGate as CD Pipeline (deploy.yml)
+    participant GHCR as GHCR
+    participant K3s as Azure K3s Cluster
+
+    Developer->>GitHub: Open PR / Push to main
+    GitHub->>TestGate: Trigger Testing & Kubeconform
+    TestGate-->>GitHub: Pass
+    
+    GitHub->>DeployGate: Trigger Deployment
+    DeployGate->>DeployGate: Filter paths (skip unchanged)
+    DeployGate->>GHCR: Build & Push Docker Images
+    DeployGate->>DeployGate: Trivy Scan Images
+    DeployGate->>K3s: SSH & Apply Kustomize (Zero-downtime)
+    K3s-->>DeployGate: Rollout Status (Rollback on failure)
+```
+
+### Deployment Flow Features
+* **Conditional Builds (`dorny/paths-filter`):** The pipeline intelligently skips building/pushing Docker images if the respective microservice source code has not changed.
+* **Zero-Downtime Rollouts:** Services update dynamically via Kustomize image patching.
+* **Automated Rollbacks:** If a Kubernetes rollout stalls for more than 300 seconds, the pipeline automatically triggers a `kubectl rollout undo` to recover the previous stable state.
+
+---
+
+## 🛠️ Local Development Setup
+
+### Prerequisites
 * Node.js (v18+)
 * Java 17+ & Maven
 * Rust & Cargo
-* Docker & Docker Compose (optional locally, required for production)
+* Docker & Docker Compose
 
----
-
-## Local Runtime Flag
-
-The React frontend now detects local runtime automatically when it is served by Vite dev mode or opened from `localhost`, `127.0.0.1`, `::1`, or `0.0.0.0`.
-
-When local mode is active, frontend API calls use:
-
+### Local Runtime Flag
+The React frontend automatically detects local runtime when served by Vite or accessed via `localhost`. API calls intelligently map to local endpoints:
 * Rust API: `http://localhost:8080`
 * Java API: `http://localhost:8081`
 
-To force or customize local mode, copy `frontend-react/.env.example` to `frontend-react/.env.local` and adjust the values:
+To override local mode manually, copy `frontend-react/.env.example` to `frontend-react/.env.local`.
 
-```bash
-VITE_LOCAL_DEV=true
-VITE_LOCAL_RUST_API_BASE_URL=http://localhost:8080
-VITE_LOCAL_JAVA_API_BASE_URL=http://localhost:8081
-VITE_PRODUCTION_API_BASE_URL=https://mattdev0.tech
-```
-
-For the Rust service, `cargo run` is treated as local automatically. If you run a release build locally without Spotify credentials, set:
-
-```bash
-APP_ENV=local
-```
-
-For local Docker, use the local Compose override:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
-```
-
-Then open:
-
-```text
-http://localhost:3000
-```
-
-The main `docker-compose.yml` keeps `APP_ENV=production` by default for Azure deployments.
-
----
-
-## 1. Start the Frontend
-
+### 1. Start the Frontend
 ```bash
 cd frontend-react
 npm install
 npm run dev
 ```
 
-Runs locally on:
-
-```text
-http://localhost:5173
-```
-
----
-
-## 2. Start the Java Microservice
-
+### 2. Start the Java Microservice
 ```bash
 cd backend-java
 ./mvnw clean compile
 ./mvnw spring-boot:run
 ```
 
-Runs locally on:
-
-```text
-http://localhost:8081
-```
-
----
-
-## 3. Start the Rust Engine
-
+### 3. Start the Rust Engine
 ```bash
 cd backend-rust
 cargo run
 ```
 
-Runs locally on:
-
-```text
-http://localhost:8080
-```
-
 ---
 
-# 🚀 Production Deployment
-
-This project utilizes a Trunk-Based CI/CD deployment workflow deploying directly to Kubernetes.
-
-```mermaid
-sequenceDiagram
-    actor Developer
-    participant GitHub as GitHub Repository (portfolio-monorepo)
-    participant Runner as GitHub Actions Runner
-    participant GHCR as GitHub Container Registry (ghcr.io)
-    participant VM as Azure VM Host
-    participant K3s as K3s Cluster
-
-    Developer->>GitHub: git push origin main
-    GitHub->>Runner: Trigger Production Deployment Workflow
-    Runner->>Runner: Build Docker images using Buildx & GHA Cache
-    Runner->>GHCR: Push built images: portfolio-frontend, portfolio-java-api, portfolio-rust-api
-    Runner->>VM: SSH Connection (using AZURE_SSH_KEY)
-    Note over VM: Pulls latest commits<br/>git reset --hard origin/main
-    VM->>K3s: Apply environment Secrets (rust-api-secret)
-    VM->>K3s: Apply manifests in infrastructure/k8s/ folder (pulls from GHCR)
-    VM->>K3s: Trigger zero-downtime rolling update (rollout restart)
-    K3s-->>VM: Pull new images & Rollout Complete
-    VM-->>Runner: Pipeline Complete
-    Runner-->>GitHub: Update Status to Green
-```
-
-## Required GitHub Secrets
-
-Configure the following repository secrets in GitHub:
-
-* `AZURE_HOST`
-* `AZURE_USER`
-* `AZURE_SSH_KEY`
-
-### Optional Configurations
-* `GITHUB_TOKEN`: Add this to `backend-rust/.env` on the host to authenticate requests to GitHub APIs, elevating your rate limits from 60 to 5,000 requests/hr.
-
-## Deployment Flow
-
-Push code to the deployment branch (`main`).
-
-GitHub Actions will automatically:
-
-1. Build the Docker images on the GitHub Actions runner using Docker Buildx and GHA caching.
-2. Push the built images to GitHub Container Registry (GHCR) at `ghcr.io/mattdev0/portfolio-monorepo/...`.
-3. Connect to the Azure VM via SSH.
-4. Pull the latest code changes (specifically updating the Kubernetes manifests).
-5. Dynamically configure K8s environment Secrets from the `.env` file on the VM.
-6. Inject the exact Git Commit SHA into the Kubernetes manifests using `sed` to replace `latest` tags.
-7. Apply the Kubernetes manifests in the `infrastructure/k8s/` folder, instructing K3s to pull the pre-built specific images from GHCR.
-8. Trigger a zero-downtime rolling update:
-   ```bash
-   sudo kubectl rollout restart deployment/frontend deployment/java-api deployment/rust-api -n portfolio
-   ```
-
----
-
-# 🔌 API Gateway Endpoints
+## 🔌 API Gateway Endpoints
 
 | Method | Route                         | Microservice | Description                                    |
 | ------ | ----------------------------- | ------------ | ---------------------------------------------- |
@@ -372,31 +222,5 @@ GitHub Actions will automatically:
 
 ---
 
-# 📦 Tech Stack
-
-## Frontend
-
-* React
-* Vite
-* Tailwind CSS
-
-## Backend
-
-* Java Spring Boot
-* Rust (Axum/Tokio)
-
-## Infrastructure
-
-* Docker
-* Docker Compose
-* Nginx
-* Azure VM
-* Kubernetes (K3s)
-* Prometheus Blackbox Exporter
-* GitHub Actions
-
----
-
-# 📄 License
-
+## 📄 License
 MIT
