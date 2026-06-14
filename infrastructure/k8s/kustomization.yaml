@@ -8,3 +8,4 @@ resources:
   - java-api.yaml
   - frontend.yaml
   - blackbox-exporter.yaml
+  - ingress.yaml
