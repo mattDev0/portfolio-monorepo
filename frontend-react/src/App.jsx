@@ -16,6 +16,7 @@ import useSpotify from './hooks/useSpotify';
 // Constants
 import { TOPOLOGY_INFO } from './constants';
 
+// Telemetry and routing updated for Traefik Ingress
 function App() {
   const [selectedTech, setSelectedTech] = useState(null);
   const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
