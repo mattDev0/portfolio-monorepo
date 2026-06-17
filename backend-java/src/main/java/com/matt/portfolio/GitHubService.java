@@ -48,8 +48,7 @@ public class GitHubService {
                 ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
                 return response.getBody();
             } catch (Exception e) {
-                logger.error("Authenticated request failed for url: {}. Error: {}", url, e.getMessage(), e);
-                return null;
+                logger.warn("Authenticated request failed for url: {}. Falling back to unauthenticated. Error: {}", url, e.getMessage());
             }
         }
         // Fallback or default to unauthenticated request
