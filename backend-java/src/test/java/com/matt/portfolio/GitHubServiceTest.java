@@ -18,8 +18,10 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import org.springframework.context.annotation.Import;
 
 @SpringBootTest
+@Import(NoOpTaskSchedulerConfig.class)
 @TestPropertySource(properties = {
     "github.token=test-token",
     "spring.cache.type=none"
