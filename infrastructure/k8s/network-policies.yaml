@@ -1,0 +1,83 @@
+# Frontend: Allow traffic from Traefik ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-ingress
+  namespace: portfolio
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# Rust API: Allow traffic from Traefik ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rust-api-ingress
+  namespace: portfolio
+spec:
+  podSelector:
+    matchLabels:
+      app: rust-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# Java API: Allow traffic from Traefik ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: java-api-ingress
+  namespace: portfolio
+spec:
+  podSelector:
+    matchLabels:
+      app: java-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 8081
+---
+# Blackbox Exporter: Allow traffic from Prometheus in devops namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: blackbox-exporter-ingress
+  namespace: portfolio
+spec:
+  podSelector:
+    matchLabels:
+      app: blackbox-exporter
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: devops
+      ports:
+        - protocol: TCP
+          port: 9115

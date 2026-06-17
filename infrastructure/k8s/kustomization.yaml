@@ -9,3 +9,4 @@ resources:
   - frontend.yaml
   - blackbox-exporter.yaml
   - ingress.yaml
+  - network-policies.yaml
