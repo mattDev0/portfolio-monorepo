@@ -14,53 +14,58 @@ A high-performance, microservice-backed personal portfolio demonstrating full-st
 
 ## 🏗️ System Architecture
 
-This monorepo houses three distinct microservices operating behind an Nginx reverse proxy, orchestrated via Kubernetes (K3s) and automatically deployed via GitHub Actions.
+This monorepo houses three distinct microservices operating behind an Ingress controller (Traefik), orchestrated via Kubernetes (K3s) and automatically deployed via GitHub Actions.
 
 ```mermaid
 graph TD
     Client[Client Browser] -->|HTTPS 443| Nginx[Host Nginx Reverse Proxy]
+    Nginx -->|Proxy to Ingress Port| Traefik[Traefik Ingress Controller]
     
-    subgraph "Azure Virtual Machine (Host)"
-        Nginx -->|Proxy to Port 30000| K8sFE[Service: frontend NodePort]
-        Nginx -->|Proxy to Port 30080| K8sRust[Service: rust-api NodePort]
-        Nginx -->|Proxy to Port 30081| K8sJava[Service: java-api NodePort]
+    subgraph "Namespace: portfolio"
+        Traefik -->|Path /| FE[frontend Service: ClusterIP]
+        Traefik -->|Path /api/status | Rust[rust-api Service: ClusterIP]
+        Traefik -->|Path /api/spotify| Rust
+        Traefik -->|Path /api/github| Java[java-api Service: ClusterIP]
+        Traefik -->|Path /api/infrastructure| Java
 
-        subgraph "Namespace: portfolio"
-            K8sFE --> FE[frontend-react Pod]
-            K8sRust --> Rust[backend-rust Pod]
-            K8sJava --> Java[backend-java Pod]
-            K8sBlackbox[Service: blackbox-exporter] --> Blackbox[blackbox-exporter Pod]
-        end
-
-        subgraph "Namespace: devops"
-            Prometheus[prometheus Pod]
-        end
+        FE --> FE_Pod[frontend Pod]
+        Rust --> Rust_Pod[backend-rust Pod]
+        Java --> Java_Pod[backend-java Pod]
+        K8sBlackbox[Service: blackbox-exporter] --> Blackbox[blackbox-exporter Pod]
     end
 
-    Rust -->|Spotify API| Spotify[Spotify Web Services]
-    Java -->|GitHub API| GitHub[GitHub REST API]
-    Rust -->|Queries Network Latency| Prometheus
+    subgraph "Namespace: devops"
+        Prometheus[prometheus Pod]
+    end
+
+    Rust_Pod -->|Spotify API| Spotify[Spotify Web Services]
+    Java_Pod -->|GitHub API| GitHub[GitHub REST API]
+    Rust_Pod -->|Queries Network Latency| Prometheus
     Prometheus -->|Scrapes ICMP Probes| K8sBlackbox
     Blackbox -->|Pings ICMP| Internet[External Internet: Google / Cloudflare / Riot Games]
 
     classDef portfolio fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
-    class FE,Rust,Java,Blackbox portfolio;
+    class FE_Pod,Rust_Pod,Java_Pod,Blackbox portfolio;
 ```
 
 ### 1. Frontend Gateway (React / Vite)
 A responsive, dark-themed UI built with Tailwind CSS. It dynamically polls the backend services for real-time telemetry and GitHub activity.
 
-### 2. Java Engine (Spring Boot)
+### 2. Java Engine (Spring Boot 4.0.6 / Java 21)
 Handles external third-party API integration.
-* Resilient memory-cached JSON parsing bypassing strict rate limits.
-* Live GitHub commit history retrieval.
-* Safe parsing for missing metadata with strongly typed API contracts.
+* **Bucket4j Rate Limiting:** Enforces client IP rate limiting on API paths (`/api/**`) at 60 req/min, with automatic reverse proxy header resolution (`X-Forwarded-For`) and actuator endpoints (`/actuator/**`) exemption.
+* **Resilient API Clients:** Gracefully falls back to unauthenticated requests if GitHub credentials are not present or expire.
+* **DTO Serialization:** Fully typed `InfrastructureMetrics` DTO replacement to prevent serialization issues.
+* **Robust Test Isolation:** Prevents `TaskScheduler` execution overlap and database locks in integration tests using a custom `NoOpTaskSchedulerConfig`.
+* Tomcat runtime version overridden to `11.0.22` to patch critical CVEs.
 
 ### 3. Rust Engine (Axum/Tokio)
 Provides low-level system telemetry and external connectivity metrics.
+* **Axum Nested Routing & tower-governor Rate Limiting:** Enforces client IP rate limiting on API paths (`/api/*`) at 60 req/min with `SmartIpKeyExtractor` (bypassing reverse proxy grouping), while leaving the Kubernetes `/healthz` endpoint completely exempt to avoid CrashLoopBackOff loops.
+* **Graceful Shutdowns:** Monitors Unix termination signals and cancels background telemetry tasks using a `CancellationToken`.
 * Real-time network telemetry (ICMP ping latency, availability) queried from Prometheus.
 * CPU, memory, and thread utilization metrics.
-* Live Spotify playback status.
+* Live Spotify playback status with robust authentication fallback handling.
 * Near-zero overhead performance.
 
 ---
@@ -71,11 +76,14 @@ Provides low-level system telemetry and external connectivity metrics.
 portfolio-monorepo/
 ├── .github/
 │   └── workflows/
-│       ├── deploy.yml              # Production CD with Kustomize & Trivy
-│       └── test.yml                # PR CI Validation Gate
+│       ├── deploy.yml              # Production CD with Kustomize, Trivy, & Rollback automation
+│       └── test.yml                # PR CI Validation Gate (tests, kubeconform, linting)
 │
 ├── infrastructure/k8s/             # Kubernetes Manifests ☸️
 │   ├── kustomization.yaml          # Declarative Kustomize Base
+│   ├── ingress.yaml                # Traefik routing paths
+│   ├── network-policies.yaml       # Namespace network isolation policies
+│   ├── pdb.yaml                    # Pod Disruption Budget
 │   ├── frontend.yaml
 │   ├── java-api.yaml
 │   └── rust-api.yaml
@@ -110,13 +118,14 @@ The repository maintains rigorous automated testing standards across all microse
 ## 🔒 Security
 
 All microservices adhere to strict DevSecOps patterns and Kubernetes security best practices:
+* **NetworkPolicies Isolation:** Restricts incoming traffic per service using namespace rules (e.g. only allowing ingress from the Traefik Ingress controller in `kube-system`, or Prometheus in `devops` to scrape metrics). Egress is unrestricted for external API communications.
+* **Application Rate Limiting:** Rate limiting on API routes is managed on both backends at 60 requests/minute/IP, utilizing custom request header extractors to prevent proxy IP spoofing. Critical infrastructure/liveness endpoints are structural bypasses.
 * **Trivy Vulnerability Scanning:** Every built Docker container is scanned for OS/library vulnerabilities before deployment. `CRITICAL` vulnerabilities will automatically block deployments.
 * **Kubernetes Hardening:** All pods enforce strict `securityContext` boundaries:
   * `readOnlyRootFilesystem: true`
   * `allowPrivilegeEscalation: false`
-  * `runAsNonRoot: true` (e.g., executing as `nobody` user 65534).
+  * `runAsNonRoot: true` (executing as `nobody` user 65534).
   * `capabilities: drop: ["ALL"]`
-* **Network Isolation:** Workloads operate strictly on required ports and validate environment-injected Secrets.
 
 ---
 
@@ -153,20 +162,21 @@ sequenceDiagram
     participant GHCR as GHCR
     participant K3s as Azure K3s Cluster
 
-    Developer->>GitHub: Open PR / Push to main
+    Developer->>GitHub: Open PR / Push / Manual Trigger
     GitHub->>TestGate: Trigger Testing & Kubeconform
     TestGate-->>GitHub: Pass
     
     GitHub->>DeployGate: Trigger Deployment
-    DeployGate->>DeployGate: Filter paths (skip unchanged)
-    DeployGate->>GHCR: Build & Push Docker Images
+    DeployGate->>DeployGate: Filter paths (skip unchanged using Git SHAs)
+    DeployGate->>GHCR: Build & Push Docker Images (tagged with component-SHA)
     DeployGate->>DeployGate: Trivy Scan Images
     DeployGate->>K3s: SSH & Apply Kustomize (Zero-downtime)
     K3s-->>DeployGate: Rollout Status (Rollback on failure)
 ```
 
 ### Deployment Flow Features
-* **Conditional Builds (`dorny/paths-filter`):** The pipeline intelligently skips building/pushing Docker images if the respective microservice source code has not changed.
+* **Conditional Builds (`dorny/paths-filter`):** The pipeline intelligently skips building/pushing Docker images if the respective microservice source code has not changed, utilizing component-specific Git SHAs.
+* **Manual Trigger:** Supported via `workflow_dispatch` for troubleshooting and forced redeployments.
 * **Zero-Downtime Rollouts:** Services update dynamically via Kustomize image patching.
 * **Automated Rollbacks:** If a Kubernetes rollout stalls for more than 300 seconds, the pipeline automatically triggers a `kubectl rollout undo` to recover the previous stable state.
 
@@ -176,7 +186,7 @@ sequenceDiagram
 
 ### Prerequisites
 * Node.js (v18+)
-* Java 17+ & Maven
+* Java 21+ & Maven
 * Rust & Cargo
 * Docker & Docker Compose
 
