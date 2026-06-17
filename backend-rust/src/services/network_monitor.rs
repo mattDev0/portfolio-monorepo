@@ -2,8 +2,9 @@ use reqwest::Client;
 use std::env;
 use tokio::time::{sleep, Duration};
 use crate::models::{AppState, NetworkMetrics, NetworkTarget, NetworkHistoryPoint};
+use tokio_util::sync::CancellationToken;
 
-pub fn start_network_monitor(state: AppState) {
+pub fn start_network_monitor(state: AppState, cancel_token: CancellationToken) -> tokio::task::JoinHandle<()> {
     let net_metrics_clone = state.network_metrics.clone();
     let net_history_clone = state.network_history.clone();
 
@@ -35,9 +36,15 @@ pub fn start_network_monitor(state: AppState) {
                 }
             }
 
-            sleep(Duration::from_secs(5)).await;
+            tokio::select! {
+                _ = cancel_token.cancelled() => {
+                    tracing::info!("Network monitor gracefully shutting down.");
+                    break;
+                }
+                _ = sleep(Duration::from_secs(5)) => {}
+            }
         }
-    });
+    })
 }
 
 async fn query_prometheus_metric(client: &Client, prometheus_url: &str, query: &str) -> Option<serde_json::Value> {

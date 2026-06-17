@@ -1,8 +1,9 @@
 use sysinfo::System;
 use tokio::time::{sleep, Duration};
 use crate::models::{AppState, SystemMetrics, TelemetryPoint};
+use tokio_util::sync::CancellationToken;
 
-pub fn start_system_monitor(state: AppState) {
+pub fn start_system_monitor(state: AppState, cancel_token: CancellationToken) -> tokio::task::JoinHandle<()> {
     let metrics_clone = state.metrics.clone();
     let history_clone = state.history.clone();
 
@@ -50,9 +51,15 @@ pub fn start_system_monitor(state: AppState) {
                 }
             }
 
-            sleep(Duration::from_secs(3)).await;
+            tokio::select! {
+                _ = cancel_token.cancelled() => {
+                    tracing::info!("System monitor gracefully shutting down.");
+                    break;
+                }
+                _ = sleep(Duration::from_secs(3)) => {}
+            }
         }
-    });
+    })
 }
 
 #[cfg(test)]
@@ -71,7 +78,8 @@ mod tests {
             network_history: Arc::new(RwLock::new(VecDeque::new())),
         };
 
-        start_system_monitor(metrics_state.clone());
+        let cancel_token = CancellationToken::new();
+        start_system_monitor(metrics_state.clone(), cancel_token.clone());
 
         // Wait for the spawned monitor to run at least one iteration
         sleep(Duration::from_millis(600)).await;

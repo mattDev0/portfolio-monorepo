@@ -15,6 +15,7 @@ use services::{system_monitor, network_monitor};
 use handlers::*;
 use tower_http::trace::{TraceLayer, DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse};
 use tracing::Level;
+use tokio_util::sync::CancellationToken;
 
 
 #[tokio::main]
@@ -40,8 +41,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // 2. Spawn background tasks to refresh telemetry periodically
-    system_monitor::start_system_monitor(metrics_state.clone());
-    network_monitor::start_network_monitor(metrics_state.clone());
+    let cancel_token = CancellationToken::new();
+    let sys_handle = system_monitor::start_system_monitor(metrics_state.clone(), cancel_token.clone());
+    let net_handle = network_monitor::start_network_monitor(metrics_state.clone(), cancel_token.clone());
 
     let allowed_origin_str = std::env::var("CORS_ALLOWED_ORIGIN")
         .unwrap_or_else(|_| {
@@ -81,13 +83,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("🚀 Rust Engine live on http://localhost:8080");
     
     axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
+        .with_graceful_shutdown(shutdown_signal(cancel_token.clone()))
         .await?;
+
+    let _ = tokio::join!(sys_handle, net_handle);
 
     Ok(())
 }
 
-async fn shutdown_signal() {
+async fn shutdown_signal(cancel_token: CancellationToken) {
     let ctrl_c = async {
         tokio::signal::ctrl_c()
             .await
@@ -111,4 +115,5 @@ async fn shutdown_signal() {
     }
 
     tracing::info!("Graceful shutdown initiated...");
+    cancel_token.cancel();
 }
