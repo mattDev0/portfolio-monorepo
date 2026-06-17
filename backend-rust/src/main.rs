@@ -70,11 +70,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .on_response(DefaultOnResponse::new().level(Level::INFO));
 
     // Rate limiter: 60 requests per minute per IP, applied ONLY to /api/* routes.
+    // Uses SmartIpKeyExtractor to read client IP from proxy headers (e.g. X-Forwarded-For).
     // /healthz is on a separate router so K8s probes are never rate-limited.
+    let mut builder = tower_governor::governor::GovernorConfigBuilder::default()
+        .key_extractor(tower_governor::key_extractor::SmartIpKeyExtractor);
+    builder.per_second(1);
+    builder.burst_size(60);
     let governor_conf = Arc::new(
-        tower_governor::governor::GovernorConfigBuilder::default()
-            .const_per_second(1)
-            .const_burst_size(60)
+        builder
             .finish()
             .expect("Failed to create governor config"),
     );
@@ -100,7 +103,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind("0.0.0.0:8080").await?;
     tracing::info!("🚀 Rust Engine live on http://localhost:8080");
     
-    axum::serve(listener, app)
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
         .with_graceful_shutdown(shutdown_signal(cancel_token.clone()))
         .await?;
 
