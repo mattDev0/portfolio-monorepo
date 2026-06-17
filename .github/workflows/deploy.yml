@@ -1,6 +1,5 @@
 name: Production Deployment
 
-# Trigger the workflow only when pushing to the main branch
 on:
   push:
     branches:
@@ -9,6 +8,14 @@ on:
       - 'README.md'
       - '**/README.md'
       - 'HELP.md'
+  # CHANGE: Allow manual triggering from GitHub UI or CLI
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild all images even if code has not changed'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -16,6 +23,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          # CHANGE: Need full history to compute per-component SHAs
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -72,6 +82,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          # CHANGE: Need full history to compute per-component SHAs
+          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -86,100 +99,134 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Paths Filter
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            frontend:
-              - 'frontend-react/**'
-              - 'infrastructure/k8s/frontend.yaml'
-            java:
-              - 'backend-java/**'
-              - 'infrastructure/k8s/java-api.yaml'
-            rust:
-              - 'backend-rust/**'
-              - 'infrastructure/k8s/rust-api.yaml'
+      # CHANGE: Compute the SHA of the last commit that touched each component.
+      # This means unchanged components get their previous build's tag, not $GITHUB_SHA.
+      - name: Compute Component SHAs
+        id: shas
+        run: |
+          FRONTEND_SHA=$(git log -1 --format=%H -- frontend-react/ infrastructure/k8s/frontend.yaml)
+          JAVA_SHA=$(git log -1 --format=%H -- backend-java/ infrastructure/k8s/java-api.yaml)
+          RUST_SHA=$(git log -1 --format=%H -- backend-rust/ infrastructure/k8s/rust-api.yaml)
+          echo "frontend_sha=$FRONTEND_SHA" >> $GITHUB_OUTPUT
+          echo "java_sha=$JAVA_SHA" >> $GITHUB_OUTPUT
+          echo "rust_sha=$RUST_SHA" >> $GITHUB_OUTPUT
+          echo "Frontend SHA: $FRONTEND_SHA"
+          echo "Java SHA: $JAVA_SHA"
+          echo "Rust SHA: $RUST_SHA"
+
+      # CHANGE: Check if images already exist in the registry.
+      # If they do, skip building. If they don't (rollback, pruned), rebuild.
+      - name: Check Existing Images
+        id: check
+        run: |
+          check_image() {
+            local image=$1
+            local tag=$2
+            if docker manifest inspect "ghcr.io/mattdev0/portfolio-monorepo/${image}:${tag}" > /dev/null 2>&1; then
+              echo "true"
+            else
+              echo "false"
+            fi
+          }
+
+          FORCE="${{ inputs.force_rebuild }}"
+
+          if [ "$FORCE" == "true" ]; then
+            echo "frontend_exists=false" >> $GITHUB_OUTPUT
+            echo "java_exists=false" >> $GITHUB_OUTPUT
+            echo "rust_exists=false" >> $GITHUB_OUTPUT
+            echo "Force rebuild requested — all images will be rebuilt."
+          else
+            FRONTEND_EXISTS=$(check_image "portfolio-frontend" "${{ steps.shas.outputs.frontend_sha }}")
+            JAVA_EXISTS=$(check_image "portfolio-java-api" "${{ steps.shas.outputs.java_sha }}")
+            RUST_EXISTS=$(check_image "portfolio-rust-api" "${{ steps.shas.outputs.rust_sha }}")
+            echo "frontend_exists=$FRONTEND_EXISTS" >> $GITHUB_OUTPUT
+            echo "java_exists=$JAVA_EXISTS" >> $GITHUB_OUTPUT
+            echo "rust_exists=$RUST_EXISTS" >> $GITHUB_OUTPUT
+            echo "Frontend image exists: $FRONTEND_EXISTS"
+            echo "Java image exists: $JAVA_EXISTS"
+            echo "Rust image exists: $RUST_EXISTS"
+          fi
 
       - name: Build and Push Portfolio Frontend
-        if: steps.filter.outputs.frontend == 'true'
+        if: steps.check.outputs.frontend_exists == 'false'
         uses: docker/build-push-action@v5
         with:
           context: ./frontend-react
           push: true
           tags: |
-            ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}
             ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Scan Portfolio Frontend Image
-        if: steps.filter.outputs.frontend == 'true'
+        if: steps.check.outputs.frontend_exists == 'false'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ github.sha }}'
+          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL'
 
       - name: Build and Push Portfolio Java API
-        if: steps.filter.outputs.java == 'true'
+        if: steps.check.outputs.java_exists == 'false'
         uses: docker/build-push-action@v5
         with:
           context: ./backend-java
           push: true
           tags: |
-            ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ steps.shas.outputs.java_sha }}
             ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Scan Portfolio Java Image
-        if: steps.filter.outputs.java == 'true'
+        if: steps.check.outputs.java_exists == 'false'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ github.sha }}'
+          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:${{ steps.shas.outputs.java_sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL'
 
       - name: Build and Push Portfolio Rust API
-        if: steps.filter.outputs.rust == 'true'
+        if: steps.check.outputs.rust_exists == 'false'
         uses: docker/build-push-action@v5
         with:
           context: ./backend-rust
           push: true
           tags: |
-            ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}
+            ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}
             ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Scan Portfolio Rust Image
-        if: steps.filter.outputs.rust == 'true'
+        if: steps.check.outputs.rust_exists == 'false'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ github.sha }}'
+          image-ref: 'ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL'
 
+      # CHANGE: Always pass all three SHAs. Deployment is deterministic.
       - name: Executing Remote SSH Commands to Deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
-          FRONTEND_CHANGED: ${{ steps.filter.outputs.frontend }}
-          JAVA_CHANGED: ${{ steps.filter.outputs.java }}
-          RUST_CHANGED: ${{ steps.filter.outputs.rust }}
-          GITHUB_SHA: ${{ github.sha }}
+          FRONTEND_SHA: ${{ steps.shas.outputs.frontend_sha }}
+          JAVA_SHA: ${{ steps.shas.outputs.java_sha }}
+          RUST_SHA: ${{ steps.shas.outputs.rust_sha }}
         with:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
-          envs: FRONTEND_CHANGED,JAVA_CHANGED,RUST_CHANGED,GITHUB_SHA
+          envs: FRONTEND_SHA,JAVA_SHA,RUST_SHA
           script: |
             set -e
             echo "Successfully connected to Azure Production Server."
@@ -214,15 +261,11 @@ jobs:
             fi
             
             cd infrastructure/k8s
-            if [ "$FRONTEND_CHANGED" == "true" ]; then
-              kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend=ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:$GITHUB_SHA
-            fi
-            if [ "$JAVA_CHANGED" == "true" ]; then
-              kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:$GITHUB_SHA
-            fi
-            if [ "$RUST_CHANGED" == "true" ]; then
-              kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:$GITHUB_SHA
-            fi
+            
+            # CHANGE: Always set all three image tags deterministically
+            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend=ghcr.io/mattdev0/portfolio-monorepo/portfolio-frontend:$FRONTEND_SHA
+            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-java-api:$JAVA_SHA
+            kustomize edit set image ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api=ghcr.io/mattdev0/portfolio-monorepo/portfolio-rust-api:$RUST_SHA
             
             kustomize build . | sudo kubectl apply -f -
             
