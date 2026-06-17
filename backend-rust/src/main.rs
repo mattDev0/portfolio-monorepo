@@ -16,6 +16,7 @@ use handlers::*;
 use tower_http::trace::{TraceLayer, DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse};
 use tracing::Level;
 use tokio_util::sync::CancellationToken;
+use tower_governor;
 
 
 #[tokio::main]
@@ -68,13 +69,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .on_request(DefaultOnRequest::new().level(Level::INFO))
         .on_response(DefaultOnResponse::new().level(Level::INFO));
 
-    let app = Router::new()
-        .route("/healthz", get(get_health))
+    // Rate limiter: 60 requests per minute per IP, applied ONLY to /api/* routes.
+    // /healthz is on a separate router so K8s probes are never rate-limited.
+    let governor_conf = Arc::new(
+        tower_governor::governor::GovernorConfigBuilder::default()
+            .const_per_second(1)
+            .const_burst_size(60)
+            .finish()
+            .expect("Failed to create governor config"),
+    );
+    let rate_limit_layer = tower_governor::GovernorLayer::new(governor_conf);
+
+    // API routes — rate-limited
+    let api_routes = Router::new()
         .route("/api/status", get(get_system_status))
         .route("/api/status/history", get(get_system_history))
         .route("/api/status/network", get(get_network_status))
         .route("/api/status/network/history", get(get_network_history))
         .route("/api/spotify", get(get_spotify))
+        .layer(rate_limit_layer);
+
+    // Health route — NOT rate-limited
+    let app = Router::new()
+        .route("/healthz", get(get_health))
+        .merge(api_routes)
         .layer(cors)
         .layer(trace_layer)
         .with_state(metrics_state);
