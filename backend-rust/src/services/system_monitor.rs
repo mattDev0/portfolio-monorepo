@@ -76,6 +76,7 @@ mod tests {
             history: Arc::new(RwLock::new(VecDeque::new())),
             network_metrics: Arc::new(RwLock::new(crate::models::NetworkMetrics::default())),
             network_history: Arc::new(RwLock::new(VecDeque::new())),
+            spotify_cache: Arc::new(RwLock::new(None)),
         };
 
         let cancel_token = CancellationToken::new();

@@ -2,7 +2,7 @@ use axum::Json;
 use reqwest::Client;
 use std::env;
 use base64::Engine;
-use crate::models::{SpotifyStatus, SpotifyTokenResponse};
+use crate::models::{SpotifyStatus, SpotifyTokenResponse, AppState};
 use crate::utils::is_local_runtime;
 
 fn spotify_offline_fallback(reason: &str) -> SpotifyStatus {
@@ -18,6 +18,26 @@ fn spotify_offline_fallback(reason: &str) -> SpotifyStatus {
     }
 }
 
+// Save the most recently observed good track so we can keep showing it
+// if Spotify later becomes unreachable.
+async fn remember(state: &AppState, status: &SpotifyStatus) {
+    *state.spotify_cache.write().await = Some(status.clone());
+}
+
+// On a runtime failure, serve the last-known track as "recently played"
+// instead of going grey/OFFLINE. Falls back to OFFLINE only on cold start.
+async fn cached_or_offline(state: &AppState, reason: &str) -> Json<SpotifyStatus> {
+    if let Some(cached) = state.spotify_cache.read().await.clone() {
+        return Json(SpotifyStatus {
+            is_playing: false,
+            is_recently_played: true,
+            progress_ms: 0,
+            ..cached
+        });
+    }
+    Json(spotify_offline_fallback(reason))
+}
+
 fn get_api_base_url() -> String {
     env::var("SPOTIFY_API_BASE_URL").unwrap_or_else(|_| "https://api.spotify.com".to_string())
 }
@@ -26,7 +46,7 @@ fn get_auth_base_url() -> String {
     env::var("SPOTIFY_AUTH_BASE_URL").unwrap_or_else(|_| "https://accounts.spotify.com".to_string())
 }
 
-async fn get_recently_played(client: &Client, access_token: &str) -> Json<SpotifyStatus> {
+async fn get_recently_played(client: &Client, access_token: &str, state: &AppState) -> Json<SpotifyStatus> {
     let url = format!("{}/v1/me/player/recently-played?limit=1", get_api_base_url());
     let recently_played_res = client
         .get(&url)
@@ -45,7 +65,7 @@ async fn get_recently_played(client: &Client, access_token: &str) -> Json<Spotif
                     let track_url = track["external_urls"]["spotify"].as_str().unwrap_or("").to_string();
                     let duration_ms = track["duration_ms"].as_u64().unwrap_or(0);
 
-                    return Json(SpotifyStatus {
+                    let status = SpotifyStatus {
                         is_playing: false,
                         is_recently_played: true,
                         title,
@@ -54,16 +74,18 @@ async fn get_recently_played(client: &Client, access_token: &str) -> Json<Spotif
                         progress_ms: 0,
                         duration_ms,
                         track_url,
-                    });
+                    };
+                    remember(state, &status).await;
+                    return Json(status);
                 }
             }
         }
     }
 
-    Json(spotify_offline_fallback("No active session"))
+    cached_or_offline(state, "No active session").await
 }
 
-pub async fn get_spotify_status() -> Json<SpotifyStatus> {
+pub async fn get_spotify_status(state: &AppState) -> Json<SpotifyStatus> {
     let spotify_credentials = (
         env::var("SPOTIFY_CLIENT_ID"),
         env::var("SPOTIFY_CLIENT_SECRET"),
@@ -123,7 +145,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
         Ok(res) => res,
         Err(e) => {
             tracing::error!(error = ?e, "Spotify token request error");
-            return Json(spotify_offline_fallback("Network Error"));
+            return cached_or_offline(state, "Network Error").await;
         }
     };
 
@@ -132,7 +154,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
         Ok(txt) => txt,
         Err(e) => {
             tracing::error!(error = ?e, "Spotify token text read error");
-            return Json(spotify_offline_fallback("Text Read Error"));
+            return cached_or_offline(state, "Text Read Error").await;
         }
     };
 
@@ -144,16 +166,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
             tracing::error!(response = %raw_response, "Spotify auth error");
             
             // Return a safe "Offline" state to React so the UI doesn't crash
-            return Json(SpotifyStatus {
-                is_playing: false,
-                is_recently_played: false,
-                title: "Auth Error".to_string(),
-                artist: "Service temporarily unavailable".to_string(),
-                album_art: "".to_string(),
-                progress_ms: 0,
-                duration_ms: 0,
-                track_url: "".to_string(),
-            });
+            return cached_or_offline(state, "Auth Error").await;
         }
     };
 
@@ -168,20 +181,20 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
         Ok(res) => res,
         Err(e) => {
             tracing::error!(error = ?e, "Spotify currently playing request error");
-            return Json(spotify_offline_fallback("API Error"));
+            return cached_or_offline(state, "API Error").await;
         }
     };
 
     // 3. Parse the data. If nothing is playing, check recently played.
     if playing_res.status() == 204 || playing_res.status() == 202 {
-        return get_recently_played(&client, &token_res.access_token).await;
+        return get_recently_played(&client, &token_res.access_token, state).await;
     }
 
     let track_data: serde_json::Value = match playing_res.json().await {
         Ok(json) => json,
         Err(e) => {
             tracing::error!(error = ?e, "Spotify currently playing JSON parse error");
-            return get_recently_played(&client, &token_res.access_token).await;
+            return get_recently_played(&client, &token_res.access_token, state).await;
         }
     };
     
@@ -195,7 +208,7 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
     let progress_ms = track_data["progress_ms"].as_u64().unwrap_or(0);
     let duration_ms = track_data["item"]["duration_ms"].as_u64().unwrap_or(0);
 
-    Json(SpotifyStatus {
+    let status = SpotifyStatus {
         is_playing,
         is_recently_played: !is_playing,
         title,
@@ -204,7 +217,9 @@ pub async fn get_spotify_status() -> Json<SpotifyStatus> {
         progress_ms,
         duration_ms,
         track_url,
-    })
+    };
+    remember(state, &status).await;
+    Json(status)
 }
 
 #[cfg(test)]
