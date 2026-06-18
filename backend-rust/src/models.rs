@@ -13,7 +13,7 @@ pub struct SystemMetrics {
     pub memory_total_mb: u64,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct SpotifyStatus {
     pub is_playing: bool,
     pub is_recently_played: bool,
@@ -64,4 +64,5 @@ pub struct AppState {
     pub history: Arc<RwLock<VecDeque<TelemetryPoint>>>,
     pub network_metrics: Arc<RwLock<NetworkMetrics>>,
     pub network_history: Arc<RwLock<VecDeque<NetworkHistoryPoint>>>,
+    pub spotify_cache: Arc<RwLock<Option<SpotifyStatus>>>,
 }
