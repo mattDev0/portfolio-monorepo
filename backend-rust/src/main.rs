@@ -39,6 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         history: Arc::new(RwLock::new(std::collections::VecDeque::new())),
         network_metrics: Arc::new(RwLock::new(NetworkMetrics::default())),
         network_history: Arc::new(RwLock::new(std::collections::VecDeque::new())),
+        spotify_cache: Arc::new(RwLock::new(None)),
     };
 
     // 2. Spawn background tasks to refresh telemetry periodically
