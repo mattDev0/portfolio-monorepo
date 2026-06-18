@@ -22,8 +22,8 @@ pub async fn get_network_history(State(state): State<AppState>) -> Json<std::col
     Json(guard.clone())
 }
 
-pub async fn get_spotify(State(_state): State<AppState>) -> Json<SpotifyStatus> {
-    spotify_client::get_spotify_status().await
+pub async fn get_spotify(State(state): State<AppState>) -> Json<SpotifyStatus> {
+    spotify_client::get_spotify_status(&state).await
 }
 
 pub async fn get_health() -> Json<serde_json::Value> {
