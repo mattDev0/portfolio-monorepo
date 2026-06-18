@@ -225,6 +225,7 @@ pub async fn get_spotify_status(state: &AppState) -> Json<SpotifyStatus> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
     use wiremock::{MockServer, Mock, ResponseTemplate};
     use wiremock::matchers::{method, path};
     use serde_json::json;
@@ -241,6 +242,16 @@ mod tests {
         }
     }
 
+    fn test_state() -> AppState {
+        AppState {
+            metrics: Arc::new(tokio::sync::RwLock::new(Default::default())),
+            history: Arc::new(tokio::sync::RwLock::new(Default::default())),
+            network_metrics: Arc::new(tokio::sync::RwLock::new(Default::default())),
+            network_history: Arc::new(tokio::sync::RwLock::new(Default::default())),
+            spotify_cache: Arc::new(tokio::sync::RwLock::new(None)),
+        }
+    }
+
     #[tokio::test]
     async fn test_get_spotify_status_missing_credentials_prod() {
         let _guard = ENV_MUTEX.lock().unwrap();
@@ -249,7 +260,8 @@ mod tests {
             env::set_var("APP_ENV", "production");
         }
 
-        let res = get_spotify_status().await;
+        let state = test_state();
+        let res = get_spotify_status(&state).await;
         assert_eq!(res.title, "Offline");
         assert_eq!(res.artist, "Spotify credentials unavailable");
     }
@@ -262,7 +274,8 @@ mod tests {
             env::set_var("APP_ENV", "local");
         }
 
-        let res = get_spotify_status().await;
+        let state = test_state();
+        let res = get_spotify_status(&state).await;
         assert_eq!(res.title, "Local Mode");
         assert_eq!(res.artist, "Spotify credentials not configured");
     }
@@ -323,7 +336,8 @@ mod tests {
             .mount(&api_server)
             .await;
 
-        let res = get_spotify_status().await;
+        let state = test_state();
+        let res = get_spotify_status(&state).await;
         assert!(res.is_playing);
         assert_eq!(res.title, "Mock Track Name");
         assert_eq!(res.artist, "Mock Artist Name");
@@ -403,7 +417,8 @@ mod tests {
             .mount(&api_server)
             .await;
 
-        let res = get_spotify_status().await;
+        let state = test_state();
+        let res = get_spotify_status(&state).await;
         assert!(!res.is_playing);
         assert!(res.is_recently_played);
         assert_eq!(res.title, "Mock Recent Track");
@@ -439,9 +454,63 @@ mod tests {
             .mount(&auth_server)
             .await;
 
-        let res = get_spotify_status().await;
-        assert_eq!(res.title, "Auth Error");
-        assert_eq!(res.artist, "Service temporarily unavailable");
+        let state = test_state();
+        let res = get_spotify_status(&state).await;
+        assert_eq!(res.title, "Offline");
+        assert_eq!(res.artist, "Auth Error");
+
+        unsafe {
+            env::remove_var("SPOTIFY_AUTH_BASE_URL");
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_spotify_status_serves_cached_track_on_error() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+        
+        let auth_server = MockServer::start().await;
+
+        unsafe {
+            env::set_var("SPOTIFY_CLIENT_ID", "mock_id");
+            env::set_var("SPOTIFY_CLIENT_SECRET", "mock_secret");
+            env::set_var("SPOTIFY_REFRESH_TOKEN", "mock_refresh");
+            env::set_var("SPOTIFY_AUTH_BASE_URL", auth_server.uri());
+            env::set_var("APP_ENV", "production");
+        }
+
+        Mock::given(method("POST"))
+            .and(path("/api/token"))
+            .respond_with(ResponseTemplate::new(500))
+            .mount(&auth_server)
+            .await;
+
+        let state = test_state();
+        
+        {
+            let mut cache = state.spotify_cache.write().await;
+            *cache = Some(SpotifyStatus {
+                is_playing: true,
+                is_recently_played: false,
+                title: "Cached Song".to_string(),
+                artist: "Cached Artist".to_string(),
+                album_art: "cached_art_url".to_string(),
+                progress_ms: 12000,
+                duration_ms: 240000,
+                track_url: "cached_track_url".to_string(),
+            });
+        }
+
+        let res = get_spotify_status(&state).await;
+        
+        assert!(!res.is_playing);
+        assert!(res.is_recently_played);
+        assert_eq!(res.title, "Cached Song");
+        assert_eq!(res.artist, "Cached Artist");
+        assert_eq!(res.album_art, "cached_art_url");
+        assert_eq!(res.progress_ms, 0);
+        assert_eq!(res.duration_ms, 240000);
+        assert_eq!(res.track_url, "cached_track_url");
 
         unsafe {
             env::remove_var("SPOTIFY_AUTH_BASE_URL");
