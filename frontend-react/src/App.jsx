@@ -125,419 +125,58 @@ function App() {
           </a>
         </div>
       </header>
-      
-      <main className="w-full max-w-5xl space-y-12">
+           <main className="w-full max-w-5xl space-y-16 md:space-y-20">
         
-        {/* Profile, Experience & Telemetry Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* --- LEFT COLUMN: About, Experience & GitHub Activity (Spans 2 of 3 columns) --- */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-            
-            {/* About the Developer */}
-            <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
-              <div>
-                <h3 className="text-xl font-bold text-white mb-4 border-b border-white/5 pb-3 tracking-wide">About the Developer</h3>
-                <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-line">
-                  {portfolioConfig.about}
-                </p>
+        {/* About the Developer */}
+        <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4 border-b border-white/5 pb-3 tracking-wide">About the Developer</h3>
+            <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-line">
+              {portfolioConfig.about}
+            </p>
 
-                {/* Highlight Badges */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  {portfolioConfig.highlights && portfolioConfig.highlights.map((hl, i) => (
-                    <div key={i} className="bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300">
-                      <div className="flex items-center space-x-2.5 mb-1.5">
-                        <span className="text-lg">{hl.icon}</span>
-                        <h4 className="text-xs font-bold text-gray-200 tracking-wide">{hl.label}</h4>
-                      </div>
-                      <p className="text-[11px] text-gray-400 leading-relaxed">{hl.detail}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-8 pt-6 border-t border-white/5">
-                 <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Education</h4>
-                 <div className="flex justify-between items-center">
-                   <span className="text-gray-200 font-semibold">{portfolioConfig.education.degree}</span>
-                   <span className="text-indigo-400 font-semibold text-sm">{portfolioConfig.education.year}</span>
-                 </div>
-                 <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
-              </div>
-            </section>
-
-            {/* Technical Skills Section */}
-            <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-              <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Technical Skills</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                {portfolioConfig.skills && Object.entries(portfolioConfig.skills).map(([category, skills]) => (
-                  <div key={category} className="space-y-3">
-                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">{category}</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {skills.map((skill, index) => (
-                        <span key={index} className="bg-indigo-500/5 border border-indigo-500/10 text-gray-300 text-xs px-2.5 py-1 rounded-lg hover:border-indigo-500/30 transition-colors duration-200">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
+            {/* Highlight Badges */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              {portfolioConfig.highlights && portfolioConfig.highlights.map((hl, i) => (
+                <div key={i} className="bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300">
+                  <div className="flex items-center space-x-2.5 mb-1.5">
+                    <span className="text-lg">{hl.icon}</span>
+                    <h4 className="text-xs font-bold text-gray-200 tracking-wide">{hl.label}</h4>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Nested Grid for Experience & GitHub Activity */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Recent Roles (Experience) */}
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-                <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Recent Roles</h3>
-                <div className="space-y-8">
-                  {portfolioConfig.experience.map((exp, index) => (
-                    <div key={index} className="relative pl-6 border-l-2 border-indigo-500/30 hover:border-indigo-400 transition-colors duration-300">
-                      <div className="absolute w-3 h-3 bg-indigo-500 rounded-full -left-[7px] top-1.5 border border-slate-900 shadow-[0_0_8px_#6366f1]"></div>
-                      <h4 className="text-gray-100 font-bold text-sm tracking-wide">{exp.role}</h4>
-                      <p className="text-indigo-400 text-xs font-medium mb-2">{exp.company}</p>
-                      <p className="text-gray-400 text-xs leading-relaxed">{exp.description}</p>
-                    </div>
-                  ))}
+                  <p className="text-[11px] text-gray-400 leading-relaxed">{hl.detail}</p>
                 </div>
-              </section>
-
-              {/* Live GitHub Activity */}
-              <GitHubActivity />
+              ))}
             </div>
-            
           </div>
-          {/* --- END LEFT COLUMN --- */}
- 
-          {/* --- RIGHT COLUMN: Telemetry Stack (Spans 1 of 3 columns) --- */}
-          <div className="lg:col-span-1 flex flex-col gap-6">
-            <h3 className="text-xl font-bold text-white mb-2 border-b border-white/5 pb-3 tracking-wide">Live Systems & Telemetry</h3>
-            
-            {/* Rust Engine */}
-            <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
-              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                <span className="flex h-3 w-3 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/40 opacity-40 delay-300"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-slate-900 shadow-[0_0_8px_#f97316]"></span>
-                </span>
-                {/* Custom Tooltip */}
-                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-orange-500/20 p-2 text-center text-[10px] text-orange-400 font-mono shadow-xl z-20">
-                  Live Axum Service
-                </div>
-              </div>
-              <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide">Rust Engine</h3>
-              <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
-              
-              {rustStatus ? (
-                <div className="font-mono text-xs space-y-4 mt-2">
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-gray-500 uppercase text-[10px]">OS</span>
-                    <span className="text-gray-200 font-medium">{rustStatus.os_info}</span>
-                  </div>
-                  
-                  {/* Real-time CPU Usage bar */}
-                  <div className="border-b border-white/5 pb-2">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
-                      <div className="flex items-center space-x-3">
-                        <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" max={100} />
-                        <span className="text-orange-400 font-semibold">
-                          {rustStatus.cpu_usage_percent !== undefined ? `${rustStatus.cpu_usage_percent.toFixed(1)}%` : "0%"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
-                        style={{ width: `${rustStatus.cpu_usage_percent || 0}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-gray-500 uppercase text-[10px]">Threads</span>
-                    <span className="text-orange-400 font-semibold">{rustStatus.cpu_core_count} Logical Cores</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500 uppercase text-[10px]">Memory</span>
-                    <div className="flex items-center space-x-3">
-                      <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" max={100} />
-                      <span className="text-amber-500 font-semibold">
-                        {rustStatus.memory_used_mb} MB / {rustStatus.memory_total_mb} MB
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
-              )}
-            </section>
- 
-            {/* Java Infrastructure */}
-            <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
-              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                <span className="flex h-3 w-3 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-                </span>
-                {/* Custom Tooltip */}
-                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
-                  Live Spring Service
-                </div>
-              </div>
-              <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide">Java Infrastructure</h3>
-              <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
-              
-              {javaStatus ? (
-                <div className="font-mono text-xs space-y-4 mt-2">
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-gray-500 uppercase text-[10px]">Version</span>
-                    <span className="text-gray-200 font-medium">{javaStatus.engine}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-gray-500 uppercase text-[10px]">Uptime</span>
-                    <span className="text-emerald-400 font-semibold">{javaStatus.uptime_hours}h {javaStatus.uptime_minutes}m</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-gray-500 uppercase text-[10px]">Active Threads</span>
-                    <span className="text-emerald-400 font-semibold">{javaStatus.active_threads} Threads</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 uppercase text-[10px]">JVM Memory</span>
-                    <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory_used_mb} MB / {javaStatus.jvm_memory_total_mb} MB</span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
-              )}
-            </section>
- 
-            {/* Network Telemetry */}
-            <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-indigo-500/10 hover:border-indigo-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-indigo-950/5">
-              <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                <span className="flex h-3 w-3 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400/40 opacity-40 delay-300"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500 shadow-[0_0_8px_#6366f1]"></span>
-                </span>
-                {/* Custom Tooltip */}
-                <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-indigo-500/20 p-2 text-center text-[10px] text-indigo-400 font-mono shadow-xl z-20">
-                  Blackbox Exporter
-                </div>
-              </div>
-              <h3 className="text-lg font-bold text-indigo-400 mb-0 tracking-wide">Network Telemetry</h3>
-              <p className="text-[10px] text-gray-500 font-medium mb-5">Synthetic latency probes via ICMP (Ping)</p>
-
-              {networkStatus ? (
-                <div className="font-mono text-xs space-y-4 mt-2">
-                  {/* Google DNS */}
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.google_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
-                      <span className="text-gray-200">{networkStatus.google_dns.name}</span>
-                      <span className="text-[9px] text-gray-500">({networkStatus.google_dns.target})</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Sparkline data={networkHistory.map(h => h.google_dns)} color="#6366f1" />
-                      <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.google_dns.latency_ms} ms</span>
-                    </div>
-                  </div>
-
-                  {/* Cloudflare DNS */}
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.cloudflare_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
-                      <span className="text-gray-200">{networkStatus.cloudflare_dns.name}</span>
-                      <span className="text-[9px] text-gray-500">({networkStatus.cloudflare_dns.target})</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Sparkline data={networkHistory.map(h => h.cloudflare_dns)} color="#6366f1" />
-                      <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.cloudflare_dns.latency_ms} ms</span>
-                    </div>
-                  </div>
-
-                  {/* Riot Games NA */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.riot_games.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
-                      <span className="text-gray-200">{networkStatus.riot_games.name}</span>
-                      <span className="text-[9px] text-gray-500">({networkStatus.riot_games.target})</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Sparkline data={networkHistory.map(h => h.riot_games)} color="#6366f1" />
-                      <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.riot_games.latency_ms} ms</span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Ping diagnostics pending...</p>
-              )}
-            </section>
-
-            {/* Live Spotify Session via Rust */}
-            <SpotifyPlayer
-              spotifyData={spotifyData}
-              progressPercent={progressPercent}
-              localProgressMs={localProgressMs}
-              formatTime={formatTime}
-            />
-            
-          </div>
-          {/* --- END RIGHT COLUMN --- */}
-          
-        </div>
-
-        {/* System Architecture & Topology Diagram Section */}
-        <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-          <div className="border-b border-white/5 pb-3 mb-6">
-            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Observability & System Design</span>
-            <h3 className="text-2xl font-extrabold text-white tracking-wide mt-1">Production System Architecture</h3>
-            <p className="text-xs text-gray-400 mt-1">Interactive layout mapping the client-to-cloud microservices network running on Azure. Hover over any node to inspect.</p>
-          </div>
-
-          {/* Topology diagram wrapper */}
-          <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-stretch">
-            
-            {/* Left/Main column: The diagram */}
-            <div className="flex-grow w-full max-w-3xl flex flex-col gap-6 justify-center">
-              
-              <div className="flex flex-col md:flex-row items-center md:items-stretch gap-4 justify-between">
-                
-                {/* 1. Client Card */}
-                <div className="flex-1 w-full flex flex-col justify-center">
-                  <TopologyNode id="client" icon="🌐" title="Client Browser" tech="React 19 + Vite" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                </div>
-
-                {/* Arrow Client -> Nginx */}
-                <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
-                  <span className="md:hidden">⬇️</span>
-                  <span className="hidden md:inline text-indigo-400/40">── HTTPS ──▶</span>
-                </div>
-
-                {/* 2. Nginx Card */}
-                <div className="flex-1 w-full flex flex-col justify-center">
-                  <TopologyNode id="nginx" icon="🛡️" title="Nginx Proxy" tech="Port 443 SSL" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                </div>
-
-                {/* Arrow Nginx -> K8s Namespace */}
-                <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
-                  <span className="md:hidden">⬇️</span>
-                  <span className="hidden md:inline text-indigo-400/40">── Proxy ──▶</span>
-                </div>
-
-                {/* 3. K3s Kubernetes Namespace (Acts as a container for internal pods) */}
-                <div 
-                  onMouseEnter={() => setHoveredTopologyNode('k8s')}
-                  onMouseLeave={() => setHoveredTopologyNode(null)}
-                  className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-blue-400 bg-blue-500/2 shadow-[0_0_15px_rgba(96,165,250,0.1)]' : 'border-white/10 bg-slate-950/10'}`}
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">K8s Namespace: portfolio</span>
-                    <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 px-1 py-0.5 rounded">☸️ K3s Cluster</span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* Pod 1: Frontend */}
-                    <TopologyNode id="frontend" icon="⚛️" title="Frontend Pod" tech="NodePort 30000" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                    {/* Pod 2: Rust API */}
-                    <TopologyNode id="rust" icon="🦀" title="Rust Pod" tech="NodePort 30080" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                    {/* Pod 3: Java API */}
-                    <TopologyNode id="java" icon="☕" title="Java Pod" tech="NodePort 30081" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Connections from K8s to external services (Horizontal flow below) */}
-              <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch">
-                
-                {/* Arrow Rust -> Spotify */}
-                <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-orange-500/30 transition-all duration-300">
-                  <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
-                    <span>Rust Gateway</span>
-                    <span className="text-orange-400 font-mono">Axum Outbound</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-gray-300">Rust API</span>
-                    <span className="text-orange-400 font-mono text-[10px]">── OAuth ──▶</span>
-                    <TopologyNode id="spotify" icon="🎵" title="Spotify API" tech="v1 Player Web Service" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                  </div>
-                </div>
-
-                {/* Arrow Java -> GitHub */}
-                <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-300">
-                  <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
-                    <span>Java Caching</span>
-                    <span className="text-emerald-400 font-mono">Spring cacheable</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-gray-300">Java API</span>
-                    <span className="text-emerald-400 font-mono text-[10px]">── REST ──▶</span>
-                    <TopologyNode id="github" icon="🐙" title="GitHub API" tech="v3 Public REST" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Right/Inspector column: The Topology Inspector */}
-            <div className="w-full lg:w-80 flex-shrink-0 bg-slate-950/40 border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
-              
-              <div>
-                <div className="flex items-center space-x-2 border-b border-white/5 pb-2 mb-3">
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                  </span>
-                  <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Topology Inspector</h4>
-                </div>
-
-                {hoveredTopologyNode ? (
-                  <div className="space-y-3.5 animate-fadeIn">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-bold text-indigo-400">{TOPOLOGY_INFO[hoveredTopologyNode].title}</span>
-                      <span className="bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-[8px] px-1.5 py-0.5 rounded font-mono uppercase tracking-widest">
-                        {TOPOLOGY_INFO[hoveredTopologyNode].badge}
-                      </span>
-                    </div>
-
-                    <div className="font-mono text-[10px] space-y-1 bg-slate-950/60 p-2 rounded-lg border border-white/5">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">ENGINE:</span>
-                        <span className="text-gray-300">{TOPOLOGY_INFO[hoveredTopologyNode].tech}</span>
-                      </div>
-                      <div className="flex justify-between mt-1">
-                        <span className="text-gray-500">PORT/PROTO:</span>
-                        <span className="text-indigo-300 font-semibold">{TOPOLOGY_INFO[hoveredTopologyNode].protocol}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-gray-400 text-xs leading-relaxed">
-                      {TOPOLOGY_INFO[hoveredTopologyNode].description}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center py-10 flex flex-col items-center justify-center space-y-3">
-                    <span className="text-2xl opacity-40 animate-bounce">🔍</span>
-                    <p className="text-gray-500 text-xs leading-relaxed font-mono">
-                      Hover over any node or container in the diagram to inspect microservice details, proxy routes, and deployment states.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 pt-3 border-t border-white/5 text-[9px] text-gray-500 font-mono flex items-center justify-between">
-                <span>DEPLOYMENT: live</span>
-                <span>VM: azure-standard-b1s</span>
-              </div>
-            </div>
-
+          <div className="mt-8 pt-6 border-t border-white/5">
+             <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Education</h4>
+             <div className="flex justify-between items-center">
+               <span className="text-gray-200 font-semibold">{portfolioConfig.education.degree}</span>
+               <span className="text-indigo-400 font-semibold text-sm">{portfolioConfig.education.year}</span>
+             </div>
+             <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
           </div>
         </section>
- 
+
+        {/* Technical Skills Section */}
+        <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+          <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Technical Skills</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {portfolioConfig.skills && Object.entries(portfolioConfig.skills).map(([category, skills]) => (
+              <div key={category} className="space-y-3">
+                <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">{category}</h4>
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill, index) => (
+                    <span key={index} className="bg-indigo-500/5 border border-indigo-500/10 text-gray-300 text-xs px-2.5 py-1 rounded-lg hover:border-indigo-500/30 transition-colors duration-200">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Featured Projects Section */}
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-3">
@@ -675,7 +314,365 @@ function App() {
             </div>
           </div>
         </section>
- 
+
+        {/* Professional Experience Section */}
+        <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+          <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Professional Experience</h3>
+          <div className="space-y-8">
+            {portfolioConfig.experience.map((exp, index) => (
+              <div key={index} className="relative pl-8 border-l-2 border-indigo-500/30 hover:border-indigo-400 transition-colors duration-300">
+                <div className="absolute w-4 h-4 bg-indigo-500 rounded-full -left-[9px] top-1 border-2 border-[#0b0f19] shadow-[0_0_8px_#6366f1]"></div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                  <h4 className="text-gray-100 font-bold text-base tracking-wide">{exp.role}</h4>
+                  <p className="text-indigo-400 text-xs sm:text-sm font-semibold">{exp.company}</p>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Live Infrastructure Dashboard */}
+        <section className="space-y-8">
+          <div className="border-b border-white/5 pb-3">
+            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Systems Observability</span>
+            <h3 className="text-2xl font-extrabold text-white tracking-wide mt-1">Live Infrastructure Dashboard</h3>
+            <p className="text-xs text-gray-400 mt-1">Real-time health telemetry and network architecture mapping my deployed systems.</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left/Spans 2 columns: Topology & GitHub Commits */}
+            <div className="lg:col-span-2 flex flex-col gap-8">
+              
+              {/* Architecture Topology */}
+              <div className="bg-slate-900/10 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+                <div className="border-b border-white/5 pb-3 mb-6">
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Deployment Topology</span>
+                  <h4 className="text-lg font-bold text-white tracking-wide mt-0.5">Microservices Architecture</h4>
+                </div>
+                
+                {/* Topology diagram wrapper */}
+                <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-stretch">
+                  
+                  {/* Left/Main column: The diagram */}
+                  <div className="flex-grow w-full max-w-3xl flex flex-col gap-6 justify-center">
+                    
+                    <div className="flex flex-col md:flex-row items-center md:items-stretch gap-4 justify-between">
+                      
+                      {/* 1. Client Card */}
+                      <div className="flex-1 w-full flex flex-col justify-center">
+                        <TopologyNode id="client" icon="🌐" title="Client Browser" tech="React 19 + Vite" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                      </div>
+
+                      {/* Arrow Client -> Nginx */}
+                      <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
+                        <span className="md:hidden">⬇️</span>
+                        <span className="hidden md:inline text-indigo-400/40">── HTTPS ──▶</span>
+                      </div>
+
+                      {/* 2. Nginx Card */}
+                      <div className="flex-1 w-full flex flex-col justify-center">
+                        <TopologyNode id="nginx" icon="🛡️" title="Nginx Proxy" tech="Port 443 SSL" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                      </div>
+
+                      {/* Arrow Nginx -> K8s Namespace */}
+                      <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
+                        <span className="md:hidden">⬇️</span>
+                        <span className="hidden md:inline text-indigo-400/40">── Proxy ──▶</span>
+                      </div>
+
+                      {/* 3. K3s Kubernetes Namespace */}
+                      <div 
+                        onMouseEnter={() => setHoveredTopologyNode('k8s')}
+                        onMouseLeave={() => setHoveredTopologyNode(null)}
+                        className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-blue-400 bg-blue-500/2 shadow-[0_0_15px_rgba(96,165,250,0.1)]' : 'border-white/10 bg-slate-950/10'}`}
+                      >
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest font-mono">K8s Namespace: portfolio</span>
+                          <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 px-1 py-0.5 rounded">☸️ K3s Cluster</span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          {/* Pod 1: Frontend */}
+                          <TopologyNode id="frontend" icon="⚛️" title="Frontend Pod" tech="NodePort 30000" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                          {/* Pod 2: Rust API */}
+                          <TopologyNode id="rust" icon="🦀" title="Rust Pod" tech="NodePort 30080" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                          {/* Pod 3: Java API */}
+                          <TopologyNode id="java" icon="☕" title="Java Pod" tech="NodePort 30081" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Connections from K8s to external services */}
+                    <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch">
+                      
+                      {/* Arrow Rust -> Spotify */}
+                      <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-orange-500/30 transition-all duration-300">
+                        <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
+                          <span>Rust Gateway</span>
+                          <span className="text-orange-400 font-mono">Axum Outbound</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-gray-300">Rust API</span>
+                          <span className="text-orange-400 font-mono text-[10px]">── OAuth ──▶</span>
+                          <TopologyNode id="spotify" icon="🎵" title="Spotify API" tech="v1 Player Web Service" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                        </div>
+                      </div>
+
+                      {/* Arrow Java -> GitHub */}
+                      <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-300">
+                        <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
+                          <span>Java Caching</span>
+                          <span className="text-emerald-400 font-mono">Spring cacheable</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-gray-300">Java API</span>
+                          <span className="text-emerald-400 font-mono text-[10px]">── REST ──▶</span>
+                          <TopologyNode id="github" icon="🐙" title="GitHub API" tech="v3 Public REST" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* Right/Inspector column: The Topology Inspector */}
+                  <div className="w-full lg:w-80 flex-shrink-0 bg-slate-950/40 border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
+                    
+                    <div>
+                      <div className="flex items-center space-x-2 border-b border-white/5 pb-2 mb-3">
+                        <span className="flex h-2 w-2 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                        </span>
+                        <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Topology Inspector</h4>
+                      </div>
+
+                      {hoveredTopologyNode ? (
+                        <div className="space-y-3.5 animate-fadeIn">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-indigo-400">{TOPOLOGY_INFO[hoveredTopologyNode].title}</span>
+                            <span className="bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-[8px] px-1.5 py-0.5 rounded font-mono uppercase tracking-widest">
+                              {TOPOLOGY_INFO[hoveredTopologyNode].badge}
+                            </span>
+                          </div>
+
+                          <div className="font-mono text-[10px] space-y-1 bg-slate-950/60 p-2 rounded-lg border border-white/5">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">ENGINE:</span>
+                              <span className="text-gray-300">{TOPOLOGY_INFO[hoveredTopologyNode].tech}</span>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-gray-500">PORT/PROTO:</span>
+                              <span className="text-indigo-300 font-semibold">{TOPOLOGY_INFO[hoveredTopologyNode].protocol}</span>
+                            </div>
+                          </div>
+
+                          <p className="text-gray-400 text-xs leading-relaxed">
+                            {TOPOLOGY_INFO[hoveredTopologyNode].description}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="text-center py-10 flex flex-col items-center justify-center space-y-3">
+                          <span className="text-2xl opacity-40 animate-bounce">🔍</span>
+                          <p className="text-gray-500 text-xs leading-relaxed font-mono">
+                            Hover over any node or container in the diagram to inspect microservice details, proxy routes, and deployment states.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-6 pt-3 border-t border-white/5 text-[9px] text-gray-500 font-mono flex items-center justify-between">
+                      <span>DEPLOYMENT: live</span>
+                      <span>VM: azure-standard-b1s</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* GitHub Activity */}
+              <GitHubActivity />
+
+            </div>
+
+            {/* Right column: Live system telemetry & Spotify */}
+            <div className="lg:col-span-1 flex flex-col gap-6 font-mono">
+              
+              {/* Rust Engine */}
+              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
+                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+                  <span className="flex h-3 w-3 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/40 opacity-40 delay-300"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-slate-900 shadow-[0_0_8px_#f97316]"></span>
+                  </span>
+                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-orange-500/20 p-2 text-center text-[10px] text-orange-400 font-mono shadow-xl z-20">
+                    Live Axum Service
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide font-sans">Rust Engine</h3>
+                <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
+                
+                {rustStatus ? (
+                  <div className="font-mono text-xs space-y-4 mt-2">
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="text-gray-500 uppercase text-[10px]">OS</span>
+                      <span className="text-gray-200 font-medium">{rustStatus.os_info}</span>
+                    </div>
+                    
+                    <div className="border-b border-white/5 pb-2">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
+                        <div className="flex items-center space-x-3">
+                          <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" max={100} />
+                          <span className="text-orange-400 font-semibold">
+                            {rustStatus.cpu_usage_percent !== undefined ? `${rustStatus.cpu_usage_percent.toFixed(1)}%` : "0%"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
+                          style={{ width: `${rustStatus.cpu_usage_percent || 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="text-gray-500 uppercase text-[10px]">Threads</span>
+                      <span className="text-orange-400 font-semibold">{rustStatus.cpu_core_count} Logical Cores</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 uppercase text-[10px]">Memory</span>
+                      <div className="flex items-center space-x-3">
+                        <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" max={100} />
+                        <span className="text-amber-500 font-semibold">
+                          {rustStatus.memory_used_mb} MB / {rustStatus.memory_total_mb} MB
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
+                )}
+              </section>
+
+              {/* Java Infrastructure */}
+              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
+                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+                  <span className="flex h-3 w-3 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                  </span>
+                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
+                    Live Spring Service
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide font-sans">Java Infrastructure</h3>
+                <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
+                
+                {javaStatus ? (
+                  <div className="font-mono text-xs space-y-4 mt-2">
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="text-gray-500 uppercase text-[10px]">Version</span>
+                      <span className="text-gray-200 font-medium">{javaStatus.engine}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="text-gray-500 uppercase text-[10px]">Uptime</span>
+                      <span className="text-emerald-400 font-semibold">{javaStatus.uptime_hours}h {javaStatus.uptime_minutes}m</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="text-gray-500 uppercase text-[10px]">Active Threads</span>
+                      <span className="text-emerald-400 font-semibold">{javaStatus.active_threads} Threads</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 uppercase text-[10px]">JVM Memory</span>
+                      <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory_used_mb} MB / {javaStatus.jvm_memory_total_mb} MB</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
+                )}
+              </section>
+
+              {/* Network Telemetry */}
+              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-indigo-500/10 hover:border-indigo-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-indigo-950/5">
+                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
+                  <span className="flex h-3 w-3 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400/40 opacity-40 delay-300"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500 shadow-[0_0_8px_#6366f1]"></span>
+                  </span>
+                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-indigo-500/20 p-2 text-center text-[10px] text-indigo-400 font-mono shadow-xl z-20">
+                    Blackbox Exporter
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-indigo-400 mb-0 tracking-wide font-sans">Network Telemetry</h3>
+                <p className="text-[10px] text-gray-500 font-medium mb-5">Synthetic latency probes via ICMP (Ping)</p>
+
+                {networkStatus ? (
+                  <div className="font-mono text-xs space-y-4 mt-2">
+                    {/* Google DNS */}
+                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                      <div className="flex items-center space-x-2">
+                        <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.google_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
+                        <span className="text-gray-200">{networkStatus.google_dns.name}</span>
+                        <span className="text-[9px] text-gray-500">({networkStatus.google_dns.target})</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Sparkline data={networkHistory.map(h => h.google_dns)} color="#6366f1" />
+                        <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.google_dns.latency_ms} ms</span>
+                      </div>
+                    </div>
+
+                    {/* Cloudflare DNS */}
+                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                      <div className="flex items-center space-x-2">
+                        <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.cloudflare_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
+                        <span className="text-gray-200">{networkStatus.cloudflare_dns.name}</span>
+                        <span className="text-[9px] text-gray-500">({networkStatus.cloudflare_dns.target})</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Sparkline data={networkHistory.map(h => h.cloudflare_dns)} color="#6366f1" />
+                        <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.cloudflare_dns.latency_ms} ms</span>
+                      </div>
+                    </div>
+
+                    {/* Riot Games NA */}
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2">
+                        <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.riot_games.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
+                        <span className="text-gray-200">{networkStatus.riot_games.name}</span>
+                        <span className="text-[9px] text-gray-500">({networkStatus.riot_games.target})</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Sparkline data={networkHistory.map(h => h.riot_games)} color="#6366f1" />
+                        <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.riot_games.latency_ms} ms</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Ping diagnostics pending...</p>
+                )}
+              </section>
+
+              {/* Live Spotify Session via Rust */}
+              <SpotifyPlayer
+                spotifyData={spotifyData}
+                progressPercent={progressPercent}
+                localProgressMs={localProgressMs}
+                formatTime={formatTime}
+              />
+              
+            </div>
+
+          </div>
+        </section>
       </main>
 
       {/* DevOps Control Center Case Study Modal */}
