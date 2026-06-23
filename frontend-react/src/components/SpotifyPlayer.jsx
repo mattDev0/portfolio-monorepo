@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function SpotifyPlayer({ spotifyData, progressPercent, localProgressMs, formatTime }) {
   const isPlaying = spotifyData?.is_playing;
   const isRecentlyPlayed = spotifyData?.is_recently_played;
