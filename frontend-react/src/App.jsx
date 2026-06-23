@@ -103,9 +103,9 @@ function App() {
     : portfolioConfig.projects;
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col items-center pt-12 pb-8 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/20 via-[#0b0f19] to-[#0b0f19]">
-      
+
       {/* Sticky Navigation Bar */}
-      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-[#0b0f19]/85 backdrop-blur-md border-b border-white/5 py-4 shadow-lg' : 'bg-transparent py-6'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-40 border-b transition-all duration-300 ${isScrolled ? 'bg-[#0b0f19]/85 backdrop-blur-md border-white/5 py-4 shadow-lg' : 'bg-transparent border-transparent py-6'}`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center justify-between">
           <a href="#" className="font-bold text-lg bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent tracking-tight">
             {portfolioConfig.name}
@@ -134,9 +134,9 @@ function App() {
         {/* Avatar / Profile Picture */}
         <div className="mb-6 relative inline-block group">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500"></div>
-          <img 
-            src="https://github.com/mattDev0.png" 
-            alt={portfolioConfig.name} 
+          <img
+            src="https://github.com/mattDev0.png"
+            alt={portfolioConfig.name}
             className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-indigo-500/40 p-1 bg-slate-900 shadow-2xl transition-transform duration-500 group-hover:scale-105"
           />
         </div>
@@ -145,7 +145,7 @@ function App() {
           {portfolioConfig.name}
         </h1>
         <h2 className="text-lg sm:text-xl font-medium text-gray-400 mb-4 tracking-wide">{portfolioConfig.title}</h2>
-        
+
         {/* Location and Remote Status */}
         <div className="flex items-center justify-center text-gray-400 mb-6 text-sm">
           <svg className="w-4 h-4 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -153,7 +153,7 @@ function App() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <span className="font-medium text-gray-300">{portfolioConfig.location}</span>
-          
+
           {portfolioConfig.openToRemote && (
             <>
               <span className="mx-3 text-gray-700">•</span>
@@ -171,10 +171,10 @@ function App() {
 
         {/* Contact Links */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-sm sm:max-w-none mx-auto w-full sm:w-auto">
-          <a 
-            href={portfolioConfig.githubUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href={portfolioConfig.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-center space-x-2 px-6 py-2.5 bg-indigo-600 border border-indigo-500 text-white hover:bg-indigo-500 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-950/20 w-full sm:w-auto"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -182,8 +182,8 @@ function App() {
             </svg>
             <span className="font-semibold text-sm">GitHub</span>
           </a>
-          <a 
-            href={`mailto:${portfolioConfig.email}`} 
+          <a
+            href={`mailto:${portfolioConfig.email}`}
             className="flex items-center justify-center space-x-2 px-6 py-2.5 bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 rounded-xl transition-all duration-300 shadow-md w-full sm:w-auto"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -193,8 +193,8 @@ function App() {
           </a>
         </div>
       </header>
-           <main className="w-full max-w-5xl space-y-16 md:space-y-20">
-        
+      <main className="w-full max-w-5xl space-y-16 md:space-y-20">
+
         {/* About the Developer */}
         <section id="about" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
           <div>
@@ -217,12 +217,12 @@ function App() {
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-white/5">
-             <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Education</h4>
-             <div className="flex justify-between items-center">
-               <span className="text-gray-200 font-semibold">{portfolioConfig.education.degree}</span>
-               <span className="text-indigo-400 font-semibold text-sm">{portfolioConfig.education.year}</span>
-             </div>
-             <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
+            <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Education</h4>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-200 font-semibold">{portfolioConfig.education.degree}</span>
+              <span className="text-indigo-400 font-semibold text-sm">{portfolioConfig.education.year}</span>
+            </div>
+            <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
           </div>
         </section>
 
@@ -249,7 +249,7 @@ function App() {
         <section id="projects" className="reveal-in space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-3">
             <h3 className="text-2xl font-extrabold text-white tracking-wide">Featured Projects</h3>
-            
+
             {/* Project Filter Controls */}
             <div className="flex flex-wrap gap-2">
               <button
@@ -292,11 +292,11 @@ function App() {
                       <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                         {devopsProject.description}
                       </p>
-                      
+
                       <div className="flex flex-wrap gap-1.5 pt-2">
                         {devopsProject.tech.map((tech, i) => (
-                          <span 
-                            key={i} 
+                          <span
+                            key={i}
                             onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
                             className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
                           >
@@ -307,16 +307,16 @@ function App() {
                     </div>
 
                     <div className="flex flex-col justify-center space-y-3 w-full md:w-64 flex-shrink-0">
-                      <button 
+                      <button
                         onClick={() => setShowDevOpsCaseStudy(true)}
                         className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5 shadow-lg shadow-indigo-950/20"
                       >
                         <span>⚙️</span>
                         <span>System Design & Demo</span>
                       </button>
-                      
-                      <a 
-                        href={devopsProject.link} 
+
+                      <a
+                        href={devopsProject.link}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-5 py-3 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-gray-300 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
@@ -357,8 +357,8 @@ function App() {
                       <div>
                         <div className="flex flex-wrap gap-1.5 mb-5">
                           {project.tech.map((tech, i) => (
-                            <span 
-                              key={i} 
+                            <span
+                              key={i}
                               onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
                               className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
                             >
@@ -366,9 +366,9 @@ function App() {
                             </span>
                           ))}
                         </div>
-                        
-                        <a 
-                          href={project.link} 
+
+                        <a
+                          href={project.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 border border-indigo-500/30 rounded-lg text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:border-indigo-500/60 inline-flex items-center transition-all duration-300 w-full justify-center"
@@ -409,25 +409,25 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             {/* Left/Spans 2 columns: Topology & GitHub Commits */}
             <div className="lg:col-span-2 flex flex-col gap-8">
-              
+
               {/* Architecture Topology */}
               <div className="bg-slate-900/10 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300">
                 <div className="border-b border-white/5 pb-3 mb-6">
                   <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Deployment Topology</span>
                   <h4 className="text-lg font-bold text-white tracking-wide mt-0.5">Microservices Architecture</h4>
                 </div>
-                
+
                 {/* Topology diagram wrapper */}
                 <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-stretch">
-                  
+
                   {/* Left/Main column: The diagram */}
                   <div className="flex-grow w-full max-w-3xl flex flex-col gap-6 justify-center">
-                    
+
                     <div className="flex flex-col md:flex-row items-center md:items-stretch gap-4 justify-between">
-                      
+
                       {/* 1. Client Card */}
                       <div className="flex-1 w-full flex flex-col justify-center">
                         <TopologyNode id="client" icon="🌐" title="Client Browser" tech="React 19 + Vite" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
@@ -451,7 +451,7 @@ function App() {
                       </div>
 
                       {/* 3. K3s Kubernetes Namespace */}
-                      <div 
+                      <div
                         onMouseEnter={() => setHoveredTopologyNode('k8s')}
                         onMouseLeave={() => setHoveredTopologyNode(null)}
                         className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-blue-400 bg-blue-500/2 shadow-[0_0_15px_rgba(96,165,250,0.1)]' : 'border-white/10 bg-slate-950/10'}`}
@@ -475,7 +475,7 @@ function App() {
 
                     {/* Connections from K8s to external services */}
                     <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch">
-                      
+
                       {/* Arrow Rust -> Spotify */}
                       <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-orange-500/30 transition-all duration-300">
                         <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
@@ -509,7 +509,7 @@ function App() {
                   {/* Right/Inspector column: The Topology Inspector */}
                   <div className="w-full lg:w-80 flex-shrink-0 bg-slate-950/40 border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
-                    
+
                     <div>
                       <div className="flex items-center space-x-2 border-b border-white/5 pb-2 mb-3">
                         <span className="flex h-2 w-2 relative">
@@ -569,7 +569,7 @@ function App() {
 
             {/* Right column: Live system telemetry & Spotify */}
             <div className="lg:col-span-1 flex flex-col gap-6 font-mono">
-              
+
               {/* Rust Engine */}
               <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
                 <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
@@ -584,14 +584,14 @@ function App() {
                 </div>
                 <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide font-sans">Rust Engine</h3>
                 <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
-                
+
                 {rustStatus ? (
                   <div className="font-mono text-xs space-y-4 mt-2">
                     <div className="flex justify-between border-b border-white/5 pb-2">
                       <span className="text-gray-500 uppercase text-[10px]">OS</span>
                       <span className="text-gray-200 font-medium">{rustStatus.os_info}</span>
                     </div>
-                    
+
                     <div className="border-b border-white/5 pb-2">
                       <div className="flex justify-between items-center mb-1.5">
                         <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
@@ -603,7 +603,7 @@ function App() {
                         </div>
                       </div>
                       <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
                           style={{ width: `${rustStatus.cpu_usage_percent || 0}%` }}
                         ></div>
@@ -643,7 +643,7 @@ function App() {
                 </div>
                 <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide font-sans">Java Infrastructure</h3>
                 <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
-                
+
                 {javaStatus ? (
                   <div className="font-mono text-xs space-y-4 mt-2">
                     <div className="flex justify-between border-b border-white/5 pb-2">
@@ -736,7 +736,7 @@ function App() {
                 localProgressMs={localProgressMs}
                 formatTime={formatTime}
               />
-              
+
             </div>
 
           </div>
@@ -774,7 +774,7 @@ function App() {
       {showDevOpsCaseStudy && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 overflow-y-auto">
           <div className="relative bg-[#0d1321] border border-white/10 rounded-2xl w-full max-w-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
-            
+
             {/* Background glowing design elements */}
             <div className="absolute top-0 left-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl -z-10"></div>
             <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-emerald-600/5 rounded-full blur-3xl -z-10"></div>
@@ -786,7 +786,7 @@ function App() {
                 <h3 className="text-2xl font-extrabold text-white mt-1">DevOps Control Center</h3>
                 <p className="text-xs text-gray-400 mt-1">A custom end-to-end telemetry and K8s orchestration dashboard.</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowDevOpsCaseStudy(false)}
                 className="text-gray-400 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
               >
@@ -798,7 +798,7 @@ function App() {
 
             {/* Content Body */}
             <div className="space-y-6">
-              
+
               {/* Overview */}
               <div>
                 <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Platform Overview</h4>
@@ -855,31 +855,31 @@ function App() {
 
             {/* Modal Footer Controls */}
             <div className="mt-8 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3 justify-end items-center">
-              <a 
-                href="https://devops.mattdev0.tech" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://devops.mattdev0.tech"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs text-center transition-colors shadow-lg shadow-indigo-900/20 cursor-pointer flex items-center justify-center space-x-1.5"
               >
                 <span>🚀</span>
                 <span>Launch Live Demo (Guest Mode)</span>
               </a>
-              <a 
-                href="https://github.com/mattDev0/devops-control-center" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://github.com/mattDev0/devops-control-center"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full sm:w-auto px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-gray-300 hover:text-white font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
               >
                 View Repository Code
               </a>
-              <button 
+              <button
                 onClick={() => setShowDevOpsCaseStudy(false)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white font-semibold rounded-xl text-xs cursor-pointer"
               >
                 Close Case Study
               </button>
             </div>
-            
+
             <p className="text-[9px] text-gray-500 text-center mt-4">
               💡 Tip: On the live dashboard, you can bypass JWT login by clicking the "Guest Login" button to explore in read-only mode.
             </p>
