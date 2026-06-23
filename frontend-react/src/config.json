@@ -6,7 +6,24 @@
   "email": "amatthew642@gmail.com",
   "githubUrl": "https://github.com/mattDev0",
   "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
-  "about": "I am a Software Developer and DevOps Engineer specializing in systems-level engineering, high-performance backends, and cloud infrastructure. With hands-on experience developing custom Android operating systems like StatixOS and helluvaOS, I bring deep expertise in Linux environments, build systems, and performance optimization. I am passionate about architecting reliable, scalable software using Rust, Java, Docker, and modern cloud platforms. By integrating DevOps practices with robust deployment workflows, I consistently drive system reliability and efficiency. My technical foundation is built on a profound curiosity for how systems operate at their core, empowering me to design comprehensive solutions spanning from networking fundamentals to distributed Infrastructure as Code.",
+  "about": "Software engineer and DevOps specialist focused on systems-level engineering, high-performance backends, and production Kubernetes infrastructure.\n\nI've shipped custom Android OS builds (StatixOS, helluvaOS), built polyglot microservices in Rust and Java, and deployed production workloads on K3s with automated CI/CD pipelines. My strongest work bridges the gap between low-level systems programming and modern cloud-native architecture.",
+  "highlights": [
+    {
+      "icon": "🔧",
+      "label": "Systems & OS",
+      "detail": "Custom AOSP ROMs, Linux kernel workflows"
+    },
+    {
+      "icon": "☁️",
+      "label": "Cloud & DevOps",
+      "detail": "K3s, Docker, GitHub Actions CI/CD, Trivy"
+    },
+    {
+      "icon": "⚡",
+      "label": "Backend",
+      "detail": "Rust (Axum), Java (Spring Boot), rate limiting, OAuth"
+    }
+  ],
   "education": {
     "degree": "BSc. Computer Science",
     "institution": "Federal University Oye-Ekiti",

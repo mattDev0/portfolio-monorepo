@@ -138,9 +138,22 @@ function App() {
             <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
               <div>
                 <h3 className="text-xl font-bold text-white mb-4 border-b border-white/5 pb-3 tracking-wide">About the Developer</h3>
-                <p className="text-gray-300 leading-relaxed text-sm">
+                <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-line">
                   {portfolioConfig.about}
                 </p>
+
+                {/* Highlight Badges */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  {portfolioConfig.highlights && portfolioConfig.highlights.map((hl, i) => (
+                    <div key={i} className="bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300">
+                      <div className="flex items-center space-x-2.5 mb-1.5">
+                        <span className="text-lg">{hl.icon}</span>
+                        <h4 className="text-xs font-bold text-gray-200 tracking-wide">{hl.label}</h4>
+                      </div>
+                      <p className="text-[11px] text-gray-400 leading-relaxed">{hl.detail}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="mt-8 pt-6 border-t border-white/5">
                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Education</h4>
