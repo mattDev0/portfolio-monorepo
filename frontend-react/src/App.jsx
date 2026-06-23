@@ -164,7 +164,26 @@ function App() {
                  <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
               </div>
             </section>
- 
+
+            {/* Technical Skills Section */}
+            <section className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+              <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Technical Skills</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {portfolioConfig.skills && Object.entries(portfolioConfig.skills).map(([category, skills]) => (
+                  <div key={category} className="space-y-3">
+                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">{category}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {skills.map((skill, index) => (
+                        <span key={index} className="bg-indigo-500/5 border border-indigo-500/10 text-gray-300 text-xs px-2.5 py-1 rounded-lg hover:border-indigo-500/30 transition-colors duration-200">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* Nested Grid for Experience & GitHub Activity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Recent Roles (Experience) */}

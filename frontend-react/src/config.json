@@ -24,6 +24,12 @@
       "detail": "Rust (Axum), Java (Spring Boot), rate limiting, OAuth"
     }
   ],
+  "skills": {
+    "Languages": ["Rust", "Java", "JavaScript", "Dart", "Go", "Python", "Bash"],
+    "Infrastructure & Cloud": ["Kubernetes (K3s)", "Docker", "Nginx", "GitHub Actions CI/CD", "Linux System Admin", "Google Cloud", "Trivy Scanning"],
+    "Frameworks & Libs": ["Axum", "Spring Boot", "React", "Flutter", "Vite", "Tokio"],
+    "Observability & Tools": ["Prometheus", "Grafana", "Git", "Webpack", "Tailwind CSS", "PostgreSQL", "WebSockets"]
+  },
   "education": {
     "degree": "BSc. Computer Science",
     "institution": "Federal University Oye-Ekiti",
