@@ -70,7 +70,7 @@ export default function SpotifyPlayer({ spotifyData, progressPercent, localProgr
         href={spotifyData.track_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5 flex flex-col justify-center cursor-pointer"
+        className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5 flex flex-col justify-center cursor-pointer"
       >
         {innerContent}
       </a>
@@ -78,7 +78,7 @@ export default function SpotifyPlayer({ spotifyData, progressPercent, localProgr
   }
 
   return (
-    <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden transition-all duration-300 flex flex-col justify-center">
+    <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden transition-all duration-300 flex flex-col justify-center">
       {innerContent}
     </section>
   );
