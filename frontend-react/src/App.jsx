@@ -61,6 +61,24 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // IntersectionObserver for scroll-reveal animations
+  useEffect(() => {
+    const revealElements = document.querySelectorAll('.reveal-in');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    revealElements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   const {
     rustStatus,
     javaStatus,
@@ -179,7 +197,7 @@ function App() {
            <main className="w-full max-w-5xl space-y-16 md:space-y-20">
         
         {/* About the Developer */}
-        <section id="about" className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
+        <section id="about" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
           <div>
             <h3 className="text-xl font-bold text-white mb-4 border-b border-white/5 pb-3 tracking-wide">About the Developer</h3>
             <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-line">
@@ -189,7 +207,7 @@ function App() {
             {/* Highlight Badges */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               {portfolioConfig.highlights && portfolioConfig.highlights.map((hl, i) => (
-                <div key={i} className="bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300">
+                <div key={i} className="hover-lift bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300">
                   <div className="flex items-center space-x-2.5 mb-1.5">
                     <span className="text-lg">{hl.icon}</span>
                     <h4 className="text-xs font-bold text-gray-200 tracking-wide">{hl.label}</h4>
@@ -210,7 +228,7 @@ function App() {
         </section>
 
         {/* Technical Skills Section */}
-        <section id="skills" className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+        <section id="skills" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
           <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Technical Skills</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {portfolioConfig.skills && Object.entries(portfolioConfig.skills).map(([category, skills]) => (
@@ -229,7 +247,7 @@ function App() {
         </section>
 
         {/* Featured Projects Section */}
-        <section id="projects" className="space-y-6">
+        <section id="projects" className="reveal-in space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-3">
             <h3 className="text-2xl font-extrabold text-white tracking-wide">Featured Projects</h3>
             
@@ -259,7 +277,7 @@ function App() {
             {filteredProjects.some(p => p.title === "DevOps Control Center") && (() => {
               const devopsProject = portfolioConfig.projects.find(p => p.title === "DevOps Control Center");
               return (
-                <div className="bg-gradient-to-br from-indigo-950/20 via-slate-900/30 to-[#0b0f19] backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-indigo-500 border-x border-b border-white/5 shadow-xl relative overflow-hidden transition-all duration-300 group hover:border-indigo-500/20">
+                <div className="hover-lift bg-gradient-to-br from-indigo-950/20 via-slate-900/30 to-[#0b0f19] backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-indigo-500 border-x border-b border-white/5 shadow-xl relative overflow-hidden transition-all duration-300 group hover:border-indigo-500/20">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-1 space-y-4">
@@ -329,7 +347,7 @@ function App() {
                   }
 
                   return (
-                    <div key={index} className={`bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border-t-2 ${accentClass} border-x border-b transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.05)]' : 'border-white/5 hover:border-indigo-500/30'}`}>
+                    <div key={index} className={`hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border-t-2 ${accentClass} border-x border-b transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.05)]' : 'border-white/5 hover:border-indigo-500/30'}`}>
                       <div>
                         <div className="flex items-center space-x-2 mb-2">
                           <span className="text-lg">{emoji}</span>
@@ -367,7 +385,7 @@ function App() {
         </section>
 
         {/* Professional Experience Section */}
-        <section id="experience" className="bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
+        <section id="experience" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
           <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Professional Experience</h3>
           <div className="space-y-8">
             {portfolioConfig.experience.map((exp, index) => (
@@ -384,7 +402,7 @@ function App() {
         </section>
 
         {/* Live Infrastructure Dashboard */}
-        <section id="infrastructure" className="space-y-8">
+        <section id="infrastructure" className="reveal-in space-y-8">
           <div className="border-b border-white/5 pb-3">
             <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Systems Observability</span>
             <h3 className="text-2xl font-extrabold text-white tracking-wide mt-1">Live Infrastructure Dashboard</h3>
@@ -554,7 +572,7 @@ function App() {
             <div className="lg:col-span-1 flex flex-col gap-6 font-mono">
               
               {/* Rust Engine */}
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
+              <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
                 <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
                   <span className="flex h-3 w-3 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -613,7 +631,7 @@ function App() {
               </section>
 
               {/* Java Infrastructure */}
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
+              <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
                 <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
                   <span className="flex h-3 w-3 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -652,7 +670,7 @@ function App() {
               </section>
 
               {/* Network Telemetry */}
-              <section className="bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-indigo-500/10 hover:border-indigo-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-indigo-950/5">
+              <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-indigo-500/10 hover:border-indigo-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-indigo-950/5">
                 <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
                   <span className="flex h-3 w-3 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
