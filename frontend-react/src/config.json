@@ -55,19 +55,19 @@
   "projects": [
     {
       "title": "Flutter & Rust Octernship",
-      "description": "Cross-platform application built with a native Flutter UI and a high-performance Rust backend core.",
+      "description": "Cross-platform application using a native Flutter UI with a Rust FFI backend core, demonstrating high-performance interop across mobile platforms.",
       "tech": ["Flutter", "Rust", "Dart"],
       "link": "https://github.com/mattDev0/flutter_rust_octernship"
     },
     {
       "title": "DevOps Control Center",
-      "description": "A centralized dashboard for infrastructure management and automation workflows.",
+      "description": "Full-stack infrastructure dashboard with live K8s pod management, WebSocket terminal sessions, and real-time telemetry — deployed on a production K3s cluster with JWT-secured access.",
       "tech": ["Rust", "React", "Java", "Spring Boot", "Grafana", "Prometheus"],
       "link": "https://github.com/mattDev0/devops-control-center"
     },
     {
       "title": "Polyglot Microservice Portfolio",
-      "description": "A full-stack monorepo bridging a hot-reloading React frontend with live Rust and Spring Boot API engines.",
+      "description": "Production monorepo serving this site — React frontend backed by live Rust (Axum) and Spring Boot APIs with automated CI/CD, Trivy scanning, and zero-downtime K8s deployments.",
       "tech": ["React", "Rust", "Spring Boot"],
       "link": "https://github.com/mattDev0/portfolio-monorepo"
     }
