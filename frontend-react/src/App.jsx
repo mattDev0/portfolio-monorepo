@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
-import { apiUrl } from './api';
 
 // Components
 import Sparkline from './components/Sparkline';
