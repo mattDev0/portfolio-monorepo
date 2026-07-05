@@ -118,7 +118,7 @@ The repository maintains rigorous automated testing standards across all microse
 ## 🔒 Security
 
 All microservices adhere to strict DevSecOps patterns and Kubernetes security best practices:
-* **NetworkPolicies Isolation:** Restricts incoming traffic per service using namespace rules (e.g. only allowing ingress from the Traefik Ingress controller in `kube-system`, or Prometheus in `devops` to scrape metrics). Egress is unrestricted for external API communications.
+* **NetworkPolicies Isolation:** Restricts traffic utilizing a strict `default-deny-all` Network Policy in the `portfolio` namespace. Incoming traffic is isolated (e.g., only allowing ingress from the Traefik Ingress controller in `kube-system`), and outbound egress is explicitly whitelisted (allowing only DNS, required HTTPS endpoints like Spotify/GitHub, and internal egress to Prometheus in the `devops` namespace).
 * **Application Rate Limiting:** Rate limiting on API routes is managed on both backends at 60 requests/minute/IP, utilizing custom request header extractors to prevent proxy IP spoofing. Critical infrastructure/liveness endpoints are structural bypasses.
 * **Trivy Vulnerability Scanning:** Every built Docker container is scanned for OS/library vulnerabilities before deployment. `CRITICAL` vulnerabilities will automatically block deployments.
 * **Kubernetes Hardening:** All pods enforce strict `securityContext` boundaries:
