@@ -3,6 +3,8 @@ import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
 import SiteHeader from './components/layout/SiteHeader';
 import HeroSection from './components/sections/HeroSection';
+import AboutSection from './components/sections/AboutSection';
+import SkillsSection from './components/sections/SkillsSection';
 
 // Components
 import Sparkline from './components/Sparkline';
@@ -109,54 +111,10 @@ function App() {
       <main id="main-content" className="w-full max-w-5xl space-y-16 md:space-y-20">
 
         {/* About the Developer */}
-        <section id="about" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
-          <div>
-            <h3 className="text-xl font-bold text-white mb-4 border-b border-white/5 pb-3 tracking-wide">About the Developer</h3>
-            <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-line">
-              {portfolioConfig.about}
-            </p>
-
-            {/* Highlight Badges */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              {portfolioConfig.highlights && portfolioConfig.highlights.map((hl, i) => (
-                <div key={i} className="hover-lift bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300">
-                  <div className="flex items-center space-x-2.5 mb-1.5">
-                    <span className="text-lg">{hl.icon}</span>
-                    <h4 className="text-xs font-bold text-gray-200 tracking-wide">{hl.label}</h4>
-                  </div>
-                  <p className="text-[11px] text-gray-400 leading-relaxed">{hl.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-8 pt-6 border-t border-white/5">
-            <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Education</h4>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-200 font-semibold">{portfolioConfig.education.degree}</span>
-              <span className="text-indigo-400 font-semibold text-sm">{portfolioConfig.education.year}</span>
-            </div>
-            <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
-          </div>
-        </section>
+        <AboutSection config={portfolioConfig} />
 
         {/* Technical Skills Section */}
-        <section id="skills" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-          <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Technical Skills</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {portfolioConfig.skills && Object.entries(portfolioConfig.skills).map(([category, skills]) => (
-              <div key={category} className="space-y-3">
-                <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">{category}</h4>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
-                    <span key={index} className="bg-indigo-500/5 border border-indigo-500/10 text-gray-300 text-xs px-2.5 py-1 rounded-lg hover:border-indigo-500/30 transition-colors duration-200">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <SkillsSection skills={portfolioConfig.skills} />
 
         {/* Featured Projects Section */}
         <section id="projects" className="reveal-in space-y-6">
