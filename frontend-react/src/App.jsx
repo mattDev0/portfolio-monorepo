@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import portfolioConfig from './config.json';
 import GitHubActivity from './GitHubActivity';
+import SiteHeader from './components/layout/SiteHeader';
 
 // Components
 import Sparkline from './components/Sparkline';
@@ -34,13 +35,11 @@ function App() {
   }, []);
 
   const [activeSection, setActiveSection] = useState('about');
-  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
 
-      const sections = ['about', 'skills', 'projects', 'experience', 'infrastructure'];
+      const sections = ['about', 'projects', 'skills', 'experience', 'infrastructure'];
       const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
@@ -103,31 +102,7 @@ function App() {
     : portfolioConfig.projects;
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col items-center pt-12 pb-8 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/20 via-[#0b0f19] to-[#0b0f19]">
-
-      {/* Sticky Navigation Bar */}
-      <nav className={`fixed top-0 left-0 right-0 z-40 border-b transition-all duration-300 ${isScrolled ? 'bg-[#0b0f19]/85 backdrop-blur-md border-white/5 py-4 shadow-lg' : 'bg-transparent border-transparent py-6'}`}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center justify-between">
-          <a href="#" className="font-bold text-lg bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent tracking-tight">
-            {portfolioConfig.name}
-          </a>
-          <div className="hidden md:flex items-center space-x-6">
-            {['about', 'skills', 'projects', 'experience', 'infrastructure'].map((sec) => (
-              <a
-                key={sec}
-                href={`#${sec}`}
-                className={`text-xs font-bold tracking-wide uppercase transition-all duration-300 hover:text-white ${activeSection === sec ? 'text-indigo-400 border-b border-indigo-400 pb-1' : 'text-gray-400 hover:scale-105'}`}
-              >
-                {sec}
-              </a>
-            ))}
-          </div>
-          {/* Subtle Mobile indicators */}
-          <div className="md:hidden flex items-center space-x-2 bg-slate-900/40 px-3 py-1 rounded-full border border-white/5 text-[10px] text-indigo-400 font-bold uppercase tracking-wider font-mono">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-ping"></span>
-            <span>{activeSection}</span>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader activeSection={activeSection} siteName={portfolioConfig.name} />
 
       {/* Header Section */}
       <header className="text-center mb-10 md:mb-12 max-w-3xl w-full">
@@ -193,7 +168,7 @@ function App() {
           </a>
         </div>
       </header>
-      <main className="w-full max-w-5xl space-y-16 md:space-y-20">
+      <main id="main-content" className="w-full max-w-5xl space-y-16 md:space-y-20">
 
         {/* About the Developer */}
         <section id="about" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
