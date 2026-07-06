@@ -5,6 +5,7 @@ import SiteHeader from './components/layout/SiteHeader';
 import HeroSection from './components/sections/HeroSection';
 import AboutSection from './components/sections/AboutSection';
 import SkillsSection from './components/sections/SkillsSection';
+import ProjectsSection from './components/sections/ProjectsSection';
 
 // Components
 import Sparkline from './components/Sparkline';
@@ -95,14 +96,7 @@ function App() {
     formatTime
   } = useSpotify(isVisible);
 
-  // Extract all unique technology tags from projects
-  const allTechTags = Array.from(
-    new Set(portfolioConfig.projects.flatMap(p => p.tech))
-  );
 
-  const filteredProjects = selectedTech
-    ? portfolioConfig.projects.filter(p => p.tech.includes(selectedTech))
-    : portfolioConfig.projects;
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col items-center pt-12 pb-8 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/20 via-[#0b0f19] to-[#0b0f19]">
       <SiteHeader activeSection={activeSection} siteName={portfolioConfig.name} />
@@ -117,142 +111,12 @@ function App() {
         <SkillsSection skills={portfolioConfig.skills} />
 
         {/* Featured Projects Section */}
-        <section id="projects" className="reveal-in space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-3">
-            <h3 className="text-2xl font-extrabold text-white tracking-wide">Featured Projects</h3>
-
-            {/* Project Filter Controls */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedTech(null)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${!selectedTech ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_8px_#6366f1]' : 'bg-slate-800/60 border-white/5 text-gray-400 hover:text-white'}`}
-              >
-                All
-              </button>
-              {allTechTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTech(tag === selectedTech ? null : tag)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${tag === selectedTech ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_8px_#6366f1]' : 'bg-slate-800/60 border-white/5 text-gray-400 hover:text-white hover:border-white/10'}`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Featured Card or Grid Layout */}
-          <div className="space-y-6">
-            {/* Find if DevOps Control Center matches the current filter */}
-            {filteredProjects.some(p => p.title === "DevOps Control Center") && (() => {
-              const devopsProject = portfolioConfig.projects.find(p => p.title === "DevOps Control Center");
-              return (
-                <div className="hover-lift bg-gradient-to-br from-indigo-950/20 via-slate-900/30 to-[#0b0f19] backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-indigo-500 border-x border-b border-white/5 shadow-xl relative overflow-hidden transition-all duration-300 group hover:border-indigo-500/20">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex-1 space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
-                          Featured Project
-                        </span>
-                        <span className="text-xl">⚙️</span>
-                      </div>
-                      <h4 className="text-xl md:text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors tracking-wide">
-                        {devopsProject.title}
-                      </h4>
-                      <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                        {devopsProject.description}
-                      </p>
-
-                      <div className="flex flex-wrap gap-1.5 pt-2">
-                        {devopsProject.tech.map((tech, i) => (
-                          <span
-                            key={i}
-                            onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
-                            className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col justify-center space-y-3 w-full md:w-64 flex-shrink-0">
-                      <button
-                        onClick={() => setShowDevOpsCaseStudy(true)}
-                        className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5 shadow-lg shadow-indigo-950/20"
-                      >
-                        <span>⚙️</span>
-                        <span>System Design & Demo</span>
-                      </button>
-
-                      <a
-                        href={devopsProject.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-5 py-3 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-gray-300 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
-                      >
-                        <span>View Repository</span>
-                        <span>→</span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Other Projects Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredProjects
-                .filter(p => p.title !== "DevOps Control Center")
-                .map((project, index) => {
-                  let accentClass = "border-t-blue-500/80";
-                  let emoji = "📁";
-                  if (project.title.includes("Flutter")) {
-                    accentClass = "border-t-orange-500/80";
-                    emoji = "📱";
-                  } else if (project.title.includes("Portfolio")) {
-                    accentClass = "border-t-emerald-500/80";
-                    emoji = "🌐";
-                  }
-
-                  return (
-                    <div key={index} className={`hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border-t-2 ${accentClass} border-x border-b transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-indigo-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.05)]' : 'border-white/5 hover:border-indigo-500/30'}`}>
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="text-lg">{emoji}</span>
-                          <h4 className="text-lg font-bold text-gray-200 group-hover:text-indigo-400 transition-colors tracking-wide">{project.title}</h4>
-                        </div>
-                        <p className="text-gray-400 text-sm leading-relaxed mb-6">{project.description}</p>
-                      </div>
-                      <div>
-                        <div className="flex flex-wrap gap-1.5 mb-5">
-                          {project.tech.map((tech, i) => (
-                            <span
-                              key={i}
-                              onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
-                              className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-
-                        <a
-                          href={project.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 border border-indigo-500/30 rounded-lg text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:border-indigo-500/60 inline-flex items-center transition-all duration-300 w-full justify-center"
-                        >
-                          View Repository <span className="ml-1">→</span>
-                        </a>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </section>
+        <ProjectsSection
+          projects={portfolioConfig.projects}
+          selectedTech={selectedTech}
+          setSelectedTech={setSelectedTech}
+          setShowDevOpsCaseStudy={setShowDevOpsCaseStudy}
+        />
 
         {/* Professional Experience Section */}
         <section id="experience" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
