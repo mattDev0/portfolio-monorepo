@@ -1,14 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { describe, it, expect } from 'vitest';
 import SpotifyPlayer from '../components/SpotifyPlayer';
 
 describe('SpotifyPlayer Component', () => {
   const mockFormatTime = (ms) => `${Math.floor(ms / 60000)}:${((ms % 60000) / 1000).toFixed(0).padStart(2, '0')}`;
 
   it('renders loading state when spotifyData is null', () => {
-    const { container } = render(<SpotifyPlayer spotifyData={null} progressPercent={0} localProgressMs={0} formatTime={mockFormatTime} />);
-    expect(container.querySelectorAll('.skeleton').length).toBe(2);
+    render(<SpotifyPlayer spotifyData={null} progressPercent={0} localProgressMs={0} formatTime={mockFormatTime} />);
+    expect(screen.getByText('Connecting to Spotify Web API...')).toBeInTheDocument();
   });
 
   it('renders track info when playing', () => {
@@ -49,7 +48,7 @@ describe('SpotifyPlayer Component', () => {
       duration_ms: 180000,
       track_url: 'http://mock.url'
     };
-    render(<SpotifyPlayer spotifyData={mockData} progressPercent={50} localProgressMs={90000} formatTime={mockFormatTime} />);
+    const { container } = render(<SpotifyPlayer spotifyData={mockData} progressPercent={50} localProgressMs={90000} formatTime={mockFormatTime} />);
     expect(screen.getByText('1:30')).toBeInTheDocument();
     expect(screen.getByText('3:00')).toBeInTheDocument();
   });
