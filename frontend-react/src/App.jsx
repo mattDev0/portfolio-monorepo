@@ -8,25 +8,22 @@ import SkillsSection from './components/sections/SkillsSection';
 import ProjectsSection from './components/sections/ProjectsSection';
 import ExperienceSection from './components/sections/ExperienceSection';
 import ContactSection from './components/sections/ContactSection';
+import TopologySection from './components/sections/TopologySection';
 
 // Components
 import Sparkline from './components/Sparkline';
 import TerminalSimulator from './components/TerminalSimulator';
-import TopologyNode from './components/TopologyNode';
 import SpotifyPlayer from './components/SpotifyPlayer';
 
 // Hooks
 import useTelemetry from './hooks/useTelemetry';
 import useSpotify from './hooks/useSpotify';
 
-// Constants
-import { TOPOLOGY_INFO } from './constants';
-
 // Telemetry and routing updated for Traefik Ingress
 function App() {
   const [selectedTech, setSelectedTech] = useState(null);
   const [showDevOpsCaseStudy, setShowDevOpsCaseStudy] = useState(false);
-  const [hoveredTopologyNode, setHoveredTopologyNode] = useState(null);
+  const [selectedTopologyNode, setSelectedTopologyNode] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
 
   // Monitor tab/window visibility state
@@ -137,153 +134,10 @@ function App() {
             <div className="lg:col-span-2 flex flex-col gap-8">
 
               {/* Architecture Topology */}
-              <div className="bg-slate-900/10 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-                <div className="border-b border-white/5 pb-3 mb-6">
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Deployment Topology</span>
-                  <h4 className="text-lg font-bold text-white tracking-wide mt-0.5">Microservices Architecture</h4>
-                </div>
-
-                {/* Topology diagram wrapper */}
-                <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-stretch">
-
-                  {/* Left/Main column: The diagram */}
-                  <div className="flex-grow w-full max-w-3xl flex flex-col gap-6 justify-center">
-
-                    <div className="flex flex-col md:flex-row items-center md:items-stretch gap-4 justify-between">
-
-                      {/* 1. Client Card */}
-                      <div className="flex-1 w-full flex flex-col justify-center">
-                        <TopologyNode id="client" icon="🌐" title="Client Browser" tech="React 19 + Vite" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                      </div>
-
-                      {/* Arrow Client -> Nginx */}
-                      <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
-                        <span className="md:hidden">⬇️</span>
-                        <span className="hidden md:inline text-indigo-400/40">── HTTPS ──▶</span>
-                      </div>
-
-                      {/* 2. Nginx Card */}
-                      <div className="flex-1 w-full flex flex-col justify-center">
-                        <TopologyNode id="nginx" icon="🛡️" title="Nginx Proxy" tech="Port 443 SSL" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                      </div>
-
-                      {/* Arrow Nginx -> K8s Namespace */}
-                      <div className="flex items-center justify-center text-gray-700 font-mono text-xs py-1 md:py-0">
-                        <span className="md:hidden">⬇️</span>
-                        <span className="hidden md:inline text-indigo-400/40">── Proxy ──▶</span>
-                      </div>
-
-                      {/* 3. K3s Kubernetes Namespace */}
-                      <div
-                        onMouseEnter={() => setHoveredTopologyNode('k8s')}
-                        onMouseLeave={() => setHoveredTopologyNode(null)}
-                        className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-blue-400 bg-blue-500/2 shadow-[0_0_15px_rgba(96,165,250,0.1)]' : 'border-white/10 bg-slate-950/10'}`}
-                      >
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest font-mono">K8s Namespace: portfolio</span>
-                          <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 px-1 py-0.5 rounded">☸️ K3s Cluster</span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2">
-                          {/* Pod 1: Frontend */}
-                          <TopologyNode id="frontend" icon="⚛️" title="Frontend Pod" tech="NodePort 30000" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                          {/* Pod 2: Rust API */}
-                          <TopologyNode id="rust" icon="🦀" title="Rust Pod" tech="NodePort 30080" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                          {/* Pod 3: Java API */}
-                          <TopologyNode id="java" icon="☕" title="Java Pod" tech="NodePort 30081" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                        </div>
-                      </div>
-
-                    </div>
-
-                    {/* Connections from K8s to external services */}
-                    <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch">
-
-                      {/* Arrow Rust -> Spotify */}
-                      <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-orange-500/30 transition-all duration-300">
-                        <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
-                          <span>Rust Gateway</span>
-                          <span className="text-orange-400 font-mono">Axum Outbound</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-gray-300">Rust API</span>
-                          <span className="text-orange-400 font-mono text-[10px]">── OAuth ──▶</span>
-                          <TopologyNode id="spotify" icon="🎵" title="Spotify API" tech="v1 Player Web Service" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                        </div>
-                      </div>
-
-                      {/* Arrow Java -> GitHub */}
-                      <div className="flex-1 bg-slate-950/20 border border-white/5 rounded-xl p-3.5 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-300">
-                        <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-wider mb-2">
-                          <span>Java Caching</span>
-                          <span className="text-emerald-400 font-mono">Spring cacheable</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-gray-300">Java API</span>
-                          <span className="text-emerald-400 font-mono text-[10px]">── REST ──▶</span>
-                          <TopologyNode id="github" icon="🐙" title="GitHub API" tech="v3 Public REST" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                        </div>
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* Right/Inspector column: The Topology Inspector */}
-                  <div className="w-full lg:w-80 flex-shrink-0 bg-slate-950/40 border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>
-
-                    <div>
-                      <div className="flex items-center space-x-2 border-b border-white/5 pb-2 mb-3">
-                        <span className="flex h-2 w-2 relative">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                        </span>
-                        <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Topology Inspector</h4>
-                      </div>
-
-                      {hoveredTopologyNode ? (
-                        <div className="space-y-3.5 animate-fadeIn">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-bold text-indigo-400">{TOPOLOGY_INFO[hoveredTopologyNode].title}</span>
-                            <span className="bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-[8px] px-1.5 py-0.5 rounded font-mono uppercase tracking-widest">
-                              {TOPOLOGY_INFO[hoveredTopologyNode].badge}
-                            </span>
-                          </div>
-
-                          <div className="font-mono text-[10px] space-y-1 bg-slate-950/60 p-2 rounded-lg border border-white/5">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">ENGINE:</span>
-                              <span className="text-gray-300">{TOPOLOGY_INFO[hoveredTopologyNode].tech}</span>
-                            </div>
-                            <div className="flex justify-between mt-1">
-                              <span className="text-gray-500">PORT/PROTO:</span>
-                              <span className="text-indigo-300 font-semibold">{TOPOLOGY_INFO[hoveredTopologyNode].protocol}</span>
-                            </div>
-                          </div>
-
-                          <p className="text-gray-400 text-xs leading-relaxed">
-                            {TOPOLOGY_INFO[hoveredTopologyNode].description}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="text-center py-10 flex flex-col items-center justify-center space-y-3">
-                          <span className="text-2xl opacity-40 animate-bounce">🔍</span>
-                          <p className="text-gray-500 text-xs leading-relaxed font-mono">
-                            Hover over any node or container in the diagram to inspect microservice details, proxy routes, and deployment states.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-6 pt-3 border-t border-white/5 text-[9px] text-gray-500 font-mono flex items-center justify-between">
-                      <span>DEPLOYMENT: live</span>
-                      <span>VM: azure-standard-b1s</span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
+              <TopologySection
+                selectedTopologyNode={selectedTopologyNode}
+                setSelectedTopologyNode={setSelectedTopologyNode}
+              />
 
               {/* GitHub Activity */}
               <GitHubActivity />
