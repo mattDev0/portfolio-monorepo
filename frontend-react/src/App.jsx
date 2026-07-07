@@ -8,9 +8,9 @@ import ProjectsSection from './components/sections/ProjectsSection';
 import ExperienceSection from './components/sections/ExperienceSection';
 import ContactSection from './components/sections/ContactSection';
 import TelemetrySection from './components/sections/TelemetrySection';
+import CaseStudyDialog from './components/CaseStudyDialog';
 
 // Components
-import TerminalSimulator from './components/TerminalSimulator';
 
 // Hooks
 import useTelemetry from './hooks/useTelemetry';
@@ -170,122 +170,11 @@ function App() {
       </footer>
 
       {/* DevOps Control Center Case Study Modal */}
-      {showDevOpsCaseStudy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 overflow-y-auto">
-          <div className="relative bg-[#0d1321] border border-white/10 rounded-2xl w-full max-w-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
-
-            {/* Background glowing design elements */}
-            <div className="absolute top-0 left-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl -z-10"></div>
-            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-emerald-600/5 rounded-full blur-3xl -z-10"></div>
-
-            {/* Header */}
-            <div className="flex justify-between items-start border-b border-white/5 pb-4 mb-6">
-              <div>
-                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Case Study & Architecture</span>
-                <h3 className="text-2xl font-extrabold text-white mt-1">DevOps Control Center</h3>
-                <p className="text-xs text-gray-400 mt-1">A custom end-to-end telemetry and K8s orchestration dashboard.</p>
-              </div>
-              <button
-                onClick={() => setShowDevOpsCaseStudy(false)}
-                className="text-gray-400 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Content Body */}
-            <div className="space-y-6">
-
-              {/* Overview */}
-              <div>
-                <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Platform Overview</h4>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  This custom dashboard unifies server monitoring, remote terminal execution, Kubernetes deployment management, and CI/CD tracking into a single view. By proxying WebSocket traffic and stream channels securely, it allows remote administration from any browser interface.
-                </p>
-              </div>
-
-              {/* Terminal Simulator Showcase */}
-              <div>
-                <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Simulated Interactive PTY Terminal</h4>
-                <p className="text-gray-400 text-[11px] mb-3 leading-relaxed">
-                  Below is a visual simulation of the live PTY console connection which streams raw shell sessions over secure WebSockets directly proxied from the Spring gateway to the Rust systems agent.
-                </p>
-                <TerminalSimulator active={showDevOpsCaseStudy} />
-              </div>
-
-              {/* System Architecture Diagram */}
-              <div>
-                <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Microservices Topology</h4>
-                <p className="text-gray-400 text-[11px] mb-4 leading-relaxed">
-                  The infrastructure operates inside the K3s namespace <code className="text-indigo-400 font-mono text-[10px] bg-indigo-950/40 px-1 py-0.5 rounded">devops</code> behind an Nginx reverse proxy.
-                </p>
-
-                {/* Architecture Visual Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch justify-center my-4 py-4 px-3 border border-white/5 bg-white/2 rounded-xl">
-                  {/* Client */}
-                  <div className="flex flex-col items-center justify-between bg-slate-950/40 p-3 rounded-lg border border-white/5 text-center shadow-md">
-                    <span className="text-xl">🌐</span>
-                    <span className="text-[10px] font-bold text-gray-200 uppercase tracking-widest mt-1">Client Dashboard</span>
-                    <span className="text-[9px] text-gray-500 mt-1">Vite + React UI Client</span>
-                  </div>
-                  {/* Spring Gateway */}
-                  <div className="flex flex-col items-center justify-between bg-emerald-950/20 p-3 rounded-lg border border-emerald-500/20 text-center shadow-md">
-                    <span className="text-xl">☕</span>
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">Spring Gateway</span>
-                    <span className="text-[9px] text-gray-400 mt-1">JWT Security Auth & WebSockets Proxy</span>
-                  </div>
-                  {/* Rust Agent */}
-                  <div className="flex flex-col items-center justify-between bg-orange-950/20 p-3 rounded-lg border border-orange-500/20 text-center shadow-md">
-                    <span className="text-xl">🦀</span>
-                    <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mt-1">Rust Agent</span>
-                    <span className="text-[9px] text-gray-400 mt-1">kube-rs Client & Shell PTY Bridge</span>
-                  </div>
-                  {/* K3s API */}
-                  <div className="flex flex-col items-center justify-between bg-blue-950/20 p-3 rounded-lg border border-blue-500/20 text-center shadow-md">
-                    <span className="text-xl">☸️</span>
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">K3s Cluster API</span>
-                    <span className="text-[9px] text-gray-400 mt-1">Pod Logs / Replicas & Status control</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer Controls */}
-            <div className="mt-8 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3 justify-end items-center">
-              <a
-                href="https://devops.mattdev0.tech"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs text-center transition-colors shadow-lg shadow-indigo-900/20 cursor-pointer flex items-center justify-center space-x-1.5"
-              >
-                <span>🚀</span>
-                <span>Launch Live Demo (Guest Mode)</span>
-              </a>
-              <a
-                href="https://github.com/mattDev0/devops-control-center"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-gray-300 hover:text-white font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
-              >
-                View Repository Code
-              </a>
-              <button
-                onClick={() => setShowDevOpsCaseStudy(false)}
-                className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white font-semibold rounded-xl text-xs cursor-pointer"
-              >
-                Close Case Study
-              </button>
-            </div>
-
-            <p className="text-[9px] text-gray-500 text-center mt-4">
-              💡 Tip: On the live dashboard, you can bypass JWT login by clicking the "Guest Login" button to explore in read-only mode.
-            </p>
-
-          </div>
-        </div>
-      )}
+      <CaseStudyDialog
+        isOpen={showDevOpsCaseStudy}
+        onClose={() => setShowDevOpsCaseStudy(false)}
+        config={portfolioConfig}
+      />
     </div>
   );
 }
