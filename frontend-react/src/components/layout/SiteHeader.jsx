@@ -7,7 +7,8 @@ const SECTIONS = [
   { id: 'projects', label: 'Projects' },
   { id: 'skills', label: 'Skills' },
   { id: 'experience', label: 'Experience' },
-  { id: 'infrastructure', label: 'Infrastructure' }
+  { id: 'infrastructure', label: 'Infrastructure' },
+  { id: 'contact', label: 'Contact' }
 ];
 
 export default function SiteHeader({ activeSection, siteName }) {

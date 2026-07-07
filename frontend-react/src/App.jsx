@@ -6,6 +6,8 @@ import HeroSection from './components/sections/HeroSection';
 import AboutSection from './components/sections/AboutSection';
 import SkillsSection from './components/sections/SkillsSection';
 import ProjectsSection from './components/sections/ProjectsSection';
+import ExperienceSection from './components/sections/ExperienceSection';
+import ContactSection from './components/sections/ContactSection';
 
 // Components
 import Sparkline from './components/Sparkline';
@@ -43,7 +45,7 @@ function App() {
   useEffect(() => {
     const handleScroll = () => {
 
-      const sections = ['about', 'projects', 'skills', 'experience', 'infrastructure'];
+      const sections = ['about', 'projects', 'skills', 'experience', 'infrastructure', 'contact'];
       const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
@@ -119,21 +121,7 @@ function App() {
         />
 
         {/* Professional Experience Section */}
-        <section id="experience" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-          <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Professional Experience</h3>
-          <div className="space-y-8">
-            {portfolioConfig.experience.map((exp, index) => (
-              <div key={index} className="relative pl-8 border-l-2 border-indigo-500/30 hover:border-indigo-400 transition-colors duration-300">
-                <div className="absolute w-4 h-4 bg-indigo-500 rounded-full -left-[9px] top-1 border-2 border-[#0b0f19] shadow-[0_0_8px_#6366f1]"></div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                  <h4 className="text-gray-100 font-bold text-base tracking-wide">{exp.role}</h4>
-                  <p className="text-indigo-400 text-xs sm:text-sm font-semibold">{exp.company}</p>
-                </div>
-                <p className="text-gray-400 text-sm leading-relaxed">{exp.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <ExperienceSection experience={portfolioConfig.experience} />
 
         {/* Live Infrastructure Dashboard */}
         <section id="infrastructure" className="reveal-in space-y-8">
@@ -476,6 +464,9 @@ function App() {
 
           </div>
         </section>
+
+        {/* Contact Section */}
+        <ContactSection config={portfolioConfig} />
       </main>
 
       {/* Footer Section */}
