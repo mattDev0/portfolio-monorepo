@@ -1,8 +1,8 @@
+/* global global */
 import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import GitHubActivity from '../GitHubActivity';
-import { apiUrl } from '../api';
-
 // Mock the api module
 vi.mock('../api', () => ({
   apiUrl: vi.fn((service, path) => `http://mock-java-api${path}`)

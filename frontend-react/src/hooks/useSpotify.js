@@ -10,8 +10,14 @@ export default function useSpotify(isVisible) {
     if (!isVisible) return;
     const fetchSpotify = () => {
       fetch(apiUrl('rust', '/api/spotify'))
-        .then(response => response.json())
-        .then(data => setSpotifyData(data))
+        .then(response => {
+          if (!response.ok) throw new Error('Not ok');
+          return response.json();
+        })
+        .then(data => {
+          setSpotifyData(data);
+          setLocalProgressMs(data?.progress_ms || 0);
+        })
         .catch(error => console.error("Error fetching Spotify API:", error));
     };
 
@@ -19,13 +25,6 @@ export default function useSpotify(isVisible) {
     const interval = setInterval(fetchSpotify, 10000);
     return () => clearInterval(interval);
   }, [isVisible]);
-
-  // Sync local progress when new data is fetched
-  useEffect(() => {
-    if (spotifyData) {
-      setLocalProgressMs(spotifyData.progress_ms || 0);
-    }
-  }, [spotifyData]);
 
   // Tick the progress bar locally every second if a song is playing (only when tab is visible)
   useEffect(() => {
@@ -50,7 +49,7 @@ export default function useSpotify(isVisible) {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const progressPercent = spotifyData?.duration_ms
+  const progressPercent = spotifyData?.duration_ms > 0
     ? (localProgressMs / spotifyData.duration_ms) * 100
     : 0;
 
