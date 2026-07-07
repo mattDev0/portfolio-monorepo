@@ -1,49 +1,56 @@
-import React from 'react';
+import { Monitor, Shield, Box, Code, Cpu, Coffee, Music } from 'lucide-react';
 
-export default function TopologyNode({ id, icon, title, tech, hoveredTopologyNode, setHoveredTopologyNode }) {
-  const isHovered = hoveredTopologyNode === id;
-  
-  let accentBorder = "border-white/5";
-  let accentBg = "bg-slate-950/20 hover:border-indigo-500/20";
-  let accentText = "text-gray-300";
-  
-  if (isHovered) {
-    if (id === 'rust') {
-      accentBorder = "border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.15)] animate-pulse";
-      accentBg = "bg-orange-500/5";
-      accentText = "text-orange-400";
-    } else if (id === 'java') {
-      accentBorder = "border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.15)] animate-pulse";
-      accentBg = "bg-emerald-500/5";
-      accentText = "text-emerald-400";
-    } else if (id === 'frontend' || id === 'client') {
-      accentBorder = "border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.15)] animate-pulse";
-      accentBg = "bg-blue-500/5";
-      accentText = "text-blue-400";
-    } else if (id === 'nginx') {
-      accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)] animate-pulse";
-      accentBg = "bg-indigo-500/5";
-      accentText = "text-indigo-400";
-    } else if (id === 'k8s') {
-      accentBorder = "border-blue-400/50 shadow-[0_0_12px_rgba(96,165,250,0.2)]";
-      accentBg = "bg-blue-400/5";
-      accentText = "text-blue-400";
-    } else {
-      accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)]";
-      accentBg = "bg-indigo-500/5";
-      accentText = "text-indigo-400";
-    }
+const GithubIcon = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+  </svg>
+);
+
+const getIcon = (id, className) => {
+  switch (id) {
+    case 'client':
+      return <Monitor className={className} />;
+    case 'nginx':
+      return <Shield className={className} />;
+    case 'k8s':
+      return <Box className={className} />;
+    case 'frontend':
+      return <Code className={className} />;
+    case 'rust':
+      return <Cpu className={className} />;
+    case 'java':
+      return <Coffee className={className} />;
+    case 'spotify':
+      return <Music className={className} />;
+    case 'github':
+      return <GithubIcon className={className} />;
+    default:
+      return null;
   }
+};
+
+export default function TopologyNode({ id, title, tech, isSelected, onClick }) {
+  const iconClass = `w-5 h-5 mb-1.5 transition-colors ${
+    isSelected ? 'text-[var(--accent-primary)]' : 'text-[var(--fg-muted)]'
+  }`;
 
   return (
-    <div
-      onMouseEnter={() => setHoveredTopologyNode(id)}
-      onMouseLeave={() => setHoveredTopologyNode(null)}
-      className={`p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-help select-none ${accentBorder} ${accentBg} ${isHovered ? 'scale-[1.02]' : ''}`}
+    <button
+      onClick={onClick}
+      aria-pressed={isSelected}
+      className={`p-3 rounded-[var(--radius-lg)] border flex flex-col items-center justify-center text-center transition-all duration-150 cursor-pointer focus-visible:outline-none w-full ${
+        isSelected
+          ? 'bg-[var(--bg-elevated)] border-[var(--accent-primary)]'
+          : 'bg-[var(--bg-surface)] border-[var(--border-default)] hover:border-[var(--fg-subtle)]'
+      }`}
     >
-      <span className="text-lg md:text-xl mb-0.5">{icon}</span>
-      <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${accentText}`}>{title}</span>
-      <span className="text-[8px] md:text-[9px] text-gray-500 font-mono mt-0.5">{tech}</span>
-    </div>
+      {getIcon(id, iconClass)}
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--fg-default)]">
+        {title}
+      </span>
+      <span className="text-[9px] text-[var(--fg-subtle)] font-mono mt-0.5">
+        {tech}
+      </span>
+    </button>
   );
 }
