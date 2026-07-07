@@ -17,9 +17,9 @@ describe('GitHubActivity Component', () => {
     // Keep fetch unresolved to test loading state
     global.fetch = vi.fn(() => new Promise(() => {}));
     const { container } = render(<GitHubActivity />);
-    expect(screen.getByText('Recent GitHub Commits (Java Infra)')).toBeInTheDocument();
-    // Check for skeleton divs (they have animate-pulse)
-    expect(container.querySelectorAll('.animate-pulse.space-y-4').length).toBe(1);
+    expect(screen.getByText('Recent GitHub Activity')).toBeInTheDocument();
+    // Check for skeleton divs
+    expect(container.querySelectorAll('.skeleton').length).toBe(3);
   });
 
   it('renders commits after fetch', async () => {
@@ -46,7 +46,7 @@ describe('GitHubActivity Component', () => {
     render(<GitHubActivity />);
 
     await waitFor(() => {
-      expect(screen.getByText('Activity feed temporarily unavailable.')).toBeInTheDocument();
+      expect(screen.getByText('Unable to connect. Retry.')).toBeInTheDocument();
     });
   });
 });

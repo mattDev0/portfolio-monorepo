@@ -33,19 +33,19 @@ describe('useTelemetry', () => {
     vi.useFakeTimers();
     global.fetch = vi.fn((url) => {
       if (url.includes('/api/status/history')) {
-        return Promise.resolve({ json: () => Promise.resolve(mockRustHistory) });
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockRustHistory) });
       }
       if (url.includes('/api/status/network/history')) {
-        return Promise.resolve({ json: () => Promise.resolve(mockNetworkHistory) });
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockNetworkHistory) });
       }
       if (url.includes('/api/status/network')) {
-        return Promise.resolve({ json: () => Promise.resolve(mockNetworkStatus) });
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockNetworkStatus) });
       }
       if (url.includes('/api/status')) {
-        return Promise.resolve({ json: () => Promise.resolve(mockRustStatus) });
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockRustStatus) });
       }
       if (url.includes('/api/infrastructure/metrics')) {
-        return Promise.resolve({ json: () => Promise.resolve(mockJavaStatus) });
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockJavaStatus) });
       }
       return Promise.reject(new Error('Unknown URL: ' + url));
     });

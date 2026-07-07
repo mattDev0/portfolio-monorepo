@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import portfolioConfig from './config.json';
-import GitHubActivity from './GitHubActivity';
 import SiteHeader from './components/layout/SiteHeader';
 import HeroSection from './components/sections/HeroSection';
 import AboutSection from './components/sections/AboutSection';
@@ -8,12 +7,10 @@ import SkillsSection from './components/sections/SkillsSection';
 import ProjectsSection from './components/sections/ProjectsSection';
 import ExperienceSection from './components/sections/ExperienceSection';
 import ContactSection from './components/sections/ContactSection';
-import TopologySection from './components/sections/TopologySection';
+import TelemetrySection from './components/sections/TelemetrySection';
 
 // Components
-import Sparkline from './components/Sparkline';
 import TerminalSimulator from './components/TerminalSimulator';
-import SpotifyPlayer from './components/SpotifyPlayer';
 
 // Hooks
 import useTelemetry from './hooks/useTelemetry';
@@ -82,9 +79,12 @@ function App() {
 
   const {
     rustStatus,
+    rustError,
     javaStatus,
+    javaError,
     telemetryHistory,
     networkStatus,
+    networkError,
     networkHistory
   } = useTelemetry(isVisible);
 
@@ -121,203 +121,22 @@ function App() {
         <ExperienceSection experience={portfolioConfig.experience} />
 
         {/* Live Infrastructure Dashboard */}
-        <section id="infrastructure" className="reveal-in space-y-8">
-          <div className="border-b border-white/5 pb-3">
-            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Systems Observability</span>
-            <h3 className="text-2xl font-extrabold text-white tracking-wide mt-1">Live Infrastructure Dashboard</h3>
-            <p className="text-xs text-gray-400 mt-1">Real-time health telemetry and network architecture mapping my deployed systems.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            {/* Left/Spans 2 columns: Topology & GitHub Commits */}
-            <div className="lg:col-span-2 flex flex-col gap-8">
-
-              {/* Architecture Topology */}
-              <TopologySection
-                selectedTopologyNode={selectedTopologyNode}
-                setSelectedTopologyNode={setSelectedTopologyNode}
-              />
-
-              {/* GitHub Activity */}
-              <GitHubActivity />
-
-            </div>
-
-            {/* Right column: Live system telemetry & Spotify */}
-            <div className="lg:col-span-1 flex flex-col gap-6 font-mono">
-
-              {/* Rust Engine */}
-              <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-orange-500/10 hover:border-orange-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-orange-950/5">
-                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                  <span className="flex h-3 w-3 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/40 opacity-40 delay-300"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-slate-900 shadow-[0_0_8px_#f97316]"></span>
-                  </span>
-                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-orange-500/20 p-2 text-center text-[10px] text-orange-400 font-mono shadow-xl z-20">
-                    Live Axum Service
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-orange-400 mb-0 tracking-wide font-sans">Rust Engine</h3>
-                <p className="text-[10px] text-gray-500 font-medium mb-5">Low-level OS telemetry & Spotify API gateway</p>
-
-                {rustStatus ? (
-                  <div className="font-mono text-xs space-y-4 mt-2">
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">OS</span>
-                      <span className="text-gray-200 font-medium">{rustStatus.os_info}</span>
-                    </div>
-
-                    <div className="border-b border-white/5 pb-2">
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-gray-500 uppercase text-[10px]">CPU Utilization</span>
-                        <div className="flex items-center space-x-3">
-                          <Sparkline data={telemetryHistory.map(h => h.cpu)} color="#f97316" max={100} />
-                          <span className="text-orange-400 font-semibold">
-                            {rustStatus.cpu_usage_percent !== undefined ? `${rustStatus.cpu_usage_percent.toFixed(1)}%` : "0%"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-1000 ease-out shadow-[0_0_8px_#f97316]"
-                          style={{ width: `${rustStatus.cpu_usage_percent || 0}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Threads</span>
-                      <span className="text-orange-400 font-semibold">{rustStatus.cpu_core_count} Logical Cores</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 uppercase text-[10px]">Memory</span>
-                      <div className="flex items-center space-x-3">
-                        <Sparkline data={telemetryHistory.map(h => h.memory)} color="#f59e0b" max={100} />
-                        <span className="text-amber-500 font-semibold">
-                          {rustStatus.memory_used_mb} MB / {rustStatus.memory_total_mb} MB
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
-                )}
-              </section>
-
-              {/* Java Infrastructure */}
-              <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-emerald-500/10 hover:border-emerald-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-emerald-950/5">
-                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                  <span className="flex h-3 w-3 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/40 opacity-40 delay-300"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-                  </span>
-                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-emerald-500/20 p-2 text-center text-[10px] text-emerald-400 font-mono shadow-xl z-20">
-                    Live Spring Service
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-emerald-400 mb-0 tracking-wide font-sans">Java Infrastructure</h3>
-                <p className="text-[10px] text-gray-500 font-medium mb-5">Spring Cache engine driving GitHub API events</p>
-
-                {javaStatus ? (
-                  <div className="font-mono text-xs space-y-4 mt-2">
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Version</span>
-                      <span className="text-gray-200 font-medium">{javaStatus.engine}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Uptime</span>
-                      <span className="text-emerald-400 font-semibold">{javaStatus.uptime_hours}h {javaStatus.uptime_minutes}m</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/5 pb-2">
-                      <span className="text-gray-500 uppercase text-[10px]">Active Threads</span>
-                      <span className="text-emerald-400 font-semibold">{javaStatus.active_threads} Threads</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 uppercase text-[10px]">JVM Memory</span>
-                      <span className="text-emerald-500 font-semibold">{javaStatus.jvm_memory_used_mb} MB / {javaStatus.jvm_memory_total_mb} MB</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Handshake pending...</p>
-                )}
-              </section>
-
-              {/* Network Telemetry */}
-              <section className="hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-indigo-500/10 hover:border-indigo-500/30 relative overflow-hidden transition-all duration-300 group hover:shadow-lg hover:shadow-indigo-950/5">
-                <div className="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                  <span className="flex h-3 w-3 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400/40 opacity-40 delay-300"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500 shadow-[0_0_8px_#6366f1]"></span>
-                  </span>
-                  <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-slate-950/95 border border-indigo-500/20 p-2 text-center text-[10px] text-indigo-400 font-mono shadow-xl z-20">
-                    Blackbox Exporter
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-indigo-400 mb-0 tracking-wide font-sans">Network Telemetry</h3>
-                <p className="text-[10px] text-gray-500 font-medium mb-5">Synthetic latency probes via ICMP (Ping)</p>
-
-                {networkStatus ? (
-                  <div className="font-mono text-xs space-y-4 mt-2">
-                    {/* Google DNS */}
-                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                      <div className="flex items-center space-x-2">
-                        <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.google_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
-                        <span className="text-gray-200">{networkStatus.google_dns.name}</span>
-                        <span className="text-[9px] text-gray-500">({networkStatus.google_dns.target})</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Sparkline data={networkHistory.map(h => h.google_dns)} color="#6366f1" />
-                        <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.google_dns.latency_ms} ms</span>
-                      </div>
-                    </div>
-
-                    {/* Cloudflare DNS */}
-                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                      <div className="flex items-center space-x-2">
-                        <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.cloudflare_dns.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
-                        <span className="text-gray-200">{networkStatus.cloudflare_dns.name}</span>
-                        <span className="text-[9px] text-gray-500">({networkStatus.cloudflare_dns.target})</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Sparkline data={networkHistory.map(h => h.cloudflare_dns)} color="#6366f1" />
-                        <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.cloudflare_dns.latency_ms} ms</span>
-                      </div>
-                    </div>
-
-                    {/* Riot Games NA */}
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <span className={`h-1.5 w-1.5 rounded-full ${networkStatus.riot_games.status === 'online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-rose-500 animate-pulse'}`}></span>
-                        <span className="text-gray-200">{networkStatus.riot_games.name}</span>
-                        <span className="text-[9px] text-gray-500">({networkStatus.riot_games.target})</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Sparkline data={networkHistory.map(h => h.riot_games)} color="#6366f1" />
-                        <span className="text-indigo-400 font-semibold w-14 text-right">{networkStatus.riot_games.latency_ms} ms</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 animate-pulse font-mono text-xs mt-2">Ping diagnostics pending...</p>
-                )}
-              </section>
-
-              {/* Live Spotify Session via Rust */}
-              <SpotifyPlayer
-                spotifyData={spotifyData}
-                progressPercent={progressPercent}
-                localProgressMs={localProgressMs}
-                formatTime={formatTime}
-              />
-
-            </div>
-
-          </div>
-        </section>
+        <TelemetrySection
+          selectedTopologyNode={selectedTopologyNode}
+          setSelectedTopologyNode={setSelectedTopologyNode}
+          rustStatus={rustStatus}
+          rustError={rustError}
+          javaStatus={javaStatus}
+          javaError={javaError}
+          networkStatus={networkStatus}
+          networkError={networkError}
+          telemetryHistory={telemetryHistory}
+          networkHistory={networkHistory}
+          spotifyData={spotifyData}
+          progressPercent={progressPercent}
+          localProgressMs={localProgressMs}
+          formatTime={formatTime}
+        />
 
         {/* Contact Section */}
         <ContactSection config={portfolioConfig} />

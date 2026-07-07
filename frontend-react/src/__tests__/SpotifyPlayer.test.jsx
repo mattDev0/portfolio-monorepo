@@ -6,8 +6,8 @@ describe('SpotifyPlayer Component', () => {
   const mockFormatTime = (ms) => `${Math.floor(ms / 60000)}:${((ms % 60000) / 1000).toFixed(0).padStart(2, '0')}`;
 
   it('renders loading state when spotifyData is null', () => {
-    render(<SpotifyPlayer spotifyData={null} progressPercent={0} localProgressMs={0} formatTime={mockFormatTime} />);
-    expect(screen.getByText('Connecting to Spotify Web API...')).toBeInTheDocument();
+    const { container } = render(<SpotifyPlayer spotifyData={null} progressPercent={0} localProgressMs={0} formatTime={mockFormatTime} />);
+    expect(container.querySelectorAll('.skeleton').length).toBe(2);
   });
 
   it('renders track info when playing', () => {
