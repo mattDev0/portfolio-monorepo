@@ -4,48 +4,28 @@ A high-performance, microservice-backed personal portfolio demonstrating full-st
 
 **🌐 Live Production Site:** [https://mattdev0.tech](https://mattdev0.tech)
 
-![Live Status](https://img.shields.io/badge/Status-Live_on_Azure-success)
+![Live Status](https://img.shields.io/badge/Status-Live_on_GCP-success)
 ![Frontend](https://img.shields.io/badge/Frontend-React_%2B_Vite-blue)
 ![Backend](https://img.shields.io/badge/Backends-Java_Spring_%7C_Rust-orange)
 ![Security](https://img.shields.io/badge/Security-Trivy_Scanned-brightgreen)
-![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions_%2B_Kustomize-blueviolet)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions_%2B_Cloud_Run-blueviolet)
 
 ---
 
 ## 🏗️ System Architecture
 
-This monorepo houses three distinct microservices operating behind an Ingress controller (Traefik), orchestrated via Kubernetes (K3s) and automatically deployed via GitHub Actions.
+This monorepo houses three distinct microservices deployed as serverless containers on **Google Cloud Run**, automatically scaled to zero when idle, and deployed via GitHub Actions.
 
 ```mermaid
 graph TD
-    Client[Client Browser] -->|HTTPS 443| Nginx[Host Nginx Reverse Proxy]
-    Nginx -->|Proxy to Ingress Port| Traefik[Traefik Ingress Controller]
+    Client[Client Browser] -->|HTTPS 443| GFE[Google Frontend Load Balancer]
+    GFE -->|Host: mattdev0.tech| FE[portfolio-frontend: Cloud Run]
     
-    subgraph "Namespace: portfolio"
-        Traefik -->|Path /| FE[frontend Service: ClusterIP]
-        Traefik -->|Path /api/status | Rust[rust-api Service: ClusterIP]
-        Traefik -->|Path /api/spotify| Rust
-        Traefik -->|Path /api/github| Java[java-api Service: ClusterIP]
-        Traefik -->|Path /api/infrastructure| Java
+    Client -->|Direct API Call| Rust[portfolio-rust-api: Cloud Run]
+    Client -->|Direct API Call| Java[portfolio-java-api: Cloud Run]
 
-        FE --> FE_Pod[frontend Pod]
-        Rust --> Rust_Pod[backend-rust Pod]
-        Java --> Java_Pod[backend-java Pod]
-        K8sBlackbox[Service: blackbox-exporter] --> Blackbox[blackbox-exporter Pod]
-    end
-
-    subgraph "Namespace: devops"
-        Prometheus[prometheus Pod]
-    end
-
-    Rust_Pod -->|Spotify API| Spotify[Spotify Web Services]
-    Java_Pod -->|GitHub API| GitHub[GitHub REST API]
-    Rust_Pod -->|Queries Network Latency| Prometheus
-    Prometheus -->|Scrapes ICMP Probes| K8sBlackbox
-    Blackbox -->|Pings ICMP| Internet[External Internet: Google / Cloudflare / Riot Games]
-
-    classDef portfolio fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
-    class FE_Pod,Rust_Pod,Java_Pod,Blackbox portfolio;
+    Rust -->|Spotify API| Spotify[Spotify Web Services]
+    Java -->|GitHub API| GitHub[GitHub REST API]
 ```
 
 ### 1. Frontend Gateway (React / Vite)
@@ -76,8 +56,8 @@ Provides low-level system telemetry and external connectivity metrics.
 portfolio-monorepo/
 ├── .github/
 │   └── workflows/
-│       ├── deploy.yml              # Production CD with Kustomize, Trivy, & Rollback automation
-│       └── test.yml                # PR CI Validation Gate (tests, kubeconform, linting)
+│       ├── deploy-gcp.yml          # Production CD to Google Cloud Run (OIDC Auth)
+│       └── test.yml                # PR CI Validation Gate (Frontend, Java, & Rust tests)
 │
 ├── infrastructure/k8s/             # Kubernetes Manifests ☸️
 │   ├── kustomization.yaml          # Declarative Kustomize Base
@@ -151,34 +131,27 @@ Production monitoring is embedded deeply into the application stack:
 
 ## 🚀 CI/CD Modernization
 
-This project utilizes an advanced, Trunk-Based CI/CD workflow executed via GitHub Actions.
+This project utilizes an advanced, Trunk-Based CI/CD workflow executed via GitHub Actions using Workload Identity Federation (OIDC) to securely authenticate with GCP.
 
 ```mermaid
 sequenceDiagram
     actor Developer
-    participant GitHub as GitHub
-    participant TestGate as CI Pipeline (test.yml)
-    participant DeployGate as CD Pipeline (deploy.yml)
-    participant GHCR as GHCR
-    participant K3s as Azure K3s Cluster
+    participant GitHub as GitHub Actions
+    participant GCP as Google Cloud IAM
+    participant GAR as Artifact Registry
+    participant CR as Cloud Run
 
-    Developer->>GitHub: Open PR / Push / Manual Trigger
-    GitHub->>TestGate: Trigger Testing & Kubeconform
-    TestGate-->>GitHub: Pass
-    
-    GitHub->>DeployGate: Trigger Deployment
-    DeployGate->>DeployGate: Filter paths (skip unchanged using Git SHAs)
-    DeployGate->>GHCR: Build & Push Docker Images (tagged with component-SHA)
-    DeployGate->>DeployGate: Trivy Scan Images
-    DeployGate->>K3s: SSH & Apply Kustomize (Zero-downtime)
-    K3s-->>DeployGate: Rollout Status (Rollback on failure)
+    Developer->>GitHub: Git Push to main
+    GitHub->>GCP: Authenticate via OIDC (Workload Identity)
+    GCP-->>GitHub: Temporary access token
+    GitHub->>GAR: Build & Push Docker Images
+    GitHub->>CR: Deploy new container revisions (Zero-downtime)
 ```
 
 ### Deployment Flow Features
-* **Conditional Builds (`dorny/paths-filter`):** The pipeline intelligently skips building/pushing Docker images if the respective microservice source code has not changed, utilizing component-specific Git SHAs.
+* **OIDC Authentication**: Zero long-lived passwords or keys. The pipeline authenticates by exchanging a short-lived GitHub OpenID Connect token for a Google Cloud service account credential.
 * **Manual Trigger:** Supported via `workflow_dispatch` for troubleshooting and forced redeployments.
-* **Zero-Downtime Rollouts:** Services update dynamically via Kustomize image patching.
-* **Automated Rollbacks:** If a Kubernetes rollout stalls for more than 300 seconds, the pipeline automatically triggers a `kubectl rollout undo` to recover the previous stable state.
+* **Zero-Downtime Rollouts**: Cloud Run performs native rolling deployments, spinning up new container revisions and routing traffic only when they pass health checks.
 
 ---
 
