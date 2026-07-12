@@ -56,12 +56,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         });
 
-    let allowed_origin = allowed_origin_str
-        .parse::<axum::http::HeaderValue>()
-        .expect("Invalid CORS_ALLOWED_ORIGIN");
+    let allowed_origins: Vec<axum::http::HeaderValue> = allowed_origin_str
+        .split(',')
+        .map(|s| s.trim().parse().expect("Invalid CORS origin"))
+        .collect();
 
     let cors = CorsLayer::new()
-        .allow_origin(allowed_origin)
+        .allow_origin(allowed_origins)
         .allow_methods(Any)
         .allow_headers(Any);
 
