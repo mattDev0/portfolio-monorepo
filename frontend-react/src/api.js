@@ -25,8 +25,8 @@ const localApiBaseUrls = {
 };
 
 const productionApiBaseUrls = {
-  rust: productionApiBaseUrl,
-  java: productionApiBaseUrl,
+  rust: 'https://portfolio-rust-api-850595626708.us-central1.run.app',
+  java: 'https://portfolio-java-api-850595626708.us-central1.run.app',
 };
 
 const apiBaseUrls = isLocalRuntime ? localApiBaseUrls : productionApiBaseUrls;
