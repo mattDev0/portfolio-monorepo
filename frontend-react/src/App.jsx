@@ -441,7 +441,7 @@ function App() {
 
                       {/* 2. Nginx Card */}
                       <div className="flex-1 w-full flex flex-col justify-center">
-                        <TopologyNode id="nginx" icon="🛡️" title="Nginx Proxy" tech="Port 443 SSL" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                        <TopologyNode id="nginx" icon="🛡️" title="GCP Ingress" tech="HTTPS Gateway" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                       </div>
 
                       {/* Arrow Nginx -> K8s Namespace */}
@@ -450,24 +450,24 @@ function App() {
                         <span className="hidden md:inline text-indigo-400/40">── Proxy ──▶</span>
                       </div>
 
-                      {/* 3. K3s Kubernetes Namespace */}
+                      {/* 3. Google Cloud Run (Serverless) */}
                       <div
                         onMouseEnter={() => setHoveredTopologyNode('k8s')}
                         onMouseLeave={() => setHoveredTopologyNode(null)}
                         className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-blue-400 bg-blue-500/2 shadow-[0_0_15px_rgba(96,165,250,0.1)]' : 'border-white/10 bg-slate-950/10'}`}
                       >
                         <div className="flex justify-between items-center mb-3">
-                          <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest font-mono">K8s Namespace: portfolio</span>
-                          <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 px-1 py-0.5 rounded">☸️ K3s Cluster</span>
+                          <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest font-mono">Platform: Google Cloud</span>
+                          <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 px-1 py-0.5 rounded">🚀 GCP Cloud Run</span>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2">
-                          {/* Pod 1: Frontend */}
-                          <TopologyNode id="frontend" icon="⚛️" title="Frontend Pod" tech="NodePort 30000" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                          {/* Pod 2: Rust API */}
-                          <TopologyNode id="rust" icon="🦀" title="Rust Pod" tech="NodePort 30080" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
-                          {/* Pod 3: Java API */}
-                          <TopologyNode id="java" icon="☕" title="Java Pod" tech="NodePort 30081" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                          {/* Service 1: Frontend */}
+                          <TopologyNode id="frontend" icon="⚛️" title="Frontend Service" tech="Cloud Run" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                          {/* Service 2: Rust API */}
+                          <TopologyNode id="rust" icon="🦀" title="Rust Service" tech="Cloud Run" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
+                          {/* Service 3: Java API */}
+                          <TopologyNode id="java" icon="☕" title="Java Service" tech="Cloud Run" hoveredTopologyNode={hoveredTopologyNode} setHoveredTopologyNode={setHoveredTopologyNode} />
                         </div>
                       </div>
 

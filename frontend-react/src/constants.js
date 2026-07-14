@@ -7,39 +7,39 @@ export const TOPOLOGY_INFO = {
     badge: "Frontend"
   },
   nginx: {
-    title: "Nginx Reverse Proxy",
-    tech: "Nginx Gateway Config",
-    protocol: "HTTPS -> NodePorts",
-    description: "Operates as the entry point on the Azure VM. It terminates SSL (Let's Encrypt), resolves CORS by hosting services on the same domain, and routes paths: / to Port 30000, /api/status & /api/spotify to Port 30080, and /api/github to Port 30081.",
+    title: "GCP Global Ingress",
+    tech: "HTTPS Load Balancing + DNS",
+    protocol: "HTTPS -> Cloud Run Routing",
+    description: "Serves as the entry gateway for the platform. Terminates SSL (Google Managed Certificates), manages global load balancing, and routes public paths to the appropriate serverless Cloud Run container services.",
     badge: "Gateway"
   },
   k8s: {
-    title: "K3s Kubernetes Namespace",
-    tech: "K3s Cluster (Orchestration)",
-    protocol: "K8s Service DNS",
-    description: "A lightweight, secure Kubernetes namespace ('portfolio') hosting isolated container pods. Manages scaling, self-healing, rolling updates, and enforces strict resource limits (limits: memory: 32Mi, cpu: 100m).",
+    title: "Google Cloud Run (Serverless)",
+    tech: "Serverless Container Platform",
+    protocol: "GCP Internal Service Mesh",
+    description: "A fully managed container platform hosting isolated, auto-scaling microservices. (Note: The codebase is fully Kubernetes-ready, with active K3s manifests and Kustomize overlays included in the repository for alternative cluster deployment).",
     badge: "Infrastructure"
   },
   frontend: {
-    title: "frontend-react Pod",
+    title: "frontend-react Service",
     tech: "Docker + Nginx Server",
-    protocol: "HTTP (Container Port 80)",
-    description: "Containerized deployment serving the static built React application bundle. Managed via rolling zero-downtime restarts in Kubernetes (K3s NodePort 30000).",
-    badge: "Deployment Pod"
+    protocol: "HTTPS (Cloud Run Ingress)",
+    description: "Containerized deployment serving the static built React application bundle. Deployed as a managed Google Cloud Run service with zero-downtime rolling updates and instant scale-to-zero.",
+    badge: "Microservice"
   },
   rust: {
-    title: "backend-rust Pod",
+    title: "backend-rust Service",
     tech: "Rust + Axum Engine",
-    protocol: "HTTP (Container Port 8080)",
+    protocol: "HTTPS (Cloud Run Ingress)",
     description: "High-performance Axum web server compiled to native machine code. Refreshes host CPU/Memory telemetry in a thread-safe background task and acts as the Spotify authentication token manager.",
-    badge: "Deployment Pod"
+    badge: "Microservice"
   },
   java: {
-    title: "backend-java Pod",
-    tech: "Java 21 + Spring Boot 4",
-    protocol: "HTTP (Container Port 8081)",
+    title: "backend-java Service",
+    tech: "Java 21 + Spring Boot 3",
+    protocol: "HTTPS (Cloud Run Ingress)",
     description: "Enterprise-grade Spring Boot microservice. Manages caching abstractions using Spring Cache (@Cacheable) to bypass public rate boundaries, pulling recent commit payloads from the GitHub API.",
-    badge: "Deployment Pod"
+    badge: "Microservice"
   },
   spotify: {
     title: "Spotify Web API",
