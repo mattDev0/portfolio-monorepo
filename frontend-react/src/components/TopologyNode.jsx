@@ -4,7 +4,7 @@ export default function TopologyNode({ id, icon, title, tech, hoveredTopologyNod
   const isHovered = hoveredTopologyNode === id;
   
   let accentBorder = "border-white/5";
-  let accentBg = "bg-slate-950/20 hover:border-indigo-500/20";
+  let accentBg = "bg-slate-950/20 hover:border-emerald-500/20";
   let accentText = "text-gray-300";
   
   if (isHovered) {
@@ -13,25 +13,25 @@ export default function TopologyNode({ id, icon, title, tech, hoveredTopologyNod
       accentBg = "bg-orange-500/5";
       accentText = "text-orange-400";
     } else if (id === 'java') {
+      accentBorder = "border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.15)] animate-pulse";
+      accentBg = "bg-rose-500/5";
+      accentText = "text-rose-400";
+    } else if (id === 'frontend' || id === 'client') {
+      accentBorder = "border-teal-500/40 shadow-[0_0_12px_rgba(20,184,166,0.15)] animate-pulse";
+      accentBg = "bg-teal-500/5";
+      accentText = "text-teal-400";
+    } else if (id === 'nginx') {
       accentBorder = "border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.15)] animate-pulse";
       accentBg = "bg-emerald-500/5";
       accentText = "text-emerald-400";
-    } else if (id === 'frontend' || id === 'client') {
-      accentBorder = "border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.15)] animate-pulse";
-      accentBg = "bg-blue-500/5";
-      accentText = "text-blue-400";
-    } else if (id === 'nginx') {
-      accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)] animate-pulse";
-      accentBg = "bg-indigo-500/5";
-      accentText = "text-indigo-400";
     } else if (id === 'k8s') {
-      accentBorder = "border-blue-400/50 shadow-[0_0_12px_rgba(96,165,250,0.2)]";
-      accentBg = "bg-blue-400/5";
-      accentText = "text-blue-400";
+      accentBorder = "border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.2)]";
+      accentBg = "bg-cyan-400/5";
+      accentText = "text-cyan-400";
     } else {
-      accentBorder = "border-indigo-500/40 shadow-[0_0_12px_rgba(99,102,241,0.15)]";
-      accentBg = "bg-indigo-500/5";
-      accentText = "text-indigo-400";
+      accentBorder = "border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.15)]";
+      accentBg = "bg-emerald-500/5";
+      accentText = "text-emerald-400";
     }
   }
 
