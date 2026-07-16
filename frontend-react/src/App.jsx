@@ -207,46 +207,46 @@ function App() {
       <main className="w-full max-w-5xl space-y-16 md:space-y-20">
 
         {/* About the Developer */}
-        <section id="about" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors duration-300">
+        <section id="about" className="reveal-in card-surface p-6 md:p-8 rounded-2xl flex flex-col justify-between transition-colors duration-300">
           <div>
-            <h3 className="text-xl font-bold text-white mb-4 border-b border-white/5 pb-3 tracking-wide">About the Developer</h3>
-            <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-line">
+            <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-4 border-b border-[var(--color-border-primary)] pb-3 tracking-wide">About the Developer</h3>
+            <p className="text-[var(--color-text-secondary)] leading-relaxed text-sm whitespace-pre-line">
               {portfolioConfig.about}
             </p>
 
             {/* Highlight Badges */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               {portfolioConfig.highlights && portfolioConfig.highlights.map((hl, i) => (
-                <div key={i} className="hover-lift bg-slate-950/40 p-4 rounded-xl border border-white/5 hover:border-emerald-500/20 transition-all duration-300">
+                <div key={i} className="hover-lift bg-[var(--color-bg-surface-elevated)] p-4 rounded-xl border border-[var(--color-border-primary)] hover:border-[var(--color-accent-emerald-border)] transition-all duration-300">
                   <div className="flex items-center space-x-2.5 mb-1.5">
                     <span className="text-lg">{hl.icon}</span>
-                    <h4 className="text-xs font-bold text-gray-200 tracking-wide">{hl.label}</h4>
+                    <h4 className="text-xs font-bold text-[var(--color-text-primary)] tracking-wide">{hl.label}</h4>
                   </div>
-                  <p className="text-[11px] text-gray-400 leading-relaxed">{hl.detail}</p>
+                  <p className="text-[11px] text-[var(--color-text-tertiary)] leading-relaxed">{hl.detail}</p>
                 </div>
               ))}
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-white/5">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Education</h4>
+          <div className="mt-8 pt-6 border-t border-[var(--color-border-primary)]">
+            <h4 className="text-xs font-bold text-[var(--color-accent-emerald)] uppercase tracking-widest mb-2">Education</h4>
             <div className="flex justify-between items-center">
-              <span className="text-gray-200 font-semibold">{portfolioConfig.education.degree}</span>
-              <span className="text-emerald-400 font-semibold text-sm">{portfolioConfig.education.year}</span>
+              <span className="text-[var(--color-text-primary)] font-semibold">{portfolioConfig.education.degree}</span>
+              <span className="text-[var(--color-accent-emerald)] font-semibold text-sm">{portfolioConfig.education.year}</span>
             </div>
-            <div className="text-gray-400 text-sm mt-1">{portfolioConfig.education.institution}</div>
+            <div className="text-[var(--color-text-tertiary)] text-sm mt-1">{portfolioConfig.education.institution}</div>
           </div>
         </section>
 
         {/* Technical Skills Section */}
-        <section id="skills" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-          <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Technical Skills</h3>
+        <section id="skills" className="reveal-in card-surface p-6 md:p-8 rounded-2xl transition-colors duration-300">
+          <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-6 border-b border-[var(--color-border-primary)] pb-3 tracking-wide">Technical Skills</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {portfolioConfig.skills && Object.entries(portfolioConfig.skills).map(([category, skills]) => (
               <div key={category} className="space-y-3">
-                <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">{category}</h4>
+                <h4 className="text-xs font-bold text-[var(--color-accent-emerald)] uppercase tracking-wider">{category}</h4>
                 <div className="flex flex-wrap gap-2">
                   {skills.map((skill, index) => (
-                    <span key={index} className="bg-emerald-500/5 border border-emerald-500/10 text-gray-300 text-xs px-2.5 py-1 rounded-lg hover:border-emerald-500/30 transition-colors duration-200">
+                    <span key={index} className="bg-[var(--color-accent-emerald-bg)] border border-[var(--color-accent-emerald-border)] text-[var(--color-text-secondary)] text-xs px-2.5 py-1 rounded-lg hover:border-[var(--color-accent-emerald)] transition-colors duration-200">
                       {skill}
                     </span>
                   ))}
@@ -395,17 +395,17 @@ function App() {
         </section>
 
         {/* Professional Experience Section */}
-        <section id="experience" className="reveal-in bg-slate-900/30 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/5 hover:border-white/10 transition-colors duration-300">
-          <h3 className="text-xl font-bold text-white mb-6 border-b border-white/5 pb-3 tracking-wide">Professional Experience</h3>
+        <section id="experience" className="reveal-in card-surface p-6 md:p-8 rounded-2xl transition-colors duration-300">
+          <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-6 border-b border-[var(--color-border-primary)] pb-3 tracking-wide">Professional Experience</h3>
           <div className="space-y-8">
             {portfolioConfig.experience.map((exp, index) => (
-              <div key={index} className="relative pl-8 border-l-2 border-emerald-500/30 hover:border-emerald-400 transition-colors duration-300">
-                <div className="absolute w-4 h-4 bg-emerald-500 rounded-full -left-[9px] top-1 border-2 border-[#0b0f19] shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+              <div key={index} className="relative pl-8 border-l-2 border-[var(--color-accent-emerald-border)] hover:border-[var(--color-accent-emerald)] transition-colors duration-300">
+                <div className="absolute w-4 h-4 bg-[var(--color-status-online)] rounded-full -left-[9px] top-1 border-2 border-[var(--color-bg-primary)] shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                  <h4 className="text-gray-100 font-bold text-base tracking-wide">{exp.role}</h4>
-                  <p className="text-emerald-400 text-xs sm:text-sm font-semibold">{exp.company}</p>
+                  <h4 className="text-[var(--color-text-primary)] font-bold text-base tracking-wide">{exp.role}</h4>
+                  <p className="text-[var(--color-accent-emerald)] text-xs sm:text-sm font-semibold">{exp.company}</p>
                 </div>
-                <p className="text-gray-400 text-sm leading-relaxed">{exp.description}</p>
+                <p className="text-[var(--color-text-tertiary)] text-sm leading-relaxed">{exp.description}</p>
               </div>
             ))}
           </div>
