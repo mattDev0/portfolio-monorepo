@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function TopologyNode({ id, icon, title, tech, hoveredTopologyNode, setHoveredTopologyNode }) {
   const isHovered = hoveredTopologyNode === id;
   
