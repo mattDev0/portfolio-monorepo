@@ -258,14 +258,14 @@ function App() {
 
         {/* Featured Projects Section */}
         <section id="projects" className="reveal-in space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-3">
-            <h3 className="text-2xl font-extrabold text-white tracking-wide">Featured Projects</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--color-border-primary)] pb-3">
+            <h3 className="text-2xl font-extrabold text-[var(--color-text-primary)] tracking-wide">Featured Projects</h3>
 
             {/* Project Filter Controls */}
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedTech(null)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${!selectedTech ? 'bg-emerald-600 border-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800/60 border-white/5 text-gray-400 hover:text-white'}`}
+                className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${!selectedTech ? 'bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]'}`}
               >
                 All
               </button>
@@ -273,7 +273,7 @@ function App() {
                 <button
                   key={tag}
                   onClick={() => setSelectedTech(tag === selectedTech ? null : tag)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${tag === selectedTech ? 'bg-emerald-600 border-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800/60 border-white/5 text-gray-400 hover:text-white hover:border-white/10'}`}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${tag === selectedTech ? 'bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]'}`}
                 >
                   {tag}
                 </button>
@@ -287,20 +287,23 @@ function App() {
             {filteredProjects.some(p => p.title === "DevOps Control Center") && (() => {
               const devopsProject = portfolioConfig.projects.find(p => p.title === "DevOps Control Center");
               return (
-                <div className="hover-lift bg-gradient-to-br from-emerald-950/20 via-slate-900/30 to-[#0b0f19] backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-emerald-500 border-x border-b border-white/5 shadow-xl relative overflow-hidden transition-all duration-300 group hover:border-emerald-500/20">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -z-10"></div>
+                <div 
+                  className="hover-lift backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-[var(--color-accent-emerald-solid)] border-x border-b border-[var(--color-border-primary)] relative overflow-hidden transition-all duration-300 group hover:border-[var(--color-accent-emerald-border)]"
+                  style={{ background: 'linear-gradient(to bottom right, var(--color-accent-emerald-bg), var(--color-bg-surface), var(--color-bg-primary))', boxShadow: 'var(--shadow-card)' }}
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-emerald-bg)] rounded-full blur-2xl -z-10"></div>
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-1 space-y-4">
                       <div className="flex items-center space-x-2">
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                        <span className="bg-[var(--color-accent-emerald-bg)] text-[var(--color-accent-emerald)] border border-[var(--color-accent-emerald-border)] px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
                           Featured Project
                         </span>
                         <span className="text-xl">⚙️</span>
                       </div>
-                      <h4 className="text-xl md:text-2xl font-bold text-white group-hover:text-emerald-400 transition-colors tracking-wide">
+                      <h4 className="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-emerald)] transition-colors tracking-wide">
                         {devopsProject.title}
                       </h4>
-                      <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                      <p className="text-[var(--color-text-secondary)] text-sm md:text-base leading-relaxed">
                         {devopsProject.description}
                       </p>
 
@@ -309,7 +312,7 @@ function App() {
                           <span
                             key={i}
                             onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
-                            className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
+                            className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-[var(--color-bg-tag-active)] border-[var(--color-accent-emerald-solid)] text-[var(--color-accent-emerald)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]'}`}
                           >
                             {tech}
                           </span>
@@ -320,7 +323,8 @@ function App() {
                     <div className="flex flex-col justify-center space-y-3 w-full md:w-64 flex-shrink-0">
                       <button
                         onClick={() => setShowDevOpsCaseStudy(true)}
-                        className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5 shadow-lg shadow-emerald-950/20"
+                        className="px-5 py-3 bg-[var(--color-accent-emerald-solid)] hover:bg-[var(--color-accent-emerald-solid-hover)] text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5"
+                        style={{ boxShadow: 'var(--shadow-button)' }}
                       >
                         <span>⚙️</span>
                         <span>System Design & Demo</span>
@@ -330,7 +334,7 @@ function App() {
                         href={devopsProject.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-5 py-3 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-gray-300 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
+                        className="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
                       >
                         <span>View Repository</span>
                         <span>→</span>
@@ -346,24 +350,28 @@ function App() {
               {filteredProjects
                 .filter(p => p.title !== "DevOps Control Center")
                 .map((project, index) => {
-                  let accentClass = "border-t-teal-500/80";
+                  let accentClass = "border-t-[var(--color-accent-teal)]";
                   let emoji = "📁";
                   if (project.title.includes("Flutter")) {
-                    accentClass = "border-t-orange-500/80";
+                    accentClass = "border-t-[var(--color-accent-orange)]";
                     emoji = "📱";
                   } else if (project.title.includes("Portfolio")) {
-                    accentClass = "border-t-emerald-500/80";
+                    accentClass = "border-t-[var(--color-accent-emerald-solid)]";
                     emoji = "🌐";
                   }
 
                   return (
-                    <div key={index} className={`hover-lift bg-slate-900/30 backdrop-blur-md p-6 rounded-2xl border-t-2 ${accentClass} border-x border-b transition-all duration-500 flex flex-col justify-between group hover:shadow-lg hover:shadow-emerald-950/5 ${selectedTech && project.tech.includes(selectedTech) ? 'border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.05)]' : 'border-white/5 hover:border-emerald-500/30'}`}>
+                    <div 
+                      key={index} 
+                      className={`hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border-t-2 ${accentClass} border-x border-b transition-all duration-500 flex flex-col justify-between group ${selectedTech && project.tech.includes(selectedTech) ? 'border-[var(--color-accent-emerald-border)]' : 'border-[var(--color-border-primary)] hover:border-[var(--color-accent-emerald-border)]'}`}
+                      style={{ boxShadow: selectedTech && project.tech.includes(selectedTech) ? 'var(--shadow-card-hover)' : 'var(--shadow-card)' }}
+                    >
                       <div>
                         <div className="flex items-center space-x-2 mb-2">
                           <span className="text-lg">{emoji}</span>
-                          <h4 className="text-lg font-bold text-gray-200 group-hover:text-emerald-400 transition-colors tracking-wide">{project.title}</h4>
+                          <h4 className="text-lg font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-emerald)] transition-colors tracking-wide">{project.title}</h4>
                         </div>
-                        <p className="text-gray-400 text-sm leading-relaxed mb-6">{project.description}</p>
+                        <p className="text-[var(--color-text-tertiary)] text-sm leading-relaxed mb-6">{project.description}</p>
                       </div>
                       <div>
                         <div className="flex flex-wrap gap-1.5 mb-5">
@@ -371,7 +379,7 @@ function App() {
                             <span
                               key={i}
                               onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
-                              className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.2)]' : 'bg-slate-800/60 border-white/5 text-gray-300 hover:text-white hover:border-white/10'}`}
+                              className={`border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 ${tech === selectedTech ? 'bg-[var(--color-bg-tag-active)] border-[var(--color-accent-emerald-solid)] text-[var(--color-accent-emerald)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]'}`}
                             >
                               {tech}
                             </span>
@@ -382,7 +390,7 @@ function App() {
                           href={project.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 border border-emerald-500/30 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60 inline-flex items-center transition-all duration-300 w-full justify-center"
+                          className="px-4 py-2 border border-[var(--color-accent-emerald-border)] rounded-lg text-xs font-semibold text-[var(--color-accent-emerald)] hover:text-[var(--color-accent-emerald-solid-hover)] hover:border-[var(--color-accent-emerald)] inline-flex items-center transition-all duration-300 w-full justify-center"
                         >
                           View Repository <span className="ml-1">→</span>
                         </a>
