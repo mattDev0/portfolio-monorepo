@@ -7,6 +7,7 @@ import Sparkline from './components/Sparkline';
 import TerminalSimulator from './components/TerminalSimulator';
 import TopologyNode from './components/TopologyNode';
 import SpotifyPlayer from './components/SpotifyPlayer';
+import ThemeToggle from './components/ThemeToggle';
 
 // Hooks
 import useTelemetry from './hooks/useTelemetry';
@@ -120,11 +121,17 @@ function App() {
                 {sec}
               </a>
             ))}
+            <div className="border-l border-[var(--color-border-primary)] pl-4 ml-2">
+              <ThemeToggle />
+            </div>
           </div>
           {/* Subtle Mobile indicators */}
-          <div className="md:hidden flex items-center space-x-2 bg-slate-900/40 px-3 py-1 rounded-full border border-white/5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-            <span>{activeSection}</span>
+          <div className="md:hidden flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-slate-900/40 px-3 py-1 rounded-full border border-white/5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>{activeSection}</span>
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
