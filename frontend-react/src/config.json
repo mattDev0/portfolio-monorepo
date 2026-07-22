@@ -70,6 +70,12 @@
       "description": "Production monorepo serving this site — React frontend backed by live Rust (Axum) and Spring Boot APIs with automated CI/CD, Trivy scanning, and zero-downtime K8s deployments.",
       "tech": ["React", "Rust", "Spring Boot"],
       "link": "https://github.com/mattDev0/portfolio-monorepo"
+    },
+    {
+      "title": "WSL Traffic Monitor",
+      "description": "Lightweight native Windows desktop application for real-time WSL2 network traffic monitoring with a glanceable floating overlay UI, redb history persistence, and Win32 IP Helper API adapter discovery.",
+      "tech": ["Rust", "Win32 API", "redb", "Windows"],
+      "link": "https://github.com/mattDev0/wsl-traffic-monitor"
     }
   ]
 }

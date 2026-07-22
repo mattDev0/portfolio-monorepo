@@ -358,6 +358,9 @@ function App() {
                   } else if (project.title.includes("Portfolio")) {
                     accentClass = "border-t-[var(--color-accent-emerald-solid)]";
                     emoji = "🌐";
+                  } else if (project.title.includes("WSL")) {
+                    accentClass = "border-t-[var(--color-accent-teal)]";
+                    emoji = "🖥️";
                   }
 
                   return (
