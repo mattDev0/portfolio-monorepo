@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mattdev0.tech/sitemap.xml
+
+# Block Cloud Run auto-generated URLs from being indexed
+# (This only takes effect if the Cloud Run URL serves this file)
+Host: https://mattdev0.tech
