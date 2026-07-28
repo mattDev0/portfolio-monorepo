@@ -8,6 +8,10 @@ RUN npm run build
 
 # Stage 2: Serve with Nginx (Unprivileged)
 FROM nginxinc/nginx-unprivileged:alpine
+# Remove default Nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+# Copy custom Nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy the built assets from the builder stage to Nginx's web folder
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 8080
