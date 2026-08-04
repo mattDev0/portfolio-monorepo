@@ -5,6 +5,8 @@
   "openToRemote": true,
   "email": "amatthew642@gmail.com",
   "githubUrl": "https://github.com/mattDev0",
+  "linkedinUrl": "https://www.linkedin.com/in/mattDev0",
+  "resumeUrl": "https://storage.googleapis.com/mattdev0-portfolio-assets/resume.pdf",
   "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
   "about": "Software engineer and DevOps specialist focused on systems-level engineering, high-performance backends, and production Kubernetes infrastructure.\n\nI've shipped custom Android OS builds (StatixOS, helluvaOS), built polyglot microservices in Rust and Java, and deployed production workloads on K3s with automated CI/CD pipelines. My strongest work bridges the gap between low-level systems programming and modern cloud-native architecture.",
   "highlights": [
