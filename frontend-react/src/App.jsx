@@ -288,7 +288,7 @@ function App() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedTech(null)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${!selectedTech ? 'bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]'}`}
+                className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${!selectedTech ? 'bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_var(--color-accent-emerald-border)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]'}`}
               >
                 All
               </button>
@@ -296,7 +296,7 @@ function App() {
                 <button
                   key={tag}
                   onClick={() => setSelectedTech(tag === selectedTech ? null : tag)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${tag === selectedTech ? 'bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]'}`}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer ${tag === selectedTech ? 'bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_var(--color-accent-emerald-border)]' : 'bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]'}`}
                 >
                   {tag}
                 </button>
@@ -434,7 +434,7 @@ function App() {
           <div className="space-y-8">
             {portfolioConfig.experience.map((exp, index) => (
               <div key={index} className="relative pl-8 border-l-2 border-[var(--color-accent-emerald-border)] hover:border-[var(--color-accent-emerald)] transition-colors duration-300">
-                <div className="absolute w-4 h-4 bg-[var(--color-status-online)] rounded-full -left-[9px] top-1 border-2 border-[var(--color-bg-primary)] shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                <div className="absolute w-4 h-4 bg-[var(--color-accent-emerald-solid)] rounded-full -left-[9px] top-1 border-2 border-[var(--color-bg-primary)] shadow-[0_0_8px_var(--color-accent-emerald)]"></div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
                   <h4 className="text-[var(--color-text-primary)] font-bold text-base tracking-wide">{exp.role}</h4>
                   <p className="text-[var(--color-accent-emerald)] text-xs sm:text-sm font-semibold">{exp.company}</p>
@@ -494,7 +494,7 @@ function App() {
                   <div
                     onMouseEnter={() => setHoveredTopologyNode('k8s')}
                     onMouseLeave={() => setHoveredTopologyNode(null)}
-                    className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-[var(--color-accent-teal)] bg-[var(--color-accent-emerald-bg)] shadow-[0_0_15px_rgba(20,184,166,0.1)]' : 'border-[var(--color-border-secondary)] bg-[var(--color-bg-surface-deep)]'}`}
+                    className={`flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 ${hoveredTopologyNode === 'k8s' ? 'border-[var(--color-accent-teal)] bg-[var(--color-accent-emerald-bg)] shadow-[0_0_15px_var(--color-accent-emerald-border)]' : 'border-[var(--color-border-secondary)] bg-[var(--color-bg-surface-deep)]'}`}
                   >
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-[8px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest font-mono">Platform: Google Cloud</span>
@@ -736,7 +736,7 @@ function App() {
                         <span className="text-[9px] text-[var(--color-text-muted)]">({networkStatus.google_dns.target})</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Sparkline data={networkHistory.map(h => h.google_dns)} color="rgba(16,185,129,0.5)" />
+                        <Sparkline data={networkHistory.map(h => h.google_dns)} color="rgba(225,29,72,0.5)" />
                         <span className="text-[var(--color-accent-emerald)] font-semibold w-14 text-right">{networkStatus.google_dns.latency_ms} ms</span>
                       </div>
                     </div>
@@ -749,7 +749,7 @@ function App() {
                         <span className="text-[9px] text-[var(--color-text-muted)]">({networkStatus.cloudflare_dns.target})</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Sparkline data={networkHistory.map(h => h.cloudflare_dns)} color="rgba(16,185,129,0.5)" />
+                        <Sparkline data={networkHistory.map(h => h.cloudflare_dns)} color="rgba(225,29,72,0.5)" />
                         <span className="text-[var(--color-accent-emerald)] font-semibold w-14 text-right">{networkStatus.cloudflare_dns.latency_ms} ms</span>
                       </div>
                     </div>
@@ -762,7 +762,7 @@ function App() {
                         <span className="text-[9px] text-[var(--color-text-muted)]">({networkStatus.riot_games.target})</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Sparkline data={networkHistory.map(h => h.riot_games)} color="rgba(16,185,129,0.5)" />
+                        <Sparkline data={networkHistory.map(h => h.riot_games)} color="rgba(225,29,72,0.5)" />
                         <span className="text-[var(--color-accent-emerald)] font-semibold w-14 text-right">{networkStatus.riot_games.latency_ms} ms</span>
                       </div>
                     </div>
@@ -824,8 +824,8 @@ function App() {
           <div className="relative bg-[var(--color-bg-modal)] border border-[var(--color-border-secondary)] rounded-2xl w-full max-w-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
 
             {/* Background glowing design elements */}
-            <div className="absolute top-0 left-1/4 w-72 h-72 bg-emerald-600/10 rounded-full blur-3xl -z-10"></div>
-            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-emerald-600/5 rounded-full blur-3xl -z-10"></div>
+            <div className="absolute top-0 left-1/4 w-72 h-72 bg-[var(--color-accent-emerald-bg)] rounded-full blur-3xl -z-10"></div>
+            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-[var(--color-accent-emerald-bg)] rounded-full blur-3xl -z-10"></div>
 
             {/* Header */}
             <div className="flex justify-between items-start border-b border-[var(--color-border-primary)] pb-4 mb-6">

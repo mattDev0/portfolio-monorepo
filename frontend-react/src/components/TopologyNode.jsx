@@ -15,11 +15,11 @@ export default function TopologyNode({ id, icon, title, tech, hoveredTopologyNod
       accentBg = "bg-[var(--color-accent-rose)]/5";
       accentText = "text-[var(--color-accent-rose)]";
     } else if (id === 'frontend' || id === 'client') {
-      accentBorder = "border-[var(--color-accent-teal)]/40 shadow-[0_0_12px_rgba(20,184,166,0.15)] animate-pulse";
+      accentBorder = "border-[var(--color-accent-teal)]/40 shadow-[0_0_12px_var(--color-accent-emerald-border)] animate-pulse";
       accentBg = "bg-[var(--color-accent-teal)]/5";
       accentText = "text-[var(--color-accent-teal)]";
     } else if (id === 'nginx') {
-      accentBorder = "border-[var(--color-accent-emerald-border)] shadow-[0_0_12px_rgba(16,185,129,0.15)] animate-pulse";
+      accentBorder = "border-[var(--color-accent-emerald-border)] shadow-[0_0_12px_var(--color-accent-emerald-border)] animate-pulse";
       accentBg = "bg-[var(--color-accent-emerald-bg)]";
       accentText = "text-[var(--color-accent-emerald)]";
     } else if (id === 'k8s') {
@@ -27,7 +27,7 @@ export default function TopologyNode({ id, icon, title, tech, hoveredTopologyNod
       accentBg = "bg-[var(--color-accent-cyan)]/5";
       accentText = "text-[var(--color-accent-cyan)]";
     } else {
-      accentBorder = "border-[var(--color-accent-emerald-border)] shadow-[0_0_12px_rgba(16,185,129,0.15)]";
+      accentBorder = "border-[var(--color-accent-emerald-border)] shadow-[0_0_12px_var(--color-accent-emerald-border)]";
       accentBg = "bg-[var(--color-accent-emerald-bg)]";
       accentText = "text-[var(--color-accent-emerald)]";
     }

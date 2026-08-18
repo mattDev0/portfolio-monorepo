@@ -29,7 +29,7 @@ export default function SpotifyPlayer({ spotifyData, progressPercent, localProgr
               {spotifyData.album_art ? (
                 <img src={spotifyData.album_art} alt="Album Art" className={`w-full h-full object-cover transition-all duration-500 ${isPlaying ? '' : 'grayscale opacity-60'}`} />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500 to-slate-900 opacity-50"></div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-accent-emerald-solid)] to-[var(--color-bg-primary)] opacity-50"></div>
               )}
             </div>
             <div className="overflow-hidden flex-grow">
@@ -45,7 +45,7 @@ export default function SpotifyPlayer({ spotifyData, progressPercent, localProgr
             <div className="mt-5">
               <div className="w-full h-1 bg-[var(--color-bg-progress-track)] rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-emerald-500 transition-all duration-1000 ease-linear shadow-[0_0_8px_#10b981]"
+                  className="h-full bg-[var(--color-accent-emerald-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent-emerald)]"
                   style={{ width: `${progressPercent}%` }}
                 ></div>
               </div>
