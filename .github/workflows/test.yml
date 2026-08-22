@@ -20,9 +20,12 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           recursive: true
+          # Matches devops-control-center: pinning apt package versions on a
+          # rolling Debian base breaks on every security update.
+          ignore: DL3008
 
       - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           ignore-unfixed: true
