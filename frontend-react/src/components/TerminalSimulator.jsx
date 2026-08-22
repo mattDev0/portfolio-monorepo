@@ -21,11 +21,6 @@ export default function TerminalSimulator({ active }) {
   const [lines, setLines] = useState([]);
 
   useEffect(() => {
-    if (!active) {
-      setLines([]);
-      return;
-    }
-
     let isMounted = true;
     
     const runSequence = async () => {
