@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function Sparkline({ data, color, max }) {
   if (!data || data.length < 2) {
     return (
