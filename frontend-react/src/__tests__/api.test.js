@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from 'vitest';
 import { isLocalRuntime, apiUrl } from '../api';
 
 describe('api.js', () => {

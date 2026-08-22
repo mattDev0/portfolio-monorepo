@@ -16,7 +16,6 @@ use handlers::*;
 use tower_http::trace::{TraceLayer, DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse};
 use tracing::Level;
 use tokio_util::sync::CancellationToken;
-use tower_governor;
 
 
 #[tokio::main]

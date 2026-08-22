@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GitHubActivity from '../GitHubActivity';
-import { apiUrl } from '../api';
 
 // Mock the api module
 vi.mock('../api', () => ({

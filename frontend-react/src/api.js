@@ -15,10 +15,6 @@ export const isLocalRuntime = truthyFlags.has(localFlag)
 
 const trimTrailingSlash = (value) => value.replace(/\/$/, '');
 
-const productionApiBaseUrl = trimTrailingSlash(
-  viteEnv.VITE_PRODUCTION_API_BASE_URL || 'https://mattdev0.tech'
-);
-
 const localApiBaseUrls = {
   rust: trimTrailingSlash(viteEnv.VITE_LOCAL_RUST_API_BASE_URL || 'http://localhost:8080'),
   java: trimTrailingSlash(viteEnv.VITE_LOCAL_JAVA_API_BASE_URL || 'http://localhost:8081'),

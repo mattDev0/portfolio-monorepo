@@ -14,7 +14,27 @@ export default function useTelemetry(isVisible) {
     const fetchRust = () => {
       fetch(apiUrl('rust', '/api/status'))
         .then(response => response.json())
-        .then(data => setRustStatus(data))
+        .then(data => {
+          setRustStatus(data);
+          if (data) {
+            const cpu = data.cpu_usage_percent ?? 0;
+            let memory = 0;
+            if (data.memory_total_mb > 0) {
+              memory = (data.memory_used_mb / data.memory_total_mb) * 100;
+            }
+            setTelemetryHistory(prev => {
+              const lastPoint = prev[prev.length - 1];
+              if (lastPoint && lastPoint.cpu === cpu && lastPoint.memory === memory) {
+                return prev;
+              }
+              const newHistory = [...prev, { cpu, memory }];
+              if (newHistory.length > 20) {
+                newHistory.shift();
+              }
+              return newHistory;
+            });
+          }
+        })
         .catch(error => console.error("Error fetching from Rust API:", error));
     };
 
@@ -31,32 +51,6 @@ export default function useTelemetry(isVisible) {
       .then(data => setTelemetryHistory(data))
       .catch(error => console.error("Error fetching telemetry history:", error));
   }, [isVisible]);
-
-  // Sync polled metrics with history buffer
-  useEffect(() => {
-    if (!rustStatus || !isVisible) return;
-
-    const cpu = rustStatus.cpu_usage_percent ?? 0;
-
-    // Calculate memory percentage from numeric fields
-    let memory = 0;
-    if (rustStatus.memory_total_mb > 0) {
-      memory = (rustStatus.memory_used_mb / rustStatus.memory_total_mb) * 100;
-    }
-
-    setTelemetryHistory(prev => {
-      // Check if this new data point is already the latest point in history to prevent duplicate entries
-      const lastPoint = prev[prev.length - 1];
-      if (lastPoint && lastPoint.cpu === cpu && lastPoint.memory === memory) {
-        return prev;
-      }
-      const newHistory = [...prev, { cpu, memory }];
-      if (newHistory.length > 20) {
-        newHistory.shift();
-      }
-      return newHistory;
-    });
-  }, [rustStatus, isVisible]);
   
   // Fetch Rust Network Metrics (with 5s polling, only when tab is visible)
   useEffect(() => {
@@ -64,7 +58,26 @@ export default function useTelemetry(isVisible) {
     const fetchNetwork = () => {
       fetch(apiUrl('rust', '/api/status/network'))
         .then(response => response.json())
-        .then(data => setNetworkStatus(data))
+        .then(data => {
+          setNetworkStatus(data);
+          if (data && data.google_dns && data.cloudflare_dns && data.riot_games) {
+            const google = data.google_dns.latency_ms;
+            const cloudflare = data.cloudflare_dns.latency_ms;
+            const riot = data.riot_games.latency_ms;
+
+            setNetworkHistory(prev => {
+              const lastPoint = prev[prev.length - 1];
+              if (lastPoint && lastPoint.google_dns === google && lastPoint.cloudflare_dns === cloudflare && lastPoint.riot_games === riot) {
+                return prev;
+              }
+              const newHistory = [...prev, { google_dns: google, cloudflare_dns: cloudflare, riot_games: riot }];
+              if (newHistory.length > 20) {
+                newHistory.shift();
+              }
+              return newHistory;
+            });
+          }
+        })
         .catch(error => console.error("Error fetching from Rust Network API:", error));
     };
 
@@ -81,27 +94,6 @@ export default function useTelemetry(isVisible) {
       .then(data => setNetworkHistory(data))
       .catch(error => console.error("Error fetching network history:", error));
   }, [isVisible]);
-
-  // Sync polled network metrics with history buffer
-  useEffect(() => {
-    if (!networkStatus || !isVisible) return;
-
-    const google = networkStatus.google_dns.latency_ms;
-    const cloudflare = networkStatus.cloudflare_dns.latency_ms;
-    const riot = networkStatus.riot_games.latency_ms;
-
-    setNetworkHistory(prev => {
-      const lastPoint = prev[prev.length - 1];
-      if (lastPoint && lastPoint.google_dns === google && lastPoint.cloudflare_dns === cloudflare && lastPoint.riot_games === riot) {
-        return prev;
-      }
-      const newHistory = [...prev, { google_dns: google, cloudflare_dns: cloudflare, riot_games: riot }];
-      if (newHistory.length > 20) {
-        newHistory.shift();
-      }
-      return newHistory;
-    });
-  }, [networkStatus, isVisible]);
 
   // Fetch Java JVM Metrics (with 10s polling, only when tab is visible)
   useEffect(() => {
