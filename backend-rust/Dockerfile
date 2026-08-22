@@ -20,6 +20,7 @@ WORKDIR /app
 RUN groupadd -g 10001 -r appuser && useradd -u 10001 -m -r -g appuser appuser
 
 # Install OpenSSL certificates (required for the Spotify reqwest calls)
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled binary from the builder and set ownership

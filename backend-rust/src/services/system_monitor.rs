@@ -85,6 +85,7 @@ mod tests {
         start_system_monitor(metrics_state.clone(), cancel_token.clone());
 
         // Wait for the spawned monitor to run at least one iteration
+        sleep(Duration::from_millis(600)).await;
         let mut ready = false;
         for _ in 0..30 {
             sleep(Duration::from_millis(100)).await;
