@@ -48,7 +48,6 @@ describe('SpotifyPlayer Component', () => {
       duration_ms: 180000,
       track_url: 'http://mock.url'
     };
-    const { container } = render(<SpotifyPlayer spotifyData={mockData} progressPercent={50} localProgressMs={90000} formatTime={mockFormatTime} />);
     expect(screen.getByText('1:30')).toBeInTheDocument();
     expect(screen.getByText('3:00')).toBeInTheDocument();
   });
