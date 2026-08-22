@@ -109,9 +109,9 @@ All microservices adhere to strict DevSecOps patterns and Kubernetes security be
 
 ---
 
-## ☸️ Kubernetes & Reliability
+## ☸️ Kubernetes & Hybrid Reliability
 
-Infrastructure manifests prioritize high availability and automated healing:
+While Google Cloud Run serves as the primary production runtime for serverless scale and zero-idle operations, complete Kubernetes manifests are maintained in `infrastructure/k8s/` for hybrid/on-prem deployments with high availability and automated healing:
 * **Kustomize Declarative Manifests:** Ensures atomic, deterministic cluster configurations.
 * **Health Probes:** Comprehensive `livenessProbe`, `readinessProbe`, and `startupProbe` checks implemented across all APIs to verify endpoints (e.g., `/healthz` and `/actuator/health`) before accepting traffic.
 * **Pod Disruption Budgets (PDB):** Enforces a `minAvailable: 1` requirement during evictions or node drains to maintain zero downtime.
