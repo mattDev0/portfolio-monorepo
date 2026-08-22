@@ -28,6 +28,20 @@ pub struct SpotifyStatus {
 #[derive(Deserialize)]
 pub struct SpotifyTokenResponse {
     pub access_token: String,
+    #[serde(default)]
+    pub scope: String,
+    #[serde(default)]
+    pub expires_in: u64,
+}
+
+// An access token held in memory so we stop trading the refresh token on
+// every single request. `scope` is kept so callers can skip endpoints the
+// token was never granted access to.
+#[derive(Clone)]
+pub struct CachedToken {
+    pub access_token: String,
+    pub scope: String,
+    pub expires_at: std::time::Instant,
 }
 
 #[derive(Serialize, Clone, Default)]
@@ -65,4 +79,6 @@ pub struct AppState {
     pub network_metrics: Arc<RwLock<NetworkMetrics>>,
     pub network_history: Arc<RwLock<VecDeque<NetworkHistoryPoint>>>,
     pub spotify_cache: Arc<RwLock<Option<SpotifyStatus>>>,
+    pub spotify_token: Arc<RwLock<Option<CachedToken>>>,
+    pub spotify_fresh: Arc<RwLock<Option<(SpotifyStatus, std::time::Instant)>>>,
 }
