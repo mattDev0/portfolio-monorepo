@@ -16,6 +16,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Lint Dockerfiles
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          recursive: true
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -23,12 +36,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './frontend-react/package-lock.json'
       
-      - name: Run Frontend Tests
       - name: Lint Frontend
         working-directory: ./frontend-react
         run: |
           npm ci
-          npm run test
           npm run lint
 
       - name: Run Frontend Tests
@@ -53,6 +64,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./backend-rust
+
+      - name: Run Clippy
+        working-directory: ./backend-rust
+        run: cargo clippy -- -D warnings
 
       - name: Run Rust Tests
         working-directory: ./backend-rust
