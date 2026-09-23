@@ -8,7 +8,7 @@
   "linkedinUrl": "https://www.linkedin.com/in/mattDev0",
   "resumeUrl": "https://storage.googleapis.com/mattdev0-portfolio-assets/resume.pdf",
   "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
-  "about": "Software engineer and DevOps specialist focused on systems-level engineering, high-performance backends, and production Kubernetes infrastructure.\n\nI've shipped custom Android OS builds (StatixOS, helluvaOS), built polyglot microservices in Rust and Java, and deployed production workloads on K3s with automated CI/CD pipelines. My strongest work bridges the gap between low-level systems programming and modern cloud-native architecture.",
+  "about": "Software engineer and DevOps specialist focused on systems-level engineering, high-performance backends, and production cloud infrastructure.\n\nI've shipped custom Android OS builds (StatixOS, helluvaOS), built polyglot microservices in Rust and Java, and operated production workloads on Kubernetes (K3s) and Docker Compose with automated CI/CD pipelines. My strongest work bridges the gap between low-level systems programming and modern cloud-native architecture.",
   "highlights": [
     {
       "icon": "🔧",
@@ -18,7 +18,7 @@
     {
       "icon": "☁️",
       "label": "Cloud & DevOps",
-      "detail": "K3s, Docker, GitHub Actions CI/CD, Trivy"
+      "detail": "Docker, Kubernetes (K3s), GitHub Actions CI/CD, Trivy"
     },
     {
       "icon": "⚡",
@@ -27,10 +27,41 @@
     }
   ],
   "skills": {
-    "Languages": ["Rust", "Java", "JavaScript", "Dart", "Go", "Python", "Bash"],
-    "Infrastructure & Cloud": ["Kubernetes (K3s)", "Docker", "Nginx", "GitHub Actions CI/CD", "Linux System Admin", "Google Cloud", "Trivy Scanning"],
-    "Frameworks & Libs": ["Axum", "Spring Boot", "React", "Flutter", "Vite", "Tokio"],
-    "Observability & Tools": ["Prometheus", "Grafana", "Git", "Webpack", "Tailwind CSS", "PostgreSQL", "WebSockets"]
+    "Languages": [
+      "Rust",
+      "Java",
+      "JavaScript",
+      "Dart",
+      "Go",
+      "Python",
+      "Bash"
+    ],
+    "Infrastructure & Cloud": [
+      "Kubernetes (K3s)",
+      "Docker",
+      "Nginx",
+      "GitHub Actions CI/CD",
+      "Linux System Admin",
+      "Google Cloud",
+      "Trivy Scanning"
+    ],
+    "Frameworks & Libs": [
+      "Axum",
+      "Spring Boot",
+      "React",
+      "Flutter",
+      "Vite",
+      "Tokio"
+    ],
+    "Observability & Tools": [
+      "Prometheus",
+      "Grafana",
+      "Git",
+      "Webpack",
+      "Tailwind CSS",
+      "PostgreSQL",
+      "WebSockets"
+    ]
   },
   "education": {
     "degree": "BSc. Computer Science",
@@ -58,25 +89,46 @@
     {
       "title": "Flutter & Rust Octernship",
       "description": "Cross-platform application using a native Flutter UI with a Rust FFI backend core, demonstrating high-performance interop across mobile platforms.",
-      "tech": ["Flutter", "Rust", "Dart"],
+      "tech": [
+        "Flutter",
+        "Rust",
+        "Dart"
+      ],
       "link": "https://github.com/mattDev0/flutter_rust_octernship"
     },
     {
       "title": "DevOps Control Center",
-      "description": "Full-stack infrastructure dashboard with live K8s pod management, WebSocket terminal sessions, and real-time telemetry — deployed on a production K3s cluster with JWT-secured access.",
-      "tech": ["Rust", "React", "Java", "Spring Boot", "Grafana", "Prometheus"],
+      "description": "Self-hosted infrastructure dashboard with live container and deployment management, real-time telemetry and JWT-secured role-based access. Originally on a K3s cluster, migrated to Docker Compose behind Caddy after documenting the cost and operational trade-offs in an ADR.",
+      "tech": [
+        "Rust",
+        "React",
+        "Java",
+        "Spring Boot",
+        "Docker",
+        "Prometheus",
+        "Grafana"
+      ],
       "link": "https://github.com/mattDev0/devops-control-center"
     },
     {
       "title": "Polyglot Microservice Portfolio",
       "description": "Production monorepo serving this site — React frontend backed by live Rust (Axum) and Spring Boot APIs with automated CI/CD, Trivy scanning, and zero-downtime K8s deployments.",
-      "tech": ["React", "Rust", "Spring Boot"],
+      "tech": [
+        "React",
+        "Rust",
+        "Spring Boot"
+      ],
       "link": "https://github.com/mattDev0/portfolio-monorepo"
     },
     {
       "title": "WSL Traffic Monitor",
       "description": "Lightweight native Windows desktop application for real-time WSL2 network traffic monitoring with a glanceable floating overlay UI, redb history persistence, and Win32 IP Helper API adapter discovery.",
-      "tech": ["Rust", "Win32 API", "redb", "Windows"],
+      "tech": [
+        "Rust",
+        "Win32 API",
+        "redb",
+        "Windows"
+      ],
       "link": "https://github.com/mattDev0/wsl-traffic-monitor"
     }
   ]
