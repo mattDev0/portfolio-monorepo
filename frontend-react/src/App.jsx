@@ -4,7 +4,6 @@ import GitHubActivity from './GitHubActivity';
 
 // Components
 import Sparkline from './components/Sparkline';
-import TerminalSimulator from './components/TerminalSimulator';
 import TopologyNode from './components/TopologyNode';
 import SpotifyPlayer from './components/SpotifyPlayer';
 import ThemeToggle from './components/ThemeToggle';
@@ -832,7 +831,7 @@ function App() {
               <div>
                 <span className="text-[10px] font-bold text-[var(--color-accent-emerald)] uppercase tracking-widest">Case Study & Architecture</span>
                 <h3 className="text-2xl font-extrabold text-[var(--color-text-primary)] mt-1">DevOps Control Center</h3>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">A custom end-to-end telemetry and K8s orchestration dashboard.</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">A self-hosted telemetry, container and CI/CD dashboard.</p>
               </div>
               <button
                 onClick={() => setShowDevOpsCaseStudy(false)}
@@ -851,24 +850,23 @@ function App() {
               <div>
                 <h4 className="text-xs font-bold uppercase text-[var(--color-text-tertiary)] tracking-wider mb-2">Platform Overview</h4>
                 <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
-                  This custom dashboard unifies server monitoring, remote terminal execution, Kubernetes deployment management, and CI/CD tracking into a single view. By proxying WebSocket traffic and stream channels securely, it allows remote administration from any browser interface.
+                  A self-hosted dashboard that unifies host and container monitoring, deployment control and CI/CD tracking into a single view, secured with JWT roles and a read-only guest mode. It runs in production on a 1 vCPU Azure VM, deployed from GitHub Actions over an SSH pipeline that validates the commit SHA before it applies anything.
                 </p>
               </div>
 
-              {/* Terminal Simulator Showcase */}
+              {/* Platform Evolution */}
               <div>
-                <h4 className="text-xs font-bold uppercase text-[var(--color-text-tertiary)] tracking-wider mb-2">Simulated Interactive PTY Terminal</h4>
+                <h4 className="text-xs font-bold uppercase text-[var(--color-text-tertiary)] tracking-wider mb-2">Platform Evolution</h4>
                 <p className="text-[var(--color-text-tertiary)] text-[11px] mb-3 leading-relaxed">
-                  Below is a visual simulation of the live PTY console connection which streams raw shell sessions over secure WebSockets directly proxied from the Spring gateway to the Rust systems agent.
+                  The platform originally ran on a self-managed K3s cluster with Traefik and cert-manager. Once the cluster&apos;s cost and operational overhead outgrew the workload, it was migrated to Docker Compose behind Caddy, with the trade-offs recorded in an ADR. Cluster-only features now degrade gracefully and report themselves unavailable rather than failing. The Kubernetes manifests remain validated in CI as a supported deployment target.
                 </p>
-                <TerminalSimulator active={showDevOpsCaseStudy} />
               </div>
 
               {/* System Architecture Diagram */}
               <div>
                 <h4 className="text-xs font-bold uppercase text-[var(--color-text-tertiary)] tracking-wider mb-1">Microservices Topology</h4>
                 <p className="text-[var(--color-text-tertiary)] text-[11px] mb-4 leading-relaxed">
-                  The infrastructure operates inside the K3s namespace <code className="text-[var(--color-accent-emerald)] font-mono text-[10px] bg-[var(--color-accent-emerald-bg)] px-1 py-0.5 rounded">devops</code> behind an Nginx reverse proxy.
+                  Services run as Docker Compose containers behind <code className="text-[var(--color-accent-emerald)] font-mono text-[10px] bg-[var(--color-accent-emerald-bg)] px-1 py-0.5 rounded">Caddy</code>, which terminates TLS.
                 </p>
 
                 {/* Architecture Visual Grid */}
@@ -883,19 +881,19 @@ function App() {
                   <div className="flex flex-col items-center justify-between bg-[var(--color-accent-emerald-bg)] p-3 rounded-lg border border-[var(--color-accent-emerald-border)] text-center shadow-md">
                     <span className="text-xl">☕</span>
                     <span className="text-[10px] font-bold text-[var(--color-accent-emerald)] uppercase tracking-widest mt-1">Spring Gateway</span>
-                    <span className="text-[9px] text-[var(--color-text-tertiary)] mt-1">JWT Security Auth & WebSockets Proxy</span>
+                    <span className="text-[9px] text-[var(--color-text-tertiary)] mt-1">JWT auth, roles &amp; API gateway</span>
                   </div>
                   {/* Rust Agent */}
                   <div className="flex flex-col items-center justify-between bg-[var(--color-accent-orange-bg)] p-3 rounded-lg border border-[var(--color-accent-orange-border)] text-center shadow-md">
                     <span className="text-xl">🦀</span>
                     <span className="text-[10px] font-bold text-[var(--color-accent-orange)] uppercase tracking-widest mt-1">Rust Agent</span>
-                    <span className="text-[9px] text-[var(--color-text-tertiary)] mt-1">kube-rs Client & Shell PTY Bridge</span>
+                    <span className="text-[9px] text-[var(--color-text-tertiary)] mt-1">Docker &amp; host telemetry collector</span>
                   </div>
-                  {/* K3s API */}
+                  {/* Observability */}
                   <div className="flex flex-col items-center justify-between bg-[var(--color-accent-emerald-bg)] p-3 rounded-lg border border-[var(--color-accent-teal)] text-center shadow-md">
-                    <span className="text-xl">☸️</span>
-                    <span className="text-[10px] font-bold text-[var(--color-accent-teal)] uppercase tracking-widest mt-1">K3s Cluster API</span>
-                    <span className="text-[9px] text-[var(--color-text-tertiary)] mt-1">Pod Logs / Replicas & Status control</span>
+                    <span className="text-xl">📊</span>
+                    <span className="text-[10px] font-bold text-[var(--color-accent-teal)] uppercase tracking-widest mt-1">Prometheus + Grafana</span>
+                    <span className="text-[9px] text-[var(--color-text-tertiary)] mt-1">Metrics, alert rules &amp; dashboards</span>
                   </div>
                 </div>
               </div>
