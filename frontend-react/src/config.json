@@ -75,9 +75,9 @@
       "description": "Engineered cross-platform solutions utilizing Flutter and Rust."
     },
     {
-      "role": "Android OS Developer",
-      "company": "Open Source (StatixOS, helluvaOS)",
-      "description": "Maintained custom ROMs for Pixel devices, resolving device-specific bugs and merging monthly AOSP security patches."
+      "role": "Android OS Maintainer",
+      "company": "StatiXOS / helluvaOS (Open Source)",
+      "description": "Official device maintainer for the Pixel 3 and 3 XL: device trees, kernels, monthly AOSP security patches and OTA releases, with the official release threads published on XDA."
     },
     {
       "role": "Networking Tutor",
@@ -130,6 +130,18 @@
         "Windows"
       ],
       "link": "https://github.com/mattDev0/wsl-traffic-monitor"
+    },
+    {
+      "title": "StatiXOS — Pixel 3 / 3 XL",
+      "description": "Official Android 13 builds I maintained for blueline and crosshatch: device trees, kernel sources, monthly AOSP security patch merges and OTA releases. ~1,600 downloads, forked by another ROM project, and covered by third-party install guides.",
+      "tech": [
+        "AOSP",
+        "Linux Kernel",
+        "C",
+        "Bash",
+        "Make"
+      ],
+      "link": "https://xdaforums.com/t/rom-crosshatch-official-13-statixos-v6-2.4586989/"
     }
   ]
 }
