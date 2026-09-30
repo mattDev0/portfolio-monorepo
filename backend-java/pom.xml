@@ -28,7 +28,11 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-		<tomcat.version>11.0.22</tomcat.version>
+		<!-- The Boot 4.0.6 parent manages a Tomcat that still carries
+		     CVE-2026-65182 (CRITICAL), CVE-2026-65905 and CVE-2026-68525.
+		     11.0.25 is the named fix; 11.0.26 is the latest published patch.
+		     Drop this override once the parent manages 11.0.25 or later. -->
+		<tomcat.version>11.0.26</tomcat.version>
 	</properties>
 	<dependencies>
 		<dependency>

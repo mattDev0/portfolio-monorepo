@@ -107,6 +107,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan Frontend Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
+
       - name: Build and Push Java API
         uses: docker/build-push-action@v5
         with:
@@ -118,6 +127,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan Java API Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:${{ steps.shas.outputs.java_sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
+
       - name: Build and Push Rust API
         uses: docker/build-push-action@v5
         with:
@@ -128,6 +146,17 @@ jobs:
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Images are pushed before they are scanned, but nothing is deployed
+      # until every scan passes: a failing gate stops the job here.
+      - name: Scan Rust API Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
 
       - name: Deploy Frontend to Cloud Run
         run: |
