@@ -12,7 +12,7 @@ export default function SpotifyPlayer({ spotifyData, progressPercent, localProgr
         </span>
         {/* Custom Tooltip */}
         <div className="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-emerald-border)] p-2 text-center text-[10px] text-[var(--color-accent-emerald)] font-mono shadow-xl z-20">
-          {isPlaying ? 'Live playback' : isRecentlyPlayed ? 'Playback idle' : 'Offline'}
+          {isPlaying ? 'Live playback' : isRecentlyPlayed ? 'Last played song' : 'Offline'}
         </div>
       </div>
       
@@ -36,7 +36,7 @@ export default function SpotifyPlayer({ spotifyData, progressPercent, localProgr
               <p className="text-[var(--color-text-primary)] font-bold truncate group-hover:text-[var(--color-accent-emerald)] transition-colors">{spotifyData.title}</p>
               <p className="text-[var(--color-text-tertiary)] text-sm truncate">{spotifyData.artist}</p>
               <p className={`text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold ${isPlaying ? 'text-[var(--color-accent-emerald)]' : isRecentlyPlayed ? 'text-[var(--color-accent-amber)]' : 'text-[var(--color-text-muted)]'}`}>
-                {isPlaying ? 'Now Playing' : isRecentlyPlayed ? 'Recently Played' : 'Offline'}
+                {isPlaying ? 'Now Playing' : isRecentlyPlayed ? 'Last Played' : 'Offline'}
               </p>
             </div>
           </div>

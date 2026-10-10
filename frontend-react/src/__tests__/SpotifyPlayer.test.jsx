@@ -36,7 +36,11 @@ describe('SpotifyPlayer Component', () => {
       track_url: 'http://mock.url'
     };
     render(<SpotifyPlayer spotifyData={mockData} progressPercent={0} localProgressMs={0} formatTime={mockFormatTime} />);
-    expect(screen.getByText('Recently Played')).toBeInTheDocument();
+    expect(screen.getByText('Last Played')).toBeInTheDocument();
+    expect(screen.getByText('Recent Track')).toBeInTheDocument();
+    expect(screen.getByText('Recent Artist')).toBeInTheDocument();
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument();
+    expect(screen.queryByText('3:00')).not.toBeInTheDocument();
   });
 
   it('renders progress bar when playing', () => {

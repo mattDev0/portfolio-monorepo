@@ -48,6 +48,13 @@ Provides low-level system telemetry and external connectivity metrics.
 * Live Spotify playback status with robust authentication fallback handling.
 * Near-zero overhead performance.
 
+Spotify shows **Now Playing** during playback and **Last Played** when idle.
+The refresh token must grant both `user-read-currently-playing` and
+`user-read-recently-played`. Refreshing an existing token cannot add permissions:
+authorize the Spotify account again with both scopes, then replace the Rust
+service's `SPOTIFY_REFRESH_TOKEN`. Cloud Run can scale to zero, so its in-memory
+last-track cache cannot substitute for access to Spotify's playback history.
+
 ---
 
 ## 📂 Project Structure
