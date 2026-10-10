@@ -31,7 +31,7 @@ graph TD
 ### 1. Frontend Gateway (React / Vite)
 A responsive, dark-themed UI built with Tailwind CSS. It dynamically polls the backend services for real-time telemetry and GitHub activity.
 
-### 2. Java Engine (Spring Boot 4.0.6 / Java 21)
+### 2. Java Engine (Spring Boot 4.0.8 / Java 21)
 Handles external third-party API integration.
 * **Bucket4j Rate Limiting:** Enforces client IP rate limiting on API paths (`/api/**`) at 60 req/min, with automatic reverse proxy header resolution (`X-Forwarded-For`) and actuator endpoints (`/actuator/**`) exemption.
 * **Resilient API Clients:** Gracefully falls back to unauthenticated requests if GitHub credentials are not present or expire.
