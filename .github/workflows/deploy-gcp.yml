@@ -100,6 +100,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend-react
+          pull: true
           push: true
           tags: |
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}
@@ -120,6 +121,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./backend-java
+          pull: true
           push: true
           tags: |
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:${{ steps.shas.outputs.java_sha }}
@@ -140,6 +142,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./backend-rust
+          pull: true
           push: true
           tags: |
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}
