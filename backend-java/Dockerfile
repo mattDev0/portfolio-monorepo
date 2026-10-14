@@ -1,5 +1,5 @@
 # Stage 1: Build the Spring Boot application
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM eclipse-temurin:25-jdk-jammy AS builder
 WORKDIR /app
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     cp target/*.jar /app/app.jar
 
 # Stage 2: Create the lightweight runner image
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 
 # Create a non-root user and group with numeric UID/GID
