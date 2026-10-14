@@ -102,6 +102,7 @@ jobs:
           context: ./frontend-react
           pull: true
           push: true
+          provenance: false
           tags: |
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:latest
@@ -123,6 +124,7 @@ jobs:
           context: ./backend-java
           pull: true
           push: true
+          provenance: false
           tags: |
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:${{ steps.shas.outputs.java_sha }}
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:latest
@@ -144,6 +146,7 @@ jobs:
           context: ./backend-rust
           pull: true
           push: true
+          provenance: false
           tags: |
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}
             us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:latest
@@ -184,3 +187,24 @@ jobs:
             --region=us-central1 \
             --platform=managed \
             --quiet
+
+      - name: Prune Old Artifact Registry Images
+        run: |
+          REPO="us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio"
+          for SERVICE in portfolio-frontend portfolio-java-api portfolio-rust-api; do
+            IMAGE="${REPO}/${SERVICE}"
+            for PASS in 1 2; do
+              DIGESTS=$(gcloud artifacts docker images list "${IMAGE}" \
+                --include-tags \
+                --filter="-tags:latest" \
+                --format="value(version)")
+              if [ -z "${DIGESTS}" ]; then
+                break
+              fi
+              for DIGEST in ${DIGESTS}; do
+                gcloud artifacts docker images delete "${IMAGE}@${DIGEST}" \
+                  --delete-tags \
+                  --quiet || true
+              done
+            done
+          done
