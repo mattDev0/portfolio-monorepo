@@ -31,17 +31,17 @@ graph TD
 ### 1. Frontend Gateway (React / Vite)
 A responsive, dark-themed UI built with Tailwind CSS. It dynamically polls the backend services for real-time telemetry and GitHub activity.
 
-### 2. Java Engine (Spring Boot 4.0.8 / Java 21)
+### 2. Java Engine (Spring Boot 4.1.1 / Java 25)
 Handles external third-party API integration.
 * **Bucket4j Rate Limiting:** Enforces client IP rate limiting on API paths (`/api/**`) at 60 req/min, with automatic reverse proxy header resolution (`X-Forwarded-For`) and actuator endpoints (`/actuator/**`) exemption.
 * **Resilient API Clients:** Gracefully falls back to unauthenticated requests if GitHub credentials are not present or expire.
 * **DTO Serialization:** Fully typed `InfrastructureMetrics` DTO replacement to prevent serialization issues.
 * **Robust Test Isolation:** Prevents `TaskScheduler` execution overlap and database locks in integration tests using a custom `NoOpTaskSchedulerConfig`.
-* Tomcat runtime version overridden to `11.0.22` to patch critical CVEs.
+* Tomcat runtime version overridden to `11.0.26` to patch critical CVEs.
 
 ### 3. Rust Engine (Axum/Tokio)
 Provides low-level system telemetry and external connectivity metrics.
-* **Axum Nested Routing & tower-governor Rate Limiting:** Enforces client IP rate limiting on API paths (`/api/*`) at 60 req/min with `SmartIpKeyExtractor` (bypassing reverse proxy grouping), while leaving the Kubernetes `/healthz` endpoint completely exempt to avoid CrashLoopBackOff loops.
+* **Axum Nested Routing & tower-governor Rate Limiting:** Enforces client IP rate limiting on API paths (`/api/*`) at 60 req/min with `SmartIpKeyExtractor` (bypassing reverse proxy grouping), while leaving `/health` (Cloud Run) and `/healthz` (Kubernetes) completely exempt to avoid probe failures.
 * **Graceful Shutdowns:** Monitors Unix termination signals and cancels background telemetry tasks using a `CancellationToken`.
 * Real-time network telemetry (ICMP ping latency, availability) queried from Prometheus.
 * CPU, memory, and thread utilization metrics.

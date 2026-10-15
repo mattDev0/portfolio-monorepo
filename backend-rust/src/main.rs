@@ -95,8 +95,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/spotify", get(get_spotify))
         .layer(rate_limit_layer);
 
-    // Health route — NOT rate-limited
+    // Health routes — NOT rate-limited.
+    // Cloud Run's Google Frontend (GFE) reserves paths ending in 'z' (/healthz)
+    // and intercepts them with a GFE 404 before reaching the container. Expose
+    // /health for Cloud Run and external checks while keeping /healthz for K8s.
     let app = Router::new()
+        .route("/health", get(get_health))
         .route("/healthz", get(get_health))
         .merge(api_routes)
         .layer(cors)
