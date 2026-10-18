@@ -120,7 +120,7 @@ All microservices adhere to strict DevSecOps patterns and Kubernetes security be
 
 While Google Cloud Run serves as the primary production runtime for serverless scale and zero-idle operations, complete Kubernetes manifests are maintained in `infrastructure/k8s/` for hybrid/on-prem deployments with high availability and automated healing:
 * **Kustomize Declarative Manifests:** Ensures atomic, deterministic cluster configurations.
-* **Health Probes:** Comprehensive `livenessProbe`, `readinessProbe`, and `startupProbe` checks implemented across all APIs to verify endpoints (e.g., `/healthz` and `/actuator/health`) before accepting traffic.
+* **Health Probes:** Comprehensive `livenessProbe`, `readinessProbe`, and `startupProbe` checks implemented across all APIs to verify endpoints (e.g., `/health` for Cloud Run/external routing, `/healthz` for K8s probes, and `/actuator/health`) before accepting traffic.
 * **Pod Disruption Budgets (PDB):** Enforces a `minAvailable: 1` requirement during evictions or node drains to maintain zero downtime.
 * **kubeconform Validation:** CI pipelines strictly validate all K8s manifests against official Kubernetes schemas prior to deployment.
 
@@ -166,7 +166,7 @@ sequenceDiagram
 
 ### Prerequisites
 * Node.js (v18+)
-* Java 21+ & Maven
+* Java 25+ (Maven via the included ./mvnw wrapper)
 * Rust & Cargo
 * Docker & Docker Compose
 
