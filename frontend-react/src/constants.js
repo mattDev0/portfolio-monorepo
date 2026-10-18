@@ -36,7 +36,7 @@ export const TOPOLOGY_INFO = {
   },
   java: {
     title: "backend-java Service",
-    tech: "Java 21 + Spring Boot 3",
+    tech: "Java 25 + Spring Boot 4",
     protocol: "HTTPS (Cloud Run Ingress)",
     description: "Enterprise-grade Spring Boot microservice. Manages caching abstractions using Spring Cache (@Cacheable) to bypass public rate boundaries, pulling recent commit payloads from the GitHub API.",
     badge: "Microservice"
