@@ -8,8 +8,9 @@ RUN npm run build
 
 # Stage 2: Serve with Nginx (Unprivileged)
 FROM nginxinc/nginx-unprivileged:alpine
-# Remove default Nginx config
-RUN rm /etc/nginx/conf.d/default.conf
+USER 0
+RUN apk upgrade --no-cache && rm /etc/nginx/conf.d/default.conf
+USER 101
 # Copy custom Nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy the built assets from the builder stage to Nginx's web folder
