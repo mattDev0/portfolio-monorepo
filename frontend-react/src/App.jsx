@@ -858,7 +858,7 @@ function App() {
               <div>
                 <h4 className="text-xs font-bold uppercase text-[var(--color-text-tertiary)] tracking-wider mb-2">Platform Evolution</h4>
                 <p className="text-[var(--color-text-tertiary)] text-[11px] mb-3 leading-relaxed">
-                  The platform originally ran on a self-managed K3s cluster with Traefik and cert-manager. Once the cluster&apos;s cost and operational overhead outgrew the workload, it was migrated to Docker Compose behind Caddy, with the trade-offs recorded in an ADR. Cluster-only features now degrade gracefully and report themselves unavailable rather than failing. The Kubernetes manifests remain validated in CI as a supported deployment target.
+                  The platform originally ran on a self-managed K3s cluster with Traefik and cert-manager. Once the cluster&apos;s cost and operational overhead outgrew the workload, it was migrated to Docker Compose behind Caddy, with the trade-offs recorded in an ADR. Cluster-only features now stay hidden until a cluster is connected. The Kubernetes manifests remain validated in CI as a supported deployment target.
                 </p>
               </div>
 
