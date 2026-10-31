@@ -10,6 +10,8 @@ A high-performance, microservice-backed personal portfolio demonstrating full-st
 ![Security](https://img.shields.io/badge/Security-Trivy_Scanned-brightgreen)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions_%2B_Cloud_Run-blueviolet)
 
+![Portfolio homepage](docs/screenshots/portfolio-home.png)
+
 ---
 
 ## 🏗️ System Architecture
