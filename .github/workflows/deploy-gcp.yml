@@ -59,13 +59,22 @@ jobs:
         working-directory: ./backend-rust
         run: cargo test
 
-  deploy:
+  build:
     needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
-
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - service: portfolio-frontend
+            dir: frontend-react
+          - service: portfolio-java-api
+            dir: backend-java
+          - service: portfolio-rust-api
+            dir: backend-rust
     steps:
       - uses: actions/checkout@v7
         with:
@@ -86,6 +95,57 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
+      - name: Compute Component SHA
+        id: sha
+        run: echo "sha=$(git log -1 --format=%H -- ${{ matrix.dir }}/)" >> "$GITHUB_OUTPUT"
+
+      # Each image gets its own cache scope. Without one, every build overwrites the
+      # shared cache entry and only the last image built ever gets a cache hit.
+      - name: Build and Push ${{ matrix.service }}
+        uses: docker/build-push-action@v7
+        with:
+          context: ./${{ matrix.dir }}
+          pull: true
+          push: true
+          provenance: false
+          tags: |
+            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/${{ matrix.service }}:${{ steps.sha.outputs.sha }}
+            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/${{ matrix.service }}:latest
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      # Images are pushed before they are scanned, but nothing is deployed
+      # until every scan passes: the deploy job needs every build to succeed.
+      - name: Scan ${{ matrix.service }} Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/${{ matrix.service }}:${{ steps.sha.outputs.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
       - name: Compute Component SHAs
         id: shas
         run: |
@@ -95,74 +155,6 @@ jobs:
           echo "frontend_sha=$FRONTEND_SHA" >> $GITHUB_OUTPUT
           echo "java_sha=$JAVA_SHA" >> $GITHUB_OUTPUT
           echo "rust_sha=$RUST_SHA" >> $GITHUB_OUTPUT
-
-      - name: Build and Push Frontend
-        uses: docker/build-push-action@v7
-        with:
-          context: ./frontend-react
-          pull: true
-          push: true
-          provenance: false
-          tags: |
-            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}
-            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Scan Frontend Image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-frontend:${{ steps.shas.outputs.frontend_sha }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL'
-
-      - name: Build and Push Java API
-        uses: docker/build-push-action@v7
-        with:
-          context: ./backend-java
-          pull: true
-          push: true
-          provenance: false
-          tags: |
-            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:${{ steps.shas.outputs.java_sha }}
-            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Scan Java API Image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-java-api:${{ steps.shas.outputs.java_sha }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL'
-
-      - name: Build and Push Rust API
-        uses: docker/build-push-action@v7
-        with:
-          context: ./backend-rust
-          pull: true
-          push: true
-          provenance: false
-          tags: |
-            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}
-            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Images are pushed before they are scanned, but nothing is deployed
-      # until every scan passes: a failing gate stops the job here.
-      - name: Scan Rust API Image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/portfolio-rust-api:${{ steps.shas.outputs.rust_sha }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL'
 
       - name: Deploy Frontend to Cloud Run
         run: |
