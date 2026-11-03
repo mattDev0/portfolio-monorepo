@@ -2,13 +2,17 @@
 FROM rust:slim-bookworm AS builder
 WORKDIR /usr/src/app
 
-# Copy dependency definition and source files
+# Build the dependencies alone first, against a placeholder main.rs, so this
+# layer stays cached until Cargo.toml or Cargo.lock changes.
 COPY Cargo.toml Cargo.lock* ./
-COPY src ./src
+RUN mkdir src && echo 'fn main() {}' > src/main.rs && \
+    cargo build --release && \
+    rm -rf src
 
-# Compile in release mode using BuildKit cache mounts
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/usr/src/app/target \
+# Build the real binary. The touch makes cargo rebuild this crate instead of
+# reusing the placeholder build.
+COPY src ./src
+RUN touch src/main.rs && \
     cargo build --release && \
     cp target/release/backend-rust /usr/local/bin/backend-rust
 
