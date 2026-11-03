@@ -6,12 +6,14 @@ COPY mvnw pom.xml ./
 # Make the wrapper executable (just in case)
 RUN chmod +x mvnw
 
-# Copy the source code
-COPY src ./src
+# Download dependencies alone first, so this layer stays cached until pom.xml
+# changes.
+# hadolint ignore=DL3059
+RUN ./mvnw -B dependency:go-offline
 
-# Build and package the application using BuildKit cache mount
-RUN --mount=type=cache,target=/root/.m2 \
-    ./mvnw package -DskipTests && \
+# Copy the source code and build
+COPY src ./src
+RUN ./mvnw -B package -DskipTests && \
     cp target/*.jar /app/app.jar
 
 # Stage 2: Create the lightweight runner image
