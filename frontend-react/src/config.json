@@ -108,7 +108,8 @@
         "Prometheus",
         "Grafana"
       ],
-      "link": "https://github.com/mattDev0/devops-control-center"
+      "link": "https://github.com/mattDev0/devops-control-center",
+      "incidentsLink": "https://github.com/mattDev0/devops-control-center/tree/main/docs/incidents"
     },
     {
       "title": "Polyglot Microservice Portfolio",

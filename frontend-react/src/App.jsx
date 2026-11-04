@@ -361,6 +361,18 @@ function App() {
                         <span>View Repository</span>
                         <span>→</span>
                       </a>
+
+                      {devopsProject.incidentsLink && (
+                        <a
+                          href={devopsProject.incidentsLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
+                        >
+                          <span>Incident Write-ups</span>
+                          <span>→</span>
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -919,6 +931,16 @@ function App() {
               >
                 View Repository Code
               </a>
+              {portfolioConfig.projects.find(p => p.title === "DevOps Control Center")?.incidentsLink && (
+                <a
+                  href={portfolioConfig.projects.find(p => p.title === "DevOps Control Center")?.incidentsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
+                >
+                  Incident Write-ups
+                </a>
+              )}
               <button
                 onClick={() => setShowDevOpsCaseStudy(false)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-[var(--color-bg-tag)] hover:bg-[var(--color-hover-bg)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs cursor-pointer"
