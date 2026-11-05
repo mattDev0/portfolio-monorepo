@@ -112,6 +112,13 @@
       "incidentsLink": "https://github.com/mattDev0/devops-control-center/tree/main/docs/incidents"
     },
     {
+      "title": "K3s GitOps Lab",
+      "description": "Single-node Kubernetes lab on an 8 GB Linode VM where everything deploys through Argo CD from git, with drift correction. A 99% SLO with multi-window burn-rate alerts tested in CI, a planned bad release that the alerts caught and a git revert rolled back, written up with measured times, and Terraform describing the hand-built VM. Synthetic traffic only.",
+      "tech": ["Kubernetes", "Argo CD", "Prometheus", "Grafana", "Terraform", "Rust"],
+      "link": "https://github.com/mattDev0/k3s-gitops-lab",
+      "incidentsLink": "https://github.com/mattDev0/k3s-gitops-lab/blob/main/docs/incidents/2026-11-05-bad-release-rollback.md"
+    },
+    {
       "title": "Polyglot Microservice Portfolio",
       "description": "Production monorepo serving this site — React frontend backed by live Rust (Axum) and Spring Boot APIs with automated CI/CD, Trivy scanning, and zero-downtime K8s deployments.",
       "tech": [

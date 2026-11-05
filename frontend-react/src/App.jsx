@@ -395,6 +395,9 @@ function App() {
                   } else if (project.title.includes("WSL")) {
                     accentClass = "border-t-[var(--color-accent-teal)]";
                     emoji = "🖥️";
+                  } else if (project.title.includes("GitOps")) {
+                    accentClass = "border-t-[var(--color-accent-orange)]";
+                    emoji = "☸️";
                   }
 
                   return (
@@ -431,6 +434,17 @@ function App() {
                         >
                           View Repository <span className="ml-1">→</span>
                         </a>
+
+                        {project.incidentsLink && (
+                          <a
+                            href={project.incidentsLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 border border-[var(--color-accent-emerald-border)] rounded-lg text-xs font-semibold text-[var(--color-accent-emerald)] hover:text-[var(--color-accent-emerald-solid-hover)] hover:border-[var(--color-accent-emerald)] inline-flex items-center transition-all duration-300 w-full justify-center mt-2"
+                          >
+                            Incident Write-up <span className="ml-1">→</span>
+                          </a>
+                        )}
                       </div>
                     </div>
                   );
