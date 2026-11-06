@@ -1,24 +1,20 @@
 # Stage 1: Build the Leptos WASM application
 FROM rust:1.95-slim-bookworm AS builder
 
-# Install build dependencies
+# Install build dependencies, Tailwind CLI, Trunk, and WASM target
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Tailwind CSS standalone CLI v4.3.3
-RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 && \
-    echo "dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a  tailwindcss-linux-x64" | sha256sum -c - && \
-    chmod +x tailwindcss-linux-x64 && \
-    mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
-
-# Install Trunk v0.22.1
-RUN cargo install --locked trunk@0.22.1 --ignore-rust-version
-
-# Add WASM target
-RUN rustup target add wasm32-unknown-unknown
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 \
+    && echo "dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a  tailwindcss-linux-x64" > tailwind.sha256 \
+    && sha256sum -c tailwind.sha256 \
+    && rm tailwind.sha256 \
+    && chmod +x tailwindcss-linux-x64 \
+    && mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss \
+    && cargo install --locked trunk@0.22.1 --ignore-rust-version \
+    && rustup target add wasm32-unknown-unknown
 
 WORKDIR /workspace
 
