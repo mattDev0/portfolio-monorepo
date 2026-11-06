@@ -7,7 +7,7 @@ It compiles to WebAssembly (`wasm32-unknown-unknown`) served statically through 
 ## Tech Stack
 
 - **Framework**: [Leptos 0.8](https://leptos.dev/) (CSR mode)
-- **Language**: Rust (Edition 2024, toolchain pinned to 1.95.0)
+- **Language**: Rust (Edition 2024, toolchain pinned to 1.95)
 - **Bundler & Dev Server**: [Trunk](https://trunkrs.dev/) 0.22.1
 - **Styling**: Tailwind CSS v4 (using the standalone CLI)
 - **Shared Types**: `portfolio-api-types` (local path dependency)
@@ -17,17 +17,18 @@ It compiles to WebAssembly (`wasm32-unknown-unknown`) served statically through 
 
 ### Prerequisites
 
-1. Rust 1.95.0 with the `wasm32-unknown-unknown` target:
+1. Rust 1.95 with the `wasm32-unknown-unknown` target:
    ```bash
    rustup target add wasm32-unknown-unknown
    ```
-2. Trunk:
+2. Trunk 0.22.1:
    ```bash
-   cargo install --locked trunk@0.22.1 --ignore-rust-version
+   cargo install --locked trunk@0.22.1
    ```
 3. Tailwind CSS standalone CLI (v4.3.3):
    ```bash
-   curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64
+   curl -fsSLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64
+   echo "dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a  tailwindcss-linux-x64" | sha256sum -c -
    chmod +x tailwindcss-linux-x64
    sudo mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
    ```
@@ -37,16 +38,29 @@ It compiles to WebAssembly (`wasm32-unknown-unknown`) served statically through 
 To start the Trunk local development server with hot-reloading:
 
 ```bash
-trunk serve
+trunk serve --port 3002
 ```
 
-Trunk executes Tailwind CSS automatically before each build using the configured build hook in `Trunk.toml`, serving the application at `http://localhost:8080`.
+Trunk runs Tailwind before each build (the hook in `Trunk.toml`). Use a port other than
+8080, which the local Rust API uses.
 
 ### Runtime Configuration
 
-The frontend dynamically detects its runtime environment:
-- When running locally (`localhost`, `127.0.0.1`, or when the local dev query flag is present), requests to `/api/v1/system` route to the local Rust service (`http://localhost:8081` by default) and `/api/v1/network` route to the local Java service (`http://localhost:8082` by default).
-- In production (`mattdev0.tech`), API requests route through the shared domain endpoints (`/api/v1/...`).
+`src/api.rs` picks the API base URLs the same way `frontend-react/src/api.js` does:
+
+- **Local** when the build-time variable `PORTFOLIO_LOCAL_DEV` is `1`, `true`, `yes`,
+  `local`, `dev` or `development`; or, unless it's set to `0`, `false`, `no`, `prod` or
+  `production`, when it's a debug build (`trunk serve`) or the page is opened on
+  `localhost`, `127.0.0.1`, `::1` or `0.0.0.0`. Local calls go to the Rust API on
+  `http://localhost:8080` and the Java API on `http://localhost:8081`, which can be changed
+  at build time with `PORTFOLIO_LOCAL_RUST_API_BASE_URL` and
+  `PORTFOLIO_LOCAL_JAVA_API_BASE_URL`.
+- **Production** otherwise: the browser calls the Rust and Java services directly on
+  their Cloud Run `*.run.app` URLs.
+
+Endpoints used: Rust `/api/status`, `/api/status/history`, `/api/status/network`,
+`/api/status/network/history` and `/api/spotify`; Java `/api/infrastructure/metrics` and
+`/api/github/activity`.
 
 ## Building for Production
 
@@ -69,7 +83,7 @@ docker build -f frontend-leptos/Dockerfile -t portfolio-frontend-leptos:local .
 To run the container locally:
 
 ```bash
-docker run --rm -p 8080:8080 portfolio-frontend-leptos:local
+docker run --rm -p 3001:8080 portfolio-frontend-leptos:local
 ```
 
 ## Bundle Size Comparison (Stage 1)

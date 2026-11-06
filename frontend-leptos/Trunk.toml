@@ -9,3 +9,9 @@ ignore = ["style/output.css"]
 stage = "pre_build"
 command = "tailwindcss"
 command_arguments = ["-i", "style/input.css", "-o", "style/output.css", "--minify"]
+
+# Pinned so builds use the binaries installed in the Dockerfile instead of
+# downloading them. wasm_bindgen must match the wasm-bindgen version in Cargo.lock.
+[tools]
+wasm_bindgen = "0.2.130"
+wasm_opt = "version_131"
