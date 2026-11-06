@@ -8,7 +8,7 @@
   "linkedinUrl": "https://www.linkedin.com/in/mattDev0",
   "resumeUrl": "https://storage.googleapis.com/mattdev0-portfolio-assets/resume.pdf",
   "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
-  "about": "Software engineer and DevOps specialist focused on systems-level engineering, high-performance backends, and production cloud infrastructure.\n\nI've shipped custom Android OS builds (StatixOS, helluvaOS), built polyglot microservices in Rust and Java, and run production workloads on single-node Kubernetes (K3s), then migrated them to Docker Compose, with automated CI/CD pipelines. My strongest work bridges the gap between low-level systems programming and modern cloud-native architecture.",
+  "about": "Software engineer and DevOps specialist who builds, deploys and operates the systems I write.\n\nI shipped custom Android OS builds (StatiXOS, helluvaOS), built polyglot microservices in Rust and Java, and run a live platform on Azure behind GitHub Actions CI/CD, with Prometheus and Grafana alerting and verified backups. This site's services run on Google Cloud Run. I also built a K3s GitOps lab with Argo CD, SLO burn-rate alerts and a measured git-revert rollback.",
   "highlights": [
     {
       "icon": "🔧",
@@ -18,7 +18,7 @@
     {
       "icon": "☁️",
       "label": "Cloud & DevOps",
-      "detail": "Docker, Kubernetes (K3s), GitHub Actions CI/CD, Trivy"
+      "detail": "Docker, Kubernetes (K3s), Argo CD, Cloud Run, GitHub Actions CI/CD"
     },
     {
       "icon": "⚡",
@@ -32,17 +32,20 @@
       "Java",
       "JavaScript",
       "Dart",
-      "Go",
       "Python",
       "Bash"
     ],
     "Infrastructure & Cloud": [
       "Kubernetes (K3s)",
+      "Argo CD",
       "Docker",
-      "Nginx",
+      "Terraform",
       "GitHub Actions CI/CD",
+      "Google Cloud Run",
+      "Azure",
+      "Caddy",
+      "Nginx",
       "Linux System Admin",
-      "Google Cloud",
       "Trivy Scanning"
     ],
     "Frameworks & Libs": [
@@ -56,11 +59,10 @@
     "Observability & Tools": [
       "Prometheus",
       "Grafana",
+      "Alertmanager",
       "Git",
-      "Webpack",
       "Tailwind CSS",
-      "PostgreSQL",
-      "WebSockets"
+      "PostgreSQL"
     ]
   },
   "education": {
@@ -69,6 +71,11 @@
     "year": "2024"
   },
   "experience": [
+    {
+      "role": "DevOps & Platform Engineer",
+      "company": "DevOps Control Center (open source, self-directed)",
+      "description": "Run a live multi-service platform on an Azure VM: GitHub Actions CI/CD with Trivy scans, Grafana alerting to Discord, encrypted nightly backups with verified restores, and written incident reviews (Jan 2026 – present)."
+    },
     {
       "role": "Software Developer",
       "company": "GitHub Octernship",
@@ -80,9 +87,9 @@
       "description": "Official device maintainer for the Pixel 3 and 3 XL: device trees, kernels, monthly AOSP security patches and OTA releases, with the official release threads published on XDA."
     },
     {
-      "role": "Networking Tutor",
-      "company": "KHEMSAFE(NYSC)",
-      "description": "Instructing students on basic and core networking fundamentals and infrastructure."
+      "role": "Networking Tutor & IT Administrator",
+      "company": "KHEMSAFE (NYSC)",
+      "description": "Administered the computer lab and its network, and taught TCP/IP, subnetting, routing and DNS to 50+ students (June 2025 – June 2026)."
     }
   ],
   "projects": [
@@ -114,17 +121,25 @@
     {
       "title": "K3s GitOps Lab",
       "description": "Single-node Kubernetes lab on an 8 GB Linode VM where everything deploys through Argo CD from git, with drift correction. A 99% SLO with multi-window burn-rate alerts tested in CI, a planned bad release that the alerts caught and a git revert rolled back, written up with measured times, and Terraform describing the hand-built VM. Synthetic traffic only.",
-      "tech": ["Kubernetes", "Argo CD", "Prometheus", "Grafana", "Terraform", "Rust"],
+      "tech": [
+        "Kubernetes",
+        "Argo CD",
+        "Prometheus",
+        "Grafana",
+        "Terraform",
+        "Rust"
+      ],
       "link": "https://github.com/mattDev0/k3s-gitops-lab",
       "incidentsLink": "https://github.com/mattDev0/k3s-gitops-lab/blob/main/docs/incidents/2026-11-05-bad-release-rollback.md"
     },
     {
       "title": "Polyglot Microservice Portfolio",
-      "description": "Production monorepo serving this site — React frontend backed by live Rust (Axum) and Spring Boot APIs with automated CI/CD, Trivy scanning, and zero-downtime K8s deployments.",
+      "description": "Production monorepo serving this site: a React frontend backed by live Rust (Axum) and Spring Boot APIs, each deployed to Google Cloud Run by GitHub Actions CI/CD with Trivy scanning.",
       "tech": [
         "React",
         "Rust",
-        "Spring Boot"
+        "Spring Boot",
+        "Cloud Run"
       ],
       "link": "https://github.com/mattDev0/portfolio-monorepo"
     },
