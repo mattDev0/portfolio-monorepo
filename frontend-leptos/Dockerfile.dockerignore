@@ -1,0 +1,6 @@
+*
+!shared/portfolio-api-types/
+!frontend-leptos/
+**/target/
+frontend-leptos/dist/
+frontend-leptos/style/output.css

@@ -1,0 +1,170 @@
+{
+  "name": "Odunayo Abraham",
+  "title": "DevOps Engineer & Software Developer",
+  "location": "Lagos, Nigeria",
+  "openToRemote": true,
+  "email": "amatthew642@gmail.com",
+  "githubUrl": "https://github.com/mattDev0",
+  "linkedinUrl": "https://www.linkedin.com/in/mattDev0",
+  "resumeUrl": "https://storage.googleapis.com/mattdev0-portfolio-assets/resume.pdf",
+  "tagline": "Bridging low-level systems, high-performance backends, and modern web architecture.",
+  "about": "Software engineer and DevOps specialist who builds, deploys and operates the systems I write.\n\nI shipped custom Android OS builds (StatiXOS, helluvaOS), built polyglot microservices in Rust and Java, and run a live platform on Azure behind GitHub Actions CI/CD, with Prometheus and Grafana alerting and verified backups. This site's services run on Google Cloud Run. I also built a K3s GitOps lab with Argo CD, SLO burn-rate alerts and a measured git-revert rollback.",
+  "highlights": [
+    {
+      "icon": "🔧",
+      "label": "Systems & OS",
+      "detail": "Custom AOSP ROMs, Linux kernel workflows"
+    },
+    {
+      "icon": "☁️",
+      "label": "Cloud & DevOps",
+      "detail": "Docker, Kubernetes (K3s), Argo CD, Cloud Run, GitHub Actions CI/CD"
+    },
+    {
+      "icon": "⚡",
+      "label": "Backend",
+      "detail": "Rust (Axum), Java (Spring Boot), rate limiting, OAuth"
+    }
+  ],
+  "skills": {
+    "Languages": [
+      "Rust",
+      "Java",
+      "JavaScript",
+      "Dart",
+      "Python",
+      "Bash"
+    ],
+    "Infrastructure & Cloud": [
+      "Kubernetes (K3s)",
+      "Argo CD",
+      "Docker",
+      "Terraform",
+      "GitHub Actions CI/CD",
+      "Google Cloud Run",
+      "Azure",
+      "Caddy",
+      "Nginx",
+      "Linux System Admin",
+      "Trivy Scanning"
+    ],
+    "Frameworks & Libs": [
+      "Axum",
+      "Spring Boot",
+      "React",
+      "Flutter",
+      "Vite",
+      "Tokio"
+    ],
+    "Observability & Tools": [
+      "Prometheus",
+      "Grafana",
+      "Alertmanager",
+      "Git",
+      "Tailwind CSS",
+      "PostgreSQL"
+    ]
+  },
+  "education": {
+    "degree": "BSc. Computer Science",
+    "institution": "Federal University Oye-Ekiti",
+    "year": "2024"
+  },
+  "experience": [
+    {
+      "role": "DevOps & Platform Engineer",
+      "company": "DevOps Control Center (open source, self-directed)",
+      "description": "Run a live multi-service platform on an Azure VM: GitHub Actions CI/CD with Trivy scans, Grafana alerting to Discord, encrypted nightly backups with verified restores, and written incident reviews (Jan 2026 – present)."
+    },
+    {
+      "role": "Software Developer",
+      "company": "GitHub Octernship",
+      "description": "Engineered cross-platform solutions utilizing Flutter and Rust."
+    },
+    {
+      "role": "Android OS Maintainer",
+      "company": "StatiXOS / helluvaOS (Open Source)",
+      "description": "Official device maintainer for the Pixel 3 and 3 XL: device trees, kernels, monthly AOSP security patches and OTA releases, with the official release threads published on XDA."
+    },
+    {
+      "role": "Networking Tutor & IT Administrator",
+      "company": "KHEMSAFE (NYSC)",
+      "description": "Administered the computer lab and its network, and taught TCP/IP, subnetting, routing and DNS to 50+ students (June 2025 – June 2026)."
+    }
+  ],
+  "projects": [
+    {
+      "title": "Flutter & Rust Octernship",
+      "description": "Cross-platform application using a native Flutter UI with a Rust FFI backend core, demonstrating high-performance interop across mobile platforms.",
+      "tech": [
+        "Flutter",
+        "Rust",
+        "Dart"
+      ],
+      "link": "https://github.com/mattDev0/flutter_rust_octernship"
+    },
+    {
+      "title": "DevOps Control Center",
+      "description": "Self-hosted infrastructure dashboard with live container and deployment management, real-time telemetry and JWT-secured role-based access. Originally on a K3s cluster, migrated to Docker Compose behind Caddy after documenting the cost and operational trade-offs in an ADR.",
+      "tech": [
+        "Rust",
+        "React",
+        "Java",
+        "Spring Boot",
+        "Docker",
+        "Prometheus",
+        "Grafana"
+      ],
+      "link": "https://github.com/mattDev0/devops-control-center",
+      "incidentsLink": "https://github.com/mattDev0/devops-control-center/tree/main/docs/incidents"
+    },
+    {
+      "title": "K3s GitOps Lab",
+      "description": "Single-node Kubernetes lab on an 8 GB Linode VM where everything deploys through Argo CD from git, with drift correction. A 99% SLO with multi-window burn-rate alerts tested in CI, a planned bad release that the alerts caught and a git revert rolled back, written up with measured times, and Terraform describing the hand-built VM. Synthetic traffic only.",
+      "tech": [
+        "Kubernetes",
+        "Argo CD",
+        "Prometheus",
+        "Grafana",
+        "Terraform",
+        "Rust"
+      ],
+      "link": "https://github.com/mattDev0/k3s-gitops-lab",
+      "incidentsLink": "https://github.com/mattDev0/k3s-gitops-lab/blob/main/docs/incidents/2026-11-05-bad-release-rollback.md"
+    },
+    {
+      "title": "Polyglot Microservice Portfolio",
+      "description": "Production monorepo serving this site: a React frontend backed by live Rust (Axum) and Spring Boot APIs, each deployed to Google Cloud Run by GitHub Actions CI/CD with Trivy scanning.",
+      "tech": [
+        "React",
+        "Rust",
+        "Spring Boot",
+        "Cloud Run"
+      ],
+      "link": "https://github.com/mattDev0/portfolio-monorepo"
+    },
+    {
+      "title": "WSL Traffic Monitor",
+      "description": "Lightweight native Windows desktop application for real-time WSL2 network traffic monitoring with a glanceable floating overlay UI, redb history persistence, and Win32 IP Helper API adapter discovery.",
+      "tech": [
+        "Rust",
+        "Win32 API",
+        "redb",
+        "Windows"
+      ],
+      "link": "https://github.com/mattDev0/wsl-traffic-monitor"
+    },
+    {
+      "title": "StatiXOS — Pixel 3 / 3 XL",
+      "description": "Official Android 13 builds I maintained for blueline and crosshatch: device trees, kernel sources, monthly AOSP security patch merges and OTA releases. ~1,600 downloads, forked by another ROM project, and covered by third-party install guides.",
+      "tech": [
+        "AOSP",
+        "Linux Kernel",
+        "C",
+        "Bash",
+        "Make"
+      ],
+      "link": "https://xdaforums.com/t/rom-crosshatch-official-13-statixos-v6-2.4586989/"
+    }
+  ]
+}

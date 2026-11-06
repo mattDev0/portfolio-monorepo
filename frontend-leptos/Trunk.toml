@@ -1,0 +1,11 @@
+[build]
+target = "index.html"
+dist = "dist"
+
+[watch]
+ignore = ["style/output.css"]
+
+[[hooks]]
+stage = "pre_build"
+command = "tailwindcss"
+command_arguments = ["-i", "style/input.css", "-o", "style/output.css", "--minify"]
