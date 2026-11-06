@@ -620,7 +620,7 @@ function App() {
 
                 <div className="mt-6 pt-3 border-t border-[var(--color-border-primary)] text-[9px] text-[var(--color-text-muted)] font-mono flex items-center justify-between">
                   <span>DEPLOYMENT: live</span>
-                  <span>VM: azure-standard-b1s</span>
+                  <span>PLATFORM: Cloud Run (us-central1)</span>
                 </div>
               </div>
 
