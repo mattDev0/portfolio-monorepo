@@ -82,7 +82,7 @@ portfolio-monorepo/
 ├── frontend-leptos/                # Leptos (CSR) WebAssembly UI 🦀
 │   └── src/
 │
-├── frontend-react/                 # React UI ⚛️ (kept alongside Leptos until cutover transition concludes)
+├── frontend-react/                 # Previous React UI ⚛️ (no longer deployed; will be removed)
 │   ├── src/__tests__/              # Vitest + React Testing Library Suite
 │   └── src/
 │
@@ -104,7 +104,7 @@ portfolio-monorepo/
 The repository maintains rigorous automated testing standards across all microservices.
 
 * **Frontend (Leptos):** Unit tests powered by `cargo test` covering URL construction, time formatting, telemetry math, and config parsing.
-* **Frontend (React):** Uses `Vitest` and `@testing-library/react` (retained alongside Leptos until cutover transition concludes).
+* **Frontend (React):** Uses `Vitest` and `@testing-library/react` (previous UI, no longer deployed).
 * **Backend (Java):** Uses `JUnit 5`, `MockMvc`, and `MockRestServiceServer`. Ensures reliable integration with external REST APIs and correct JSON payload serialization.
 * **Backend (Rust):** Unit tests powered by `cargo test` and `wiremock`. Validates robust error handling, concurrency states, and mock Prometheus responses.
 
@@ -189,7 +189,7 @@ The Leptos frontend automatically detects local runtime when running under debug
 cd frontend-leptos
 trunk serve
 ```
-*(Note: `frontend-react` is preserved in the repository alongside `frontend-leptos` until the cutover transition concludes.)*
+*(The previous React UI in `frontend-react` is no longer deployed and will be removed.)*
 
 ### 2. Start the Java Microservice
 ```bash
