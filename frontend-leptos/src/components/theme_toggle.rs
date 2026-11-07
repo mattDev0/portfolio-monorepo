@@ -42,7 +42,7 @@ pub fn ThemeToggle() -> impl IntoView {
     view! {
         <button
             on:click=on_click
-            class="relative w-9 h-9 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-hover-bg)] text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-emerald)] hover:border-[var(--color-border-secondary)] transition-all duration-200 cursor-pointer flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[var(--color-focus-ring)] focus-visible:outline-offset-2"
+            class="relative w-9 h-9 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-hover-bg)] text-[var(--color-text-tertiary)] hover:text-[var(--color-accent)] hover:border-[var(--color-border-secondary)] transition-all duration-200 cursor-pointer flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[var(--color-focus-ring)] focus-visible:outline-offset-2"
             aria-label=aria_label
             title=title_text
         >

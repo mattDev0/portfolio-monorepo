@@ -26,9 +26,9 @@ pub fn SpotifyPlayer(
         };
 
         let dot_class = if is_playing {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_#10b981]"
+            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_var(--color-status-online)]"
         } else if is_recently_played {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-warning)] shadow-[0_0_8px_#f59e0b]"
+            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-warning)] shadow-[0_0_8px_var(--color-status-warning)]"
         } else {
             "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-muted)]"
         };
@@ -50,14 +50,14 @@ pub fn SpotifyPlayer(
                     <span class=dot_class></span>
                 </span>
                 // Custom Tooltip
-                <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-emerald-border)] p-2 text-center text-[10px] text-[var(--color-accent-emerald)] font-mono shadow-xl z-20">
+                <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-border)] p-2 text-center text-[10px] text-[var(--color-accent)] font-mono shadow-xl z-20">
                     {tooltip_text}
                 </div>
             </div>
 
-            <h3 class="text-lg font-bold text-[var(--color-accent-emerald)] mb-0 tracking-wide flex items-center font-sans">
+            <h3 class="text-lg font-bold text-[var(--color-accent)] mb-0 tracking-wide flex items-center font-sans">
                 <svg
-                    class="w-5 h-5 mr-2 text-[var(--color-accent-emerald)] group-hover:animate-spin"
+                    class="w-5 h-5 mr-2 text-[var(--color-accent)] group-hover:animate-spin"
                     style=format!("animation-duration: {}", anim_duration)
                     fill="currentColor"
                     viewBox="0 0 24 24"
@@ -92,7 +92,7 @@ pub fn SpotifyPlayer(
                     };
 
                     let state_text_class = if is_playing {
-                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent-emerald)]"
+                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent)]"
                     } else if is_recently_played {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent-amber)]"
                     } else {
@@ -111,12 +111,12 @@ pub fn SpotifyPlayer(
                                         }.into_any()
                                     } else {
                                         view! {
-                                            <div class="absolute inset-0 bg-gradient-to-tr from-[var(--color-accent-emerald-solid)] to-[var(--color-bg-primary)] opacity-50"></div>
+                                            <div class="absolute inset-0 bg-gradient-to-tr from-[var(--color-accent-solid)] to-[var(--color-bg-primary)] opacity-50"></div>
                                         }.into_any()
                                     }}
                                 </div>
                                 <div class="overflow-hidden flex-grow">
-                                    <p class="text-[var(--color-text-primary)] font-bold truncate group-hover:text-[var(--color-accent-emerald)] transition-colors">
+                                    <p class="text-[var(--color-text-primary)] font-bold truncate group-hover:text-[var(--color-accent)] transition-colors">
                                         {title}
                                     </p>
                                     <p class="text-[var(--color-text-tertiary)] text-sm truncate">
@@ -133,11 +133,11 @@ pub fn SpotifyPlayer(
                                     <div class="mt-5">
                                         <div class="w-full h-1 bg-[var(--color-bg-progress-track)] rounded-full overflow-hidden">
                                             <div
-                                                class="h-full bg-[var(--color-accent-emerald-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent-emerald)]"
+                                                class="h-full bg-[var(--color-accent-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent)]"
                                                 style=format!("width: {}%", percent)
                                             ></div>
                                         </div>
-                                        <div class="flex justify-between text-[9px] text-[var(--color-text-muted)] mt-1.5 font-mono">
+                                        <div class="flex justify-between text-[10px] text-[var(--color-text-muted)] mt-1.5 font-mono">
                                             <span>{format_time(Some(local_ms))}</span>
                                             <span>{format_time(Some(duration_ms))}</span>
                                         </div>
@@ -171,7 +171,7 @@ pub fn SpotifyPlayer(
                         href=track_url
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border border-[var(--color-accent-emerald-border)] hover:border-[var(--color-accent-emerald)] relative overflow-hidden transition-all duration-300 group flex flex-col justify-center cursor-pointer"
+                        class="hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border border-[var(--color-accent-border)] hover:border-[var(--color-accent)] relative overflow-hidden transition-all duration-300 group flex flex-col justify-center cursor-pointer"
                         style="box-shadow: var(--shadow-card)"
                     >
                         {view_content()}

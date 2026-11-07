@@ -1,3 +1,4 @@
+use crate::components::SectionHeading;
 use crate::config::{PortfolioConfig, ProjectItem};
 use leptos::prelude::*;
 
@@ -25,47 +26,43 @@ pub fn Projects(
 
     view! {
         <section id="projects" class="reveal-in space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--color-border-primary)] pb-3">
-                <h3 class="text-2xl font-extrabold text-[var(--color-text-primary)] tracking-wide">
-                    "Featured Projects"
-                </h3>
+            <SectionHeading eyebrow="Projects" title="Featured Projects" />
 
-                // Project Filter Controls
-                <div class="flex flex-wrap gap-2">
-                    <button
-                        on:click=move |_| set_selected_tech.set(None)
-                        class=move || {
-                            if selected_tech.get().is_none() {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_var(--color-accent-emerald-border)]"
-                            } else {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]"
-                            }
+            // Project Filter Controls
+            <div class="flex gap-2 overflow-x-auto sm:overflow-visible sm:flex-wrap pb-2 sm:pb-0 custom-scrollbar">
+                <button
+                    on:click=move |_| set_selected_tech.set(None)
+                    class=move || {
+                        if selected_tech.get().is_none() {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
+                        } else {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]"
                         }
-                    >
-                        "All"
-                    </button>
-                    {all_tech_tags.into_iter().map(|tag| {
-                        let tag_str = tag.clone();
-                        let tag_for_click = tag.clone();
-                        let tag_for_active = tag.clone();
-                        let is_active = move || selected_tech.get().as_ref() == Some(&tag_for_active);
-                        let btn_class = move || {
-                            if is_active() {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-emerald-solid)] border-[var(--color-accent-emerald-solid)] text-white shadow-[0_0_8px_var(--color-accent-emerald-border)]"
-                            } else {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
-                            }
-                        };
-                        view! {
-                            <button
-                                on:click=move |_| toggle_tech(&tag_for_click)
-                                class=btn_class
-                            >
-                                {tag_str}
-                            </button>
+                    }
+                >
+                    "All"
+                </button>
+                {all_tech_tags.into_iter().map(|tag| {
+                    let tag_str = tag.clone();
+                    let tag_for_click = tag.clone();
+                    let tag_for_active = tag.clone();
+                    let is_active = move || selected_tech.get().as_ref() == Some(&tag_for_active);
+                    let btn_class = move || {
+                        if is_active() {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
+                        } else {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                         }
-                    }).collect_view()}
-                </div>
+                    };
+                    view! {
+                        <button
+                            on:click=move |_| toggle_tech(&tag_for_click)
+                            class=btn_class
+                        >
+                            {tag_str}
+                        </button>
+                    }
+                }).collect_view()}
             </div>
 
             // Featured Card or Grid Layout
@@ -81,19 +78,19 @@ pub fn Projects(
                     if matches_devops {
                         Some(view! {
                             <div
-                                class="hover-lift backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-[var(--color-accent-emerald-solid)] border-x border-b border-[var(--color-border-primary)] relative overflow-hidden transition-all duration-300 group hover:border-[var(--color-accent-emerald-border)]"
-                                style="background: linear-gradient(to bottom right, var(--color-accent-emerald-bg), var(--color-bg-surface), var(--color-bg-primary)); box-shadow: var(--shadow-card)"
+                                class="hover-lift backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-[var(--color-accent-solid)] border-x border-b border-[var(--color-border-primary)] relative overflow-hidden transition-all duration-300 group hover:border-[var(--color-accent-border)]"
+                                style="background: linear-gradient(to bottom right, var(--color-accent-bg), var(--color-bg-surface), var(--color-bg-primary)); box-shadow: var(--shadow-card)"
                             >
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-emerald-bg)] rounded-full blur-2xl -z-10"></div>
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-bg)] rounded-full blur-2xl -z-10"></div>
                                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                     <div class="flex-1 space-y-4">
                                         <div class="flex items-center space-x-2">
-                                            <span class="bg-[var(--color-accent-emerald-bg)] text-[var(--color-accent-emerald)] border border-[var(--color-accent-emerald-border)] px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                                            <span class="bg-[var(--color-accent-bg)] text-[var(--color-accent)] border border-[var(--color-accent-border)] px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
                                                 "Featured Project"
                                             </span>
                                             <span class="text-xl">"⚙️"</span>
                                         </div>
-                                        <h4 class="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-emerald)] transition-colors tracking-wide">
+                                        <h4 class="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors tracking-wide">
                                             {devops_project.title.as_str()}
                                         </h4>
                                         <p class="text-[var(--color-text-secondary)] text-sm md:text-base leading-relaxed">
@@ -103,22 +100,23 @@ pub fn Projects(
                                         <div class="flex flex-wrap gap-1.5 pt-2">
                                             {devops_project.tech.iter().map(|tech| {
                                                 let tech_str = tech.as_str();
-                                                let t_active = tech.clone();
-                                                let is_tag_active = move || selected_tech.get().as_ref() == Some(&t_active);
+                                                let is_tag_active = move || selected_tech.get().as_deref() == Some(tech_str);
                                                 let tag_class = move || {
                                                     if is_tag_active() {
-                                                        "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-emerald-solid)] text-[var(--color-accent-emerald)]"
+                                                        "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-solid)] text-[var(--color-accent)]"
                                                     } else {
                                                         "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                                                     }
                                                 };
                                                 view! {
-                                                    <span
+                                                    <button
+                                                        type="button"
+                                                        aria-pressed=move || is_tag_active().to_string()
                                                         on:click=move |_| toggle_tech(tech_str)
                                                         class=tag_class
                                                     >
                                                         {tech_str}
-                                                    </span>
+                                                    </button>
                                                 }
                                             }).collect_view()}
                                         </div>
@@ -127,7 +125,7 @@ pub fn Projects(
                                     <div class="flex flex-col justify-center space-y-3 w-full md:w-64 flex-shrink-0">
                                         <button
                                             on:click=move |_| set_show_case_study.set(true)
-                                            class="px-5 py-3 bg-[var(--color-accent-emerald-solid)] hover:bg-[var(--color-accent-emerald-solid-hover)] text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5"
+                                            class="px-5 py-3 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5"
                                             style="box-shadow: var(--shadow-button)"
                                         >
                                             <span>"⚙️"</span>
@@ -167,7 +165,7 @@ pub fn Projects(
                 }}
 
                 // Other Projects Grid
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-start">
                     {move || {
                         let current_filter = selected_tech.get();
                         config.projects
@@ -201,13 +199,13 @@ where
     let (accent_class, emoji) = if project.title.contains("Flutter") {
         ("border-t-[var(--color-accent-orange)]", "📱")
     } else if project.title.contains("Portfolio") {
-        ("border-t-[var(--color-accent-emerald-solid)]", "🌐")
+        ("border-t-[var(--color-accent-solid)]", "🌐")
     } else if project.title.contains("WSL") {
-        ("border-t-[var(--color-accent-teal)]", "🖥️")
+        ("border-t-[var(--color-accent-gold)]", "🖥️")
     } else if project.title.contains("GitOps") {
         ("border-t-[var(--color-accent-orange)]", "☸️")
     } else {
-        ("border-t-[var(--color-accent-teal)]", "📁")
+        ("border-t-[var(--color-accent-gold)]", "📁")
     };
 
     let title = &project.title;
@@ -225,12 +223,12 @@ where
     let card_class = move || {
         let is_matched = is_card_matched();
         format!(
-            "hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border-t-2 {} border-x border-b transition-all duration-500 flex flex-col justify-between group {}",
+            "hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border-t-2 {} border-x border-b transition-all duration-500 flex flex-col justify-between group md:[&:last-child:nth-child(odd)]:col-span-2 {}",
             accent_class,
             if is_matched {
-                "border-[var(--color-accent-emerald-border)]"
+                "border-[var(--color-accent-border)]"
             } else {
-                "border-[var(--color-border-primary)] hover:border-[var(--color-accent-emerald-border)]"
+                "border-[var(--color-border-primary)] hover:border-[var(--color-accent-border)]"
             }
         )
     };
@@ -248,7 +246,7 @@ where
             <div>
                 <div class="flex items-center space-x-2 mb-2">
                     <span class="text-lg">{emoji}</span>
-                    <h4 class="text-lg font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-emerald)] transition-colors tracking-wide">
+                    <h4 class="text-lg font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors tracking-wide">
                         {title.as_str()}
                     </h4>
                 </div>
@@ -260,22 +258,23 @@ where
                 <div class="flex flex-wrap gap-1.5 mb-5">
                     {project.tech.iter().map(|tech| {
                         let tech_str = tech.as_str();
-                        let t_active = tech.clone();
-                        let is_tag_active = move || selected_tech.get().as_ref() == Some(&t_active);
+                        let is_tag_active = move || selected_tech.get().as_deref() == Some(tech_str);
                         let tag_class = move || {
                             if is_tag_active() {
-                                "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-emerald-solid)] text-[var(--color-accent-emerald)]"
+                                "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-solid)] text-[var(--color-accent)]"
                             } else {
                                 "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                             }
                         };
                         view! {
-                            <span
+                            <button
+                                type="button"
+                                aria-pressed=move || is_tag_active().to_string()
                                 on:click=move |_| toggle_tech(tech_str)
                                 class=tag_class
                             >
                                 {tech_str}
-                            </span>
+                            </button>
                         }
                     }).collect_view()}
                 </div>
@@ -284,7 +283,7 @@ where
                     href=link.as_str()
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="px-4 py-2 border border-[var(--color-accent-emerald-border)] rounded-lg text-xs font-semibold text-[var(--color-accent-emerald)] hover:text-[var(--color-accent-emerald-solid-hover)] hover:border-[var(--color-accent-emerald)] inline-flex items-center transition-all duration-300 w-full justify-center"
+                    class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-solid-hover)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center"
                 >
                     "View Repository" <span class="ml-1">"→"</span>
                 </a>
@@ -295,7 +294,7 @@ where
                             href=incidents
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="px-4 py-2 border border-[var(--color-accent-emerald-border)] rounded-lg text-xs font-semibold text-[var(--color-accent-emerald)] hover:text-[var(--color-accent-emerald-solid-hover)] hover:border-[var(--color-accent-emerald)] inline-flex items-center transition-all duration-300 w-full justify-center mt-2"
+                            class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-solid-hover)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center mt-2"
                         >
                             "Incident Write-up" <span class="ml-1">"→"</span>
                         </a>
