@@ -1,3 +1,4 @@
+use crate::components::EmojiIcon;
 use leptos::prelude::*;
 
 #[component]
@@ -69,7 +70,7 @@ pub fn TopologyNode(
             on:mouseleave=move |_| set_hovered_node.set(None)
             class=container_class
         >
-            <span class="text-lg md:text-xl mb-0.5">{icon}</span>
+            <span class="text-lg md:text-xl mb-0.5"><EmojiIcon glyph=icon /></span>
             <span class=title_class>{title}</span>
             <span class="text-[10px] text-[var(--color-text-muted)] font-mono mt-0.5">{tech}</span>
         </div>

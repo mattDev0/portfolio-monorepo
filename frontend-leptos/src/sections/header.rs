@@ -86,7 +86,10 @@ pub fn Header(config: &'static PortfolioConfig) -> impl IntoView {
                     style="background-image: var(--gradient-glow)"
                 ></div>
                 <img
-                    src="https://github.com/mattDev0.png"
+                    src="/avatar-53d31c1b.webp"
+                    width="112"
+                    height="112"
+                    fetchpriority="high"
                     alt=config.name.as_str()
                     class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-[var(--color-accent-border)] p-1 bg-[var(--color-bg-primary)] shadow-2xl transition-transform duration-500 group-hover:scale-105"
                 />

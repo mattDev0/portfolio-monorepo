@@ -1,4 +1,4 @@
-use crate::components::{GitHubActivity, Sparkline, SpotifyPlayer, TopologyNode};
+use crate::components::{GitHubActivity, Icon, Sparkline, SpotifyPlayer, TopologyNode};
 use crate::constants::get_topology_info;
 use crate::spotify::SpotifySignals;
 use crate::telemetry::TelemetrySignals;
@@ -65,7 +65,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
 
                             // Arrow Client -> Nginx
                             <div class="flex items-center justify-center text-[var(--color-text-muted)] font-mono text-xs py-1 md:py-0">
-                                <span class="md:hidden">"⬇️"</span>
+                                <span class="md:hidden"><Icon name="arrow-down" /></span>
                                 <span class="hidden md:inline text-[var(--color-accent)] opacity-40">
                                     "── HTTPS ──▶"
                                 </span>
@@ -85,7 +85,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
 
                             // Arrow Nginx -> K8s Namespace
                             <div class="flex items-center justify-center text-[var(--color-text-muted)] font-mono text-xs py-1 md:py-0">
-                                <span class="md:hidden">"⬇️"</span>
+                                <span class="md:hidden"><Icon name="arrow-down" /></span>
                                 <span class="hidden md:inline text-[var(--color-accent)] opacity-40">
                                     "── Proxy ──▶"
                                 </span>
@@ -102,7 +102,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                         "Platform: Google Cloud"
                                     </span>
                                     <span class="text-[10px] font-mono text-[var(--color-accent-gold)] bg-[var(--color-accent-bg)] px-1 py-0.5 rounded">
-                                        "🚀 GCP Cloud Run"
+                                        <Icon name="cloud" class="w-3 h-3 mr-1" />"GCP Cloud Run"
                                     </span>
                                 </div>
 
@@ -228,7 +228,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 }
                                 view! {
                                     <div class="text-center py-10 flex flex-col items-center justify-center space-y-3">
-                                        <span class="text-2xl opacity-40 animate-bounce">"🔍"</span>
+                                        <span class="text-2xl opacity-40 animate-bounce"><Icon name="search" /></span>
                                         <p class="text-[var(--color-text-muted)] text-xs leading-relaxed font-mono">
                                             "Hover over any node or container in the diagram to inspect microservice details, proxy routes, and deployment states."
                                         </p>
