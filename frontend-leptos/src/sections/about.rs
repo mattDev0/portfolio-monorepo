@@ -1,4 +1,4 @@
-use crate::components::SectionHeading;
+use crate::components::{EmojiIcon, SectionHeading};
 use crate::config::PortfolioConfig;
 use leptos::prelude::*;
 
@@ -21,7 +21,7 @@ pub fn About(config: &'static PortfolioConfig) -> impl IntoView {
                         view! {
                             <div class="hover-lift bg-[var(--color-bg-surface-elevated)] p-4 rounded-xl border border-[var(--color-border-primary)] hover:border-[var(--color-accent-border)] transition-all duration-300">
                                 <div class="flex items-center space-x-2.5 mb-1.5">
-                                    <span class="text-lg">{hl.icon.as_str()}</span>
+                                    <span class="text-lg"><EmojiIcon glyph=hl.icon.as_str() /></span>
                                     <h4 class="text-xs font-bold text-[var(--color-text-primary)] tracking-wide">
                                         {hl.label.as_str()}
                                     </h4>

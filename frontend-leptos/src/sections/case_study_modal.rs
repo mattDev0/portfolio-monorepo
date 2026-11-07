@@ -1,3 +1,4 @@
+use crate::components::{EmojiIcon, Icon};
 use crate::config::PortfolioConfig;
 use leptos::prelude::*;
 
@@ -80,25 +81,25 @@ pub fn CaseStudyModal(
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch justify-center my-4 py-4 px-3 border border-[var(--color-border-primary)] bg-[var(--color-hover-bg)] rounded-xl">
                                         // Client
                                         <div class="flex flex-col items-center justify-between bg-[var(--color-bg-surface-elevated)] p-3 rounded-lg border border-[var(--color-border-primary)] text-center shadow-md">
-                                            <span class="text-xl">"🌐"</span>
+                                            <span class="text-xl"><EmojiIcon glyph="🌐" /></span>
                                             <span class="text-[10px] font-bold text-[var(--color-text-primary)] uppercase tracking-widest mt-1">"Client Dashboard"</span>
                                             <span class="text-[10px] text-[var(--color-text-muted)] mt-1">"Vite + React UI Client"</span>
                                         </div>
                                         // Spring Gateway
                                         <div class="flex flex-col items-center justify-between bg-[var(--color-accent-bg)] p-3 rounded-lg border border-[var(--color-accent-border)] text-center shadow-md">
-                                            <span class="text-xl">"☕"</span>
+                                            <span class="text-xl"><EmojiIcon glyph="☕" /></span>
                                             <span class="text-[10px] font-bold text-[var(--color-accent)] uppercase tracking-widest mt-1">"Spring Gateway"</span>
                                             <span class="text-[10px] text-[var(--color-text-tertiary)] mt-1">"JWT auth, roles & API gateway"</span>
                                         </div>
                                         // Rust Agent
                                         <div class="flex flex-col items-center justify-between bg-[var(--color-accent-orange-bg)] p-3 rounded-lg border border-[var(--color-accent-orange-border)] text-center shadow-md">
-                                            <span class="text-xl">"🦀"</span>
+                                            <span class="text-xl"><EmojiIcon glyph="🦀" /></span>
                                             <span class="text-[10px] font-bold text-[var(--color-accent-orange)] uppercase tracking-widest mt-1">"Rust Agent"</span>
                                             <span class="text-[10px] text-[var(--color-text-tertiary)] mt-1">"Docker & host telemetry collector"</span>
                                         </div>
                                         // Observability
                                         <div class="flex flex-col items-center justify-between bg-[var(--color-accent-bg)] p-3 rounded-lg border border-[var(--color-accent-gold)] text-center shadow-md">
-                                            <span class="text-xl">"📊"</span>
+                                            <span class="text-xl"><EmojiIcon glyph="📊" /></span>
                                             <span class="text-[10px] font-bold text-[var(--color-accent-gold)] uppercase tracking-widest mt-1">"Prometheus + Grafana"</span>
                                             <span class="text-[10px] text-[var(--color-text-tertiary)] mt-1">"Metrics, alert rules & dashboards"</span>
                                         </div>
@@ -115,7 +116,7 @@ pub fn CaseStudyModal(
                                     class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white font-bold rounded-xl text-xs text-center transition-colors cursor-pointer flex items-center justify-center space-x-1.5"
                                     style="box-shadow: var(--shadow-button)"
                                 >
-                                    <span>"🚀"</span>
+                                    <Icon name="play" />
                                     <span>"Launch Live Demo (Guest Mode)"</span>
                                 </a>
                                 <a
@@ -150,7 +151,7 @@ pub fn CaseStudyModal(
                             </div>
 
                             <p class="text-[10px] text-[var(--color-text-muted)] text-center mt-4">
-                                "💡 Tip: On the live dashboard, you can bypass JWT login by clicking the \"Guest Login\" button to explore in read-only mode."
+                                <Icon name="lightbulb" class="w-3 h-3 mr-1" />"Tip: On the live dashboard, you can bypass JWT login by clicking the \"Guest Login\" button to explore in read-only mode."
                             </p>
                         </div>
                     </div>

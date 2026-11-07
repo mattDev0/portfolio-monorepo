@@ -1,4 +1,4 @@
-use crate::components::SectionHeading;
+use crate::components::{EmojiIcon, SectionHeading};
 use crate::config::{PortfolioConfig, ProjectItem};
 use leptos::prelude::*;
 
@@ -88,7 +88,7 @@ pub fn Projects(
                                             <span class="bg-[var(--color-accent-bg)] text-[var(--color-accent)] border border-[var(--color-accent-border)] px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
                                                 "Featured Project"
                                             </span>
-                                            <span class="text-xl">"⚙️"</span>
+                                            <span class="text-xl"><EmojiIcon glyph="⚙️" /></span>
                                         </div>
                                         <h4 class="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors tracking-wide">
                                             {devops_project.title.as_str()}
@@ -128,7 +128,7 @@ pub fn Projects(
                                             class="px-5 py-3 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5"
                                             style="box-shadow: var(--shadow-button)"
                                         >
-                                            <span>"⚙️"</span>
+                                            <EmojiIcon glyph="⚙️" />
                                             <span>"System Design & Demo"</span>
                                         </button>
 
@@ -245,7 +245,7 @@ where
         <div class=card_class style=card_style>
             <div>
                 <div class="flex items-center space-x-2 mb-2">
-                    <span class="text-lg">{emoji}</span>
+                    <span class="text-lg"><EmojiIcon glyph=emoji /></span>
                     <h4 class="text-lg font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors tracking-wide">
                         {title.as_str()}
                     </h4>
