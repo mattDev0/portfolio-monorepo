@@ -26,18 +26,49 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@1.95.0
         with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: './frontend-react/package-lock.json'
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
 
-      - name: Lint and Test Frontend
-        working-directory: ./frontend-react
+      - name: Set up Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ./frontend-leptos
+            ./backend-rust
+            ./shared/portfolio-api-types
+
+      - name: Install Tailwind CSS CLI
         run: |
-          npm ci
-          npm run lint
-          npm run test
+          curl -fsSLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64
+          echo "dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a  tailwindcss-linux-x64" | sha256sum -c -
+          chmod +x tailwindcss-linux-x64
+          sudo mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+
+      - name: Install Trunk
+        run: |
+          curl -fsSLO https://github.com/trunk-rs/trunk/releases/download/v0.22.1/trunk-x86_64-unknown-linux-gnu.tar.gz
+          echo "2ab8d548fd5ed9cda50906f61fd8654204e7893bd52ebbfd90533862b7d71ee1  trunk-x86_64-unknown-linux-gnu.tar.gz" | sha256sum -c -
+          sudo tar -xzf trunk-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin trunk
+          rm trunk-x86_64-unknown-linux-gnu.tar.gz
+
+      - name: Check Leptos Formatting
+        working-directory: ./frontend-leptos
+        run: cargo fmt --check
+
+      - name: Run Leptos Clippy
+        working-directory: ./frontend-leptos
+        run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+
+      - name: Run Leptos Tests
+        working-directory: ./frontend-leptos
+        run: cargo test
+
+      - name: Build Leptos Release Bundle
+        working-directory: ./frontend-leptos
+        run: trunk build --release --locked
 
       - uses: actions/setup-java@v6
         with:
@@ -48,12 +79,6 @@ jobs:
       - name: Run Java Tests
         working-directory: ./backend-java
         run: ./mvnw test
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ./backend-rust
 
       - name: Run Rust Tests
         working-directory: ./backend-rust
@@ -70,10 +95,10 @@ jobs:
       matrix:
         include:
           - service: portfolio-frontend
-            dir: frontend-react
-            context: ./frontend-react
-            file: ./frontend-react/Dockerfile
-            paths: frontend-react/
+            dir: frontend-leptos
+            context: .
+            file: ./frontend-leptos/Dockerfile
+            paths: frontend-leptos/ shared/portfolio-api-types/
           - service: portfolio-java-api
             dir: backend-java
             context: ./backend-java
@@ -159,7 +184,7 @@ jobs:
       - name: Compute Component SHAs
         id: shas
         run: |
-          FRONTEND_SHA=$(git log -1 --format=%H -- frontend-react/)
+          FRONTEND_SHA=$(git log -1 --format=%H -- frontend-leptos/ shared/portfolio-api-types/)
           JAVA_SHA=$(git log -1 --format=%H -- backend-java/)
           RUST_SHA=$(git log -1 --format=%H -- backend-rust/ shared/portfolio-api-types/)
           echo "frontend_sha=$FRONTEND_SHA" >> $GITHUB_OUTPUT
