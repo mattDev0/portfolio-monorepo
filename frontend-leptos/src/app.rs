@@ -16,6 +16,8 @@ use wasm_bindgen::closure::Closure;
 
 pub static CONFIG: LazyLock<PortfolioConfig> = LazyLock::new(get_config);
 
+// The signal setters are only used in the browser (wasm32) code below.
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 #[component]
 pub fn App() -> impl IntoView {
     provide_theme_context();

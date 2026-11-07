@@ -102,29 +102,31 @@ mod tests {
             riot_games: 32.0,
         };
 
+        // Field names, field order and number formatting are the API contract the
+        // frontend reads, so compare the exact JSON text, not individual fields.
         assert_eq!(
-            serde_json::to_value(&system_metrics).unwrap()["service"],
-            "backend-rust"
+            serde_json::to_string(&system_metrics).unwrap(),
+            r#"{"service":"backend-rust","os_info":"Linux 6.6.137 x86_64","cpu_core_count":8,"cpu_usage_percent":24.5,"memory_used_mb":512,"memory_total_mb":2048}"#
         );
         assert_eq!(
-            serde_json::to_value(&spotify_status).unwrap()["title"],
-            "Time"
+            serde_json::to_string(&spotify_status).unwrap(),
+            r#"{"is_playing":true,"is_recently_played":false,"title":"Time","artist":"Hans Zimmer","album_art":"https://example.com/art.jpg","progress_ms":120000,"duration_ms":275000,"track_url":"https://open.spotify.com/track/12345"}"#
         );
         assert_eq!(
-            serde_json::to_value(&telemetry_point).unwrap()["cpu"],
-            18.25
+            serde_json::to_string(&telemetry_point).unwrap(),
+            r#"{"cpu":18.25,"memory":45.5}"#
         );
         assert_eq!(
-            serde_json::to_value(&google_dns).unwrap()["name"],
-            "Google DNS"
+            serde_json::to_string(&google_dns).unwrap(),
+            r#"{"target":"8.8.8.8","name":"Google DNS","latency_ms":14.5,"status":"online"}"#
         );
         assert_eq!(
-            serde_json::to_value(&network_metrics).unwrap()["cloudflare_dns"]["name"],
-            "Cloudflare DNS"
+            serde_json::to_string(&network_metrics).unwrap(),
+            r#"{"google_dns":{"target":"8.8.8.8","name":"Google DNS","latency_ms":14.5,"status":"online"},"cloudflare_dns":{"target":"1.1.1.1","name":"Cloudflare DNS","latency_ms":9.75,"status":"online"},"riot_games":{"target":"104.160.131.1","name":"Riot Games","latency_ms":32.0,"status":"degraded"}}"#
         );
         assert_eq!(
-            serde_json::to_value(&network_history_point).unwrap()["riot_games"],
-            32.0
+            serde_json::to_string(&network_history_point).unwrap(),
+            r#"{"google_dns":14.5,"cloudflare_dns":9.75,"riot_games":32.0}"#
         );
     }
 }

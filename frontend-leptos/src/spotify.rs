@@ -2,9 +2,7 @@ use leptos::prelude::*;
 use portfolio_api_types::SpotifyStatus;
 
 #[cfg(target_arch = "wasm32")]
-use wasm_bindgen::JsCast;
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::closure::Closure;
+use std::time::Duration;
 
 pub fn format_time(ms: Option<u64>) -> String {
     let ms = match ms {
@@ -64,6 +62,8 @@ pub struct SpotifySignals {
     pub local_progress_ms: ReadSignal<u64>,
 }
 
+// The signal setters are only used in the browser (wasm32) code below.
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
     let (spotify_data, set_spotify_data) = signal(None::<SpotifyStatus>);
     let (local_progress_ms, set_local_progress_ms) = signal(0u64);
@@ -72,16 +72,13 @@ pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
     {
         use crate::api::api_url;
         use gloo_net::http::Request;
+        use leptos::prelude::set_interval_with_handle;
 
         // Fetch Spotify API every 10s (only when visible)
         Effect::new(move |_| {
             if !is_visible.get() {
                 return;
             }
-
-            let Some(window) = web_sys::window() else {
-                return;
-            };
 
             let fetch_spotify = move || {
                 leptos::task::spawn_local(async move {
@@ -104,41 +101,30 @@ pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
             };
             fetch_spotify();
 
-            let fetch_closure = Closure::<dyn FnMut()>::new(fetch_spotify);
-            let fetch_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    fetch_closure.as_ref().unchecked_ref(),
-                    10000,
-                )
-                .ok();
-            fetch_closure.forget();
+            let fetch_interval =
+                set_interval_with_handle(fetch_spotify, Duration::from_millis(10000)).ok();
 
             // Progress tick every 1s while playing
-            let tick_closure = Closure::<dyn FnMut()>::new(move || {
-                if let Some(data) = spotify_data.get_untracked() {
-                    if data.is_playing && data.duration_ms > 0 {
-                        set_local_progress_ms.update(|prev| {
-                            *prev = tick_progress_capped(*prev, data.duration_ms, 1000);
-                        });
+            let tick_interval = set_interval_with_handle(
+                move || {
+                    if let Some(data) = spotify_data.get_untracked() {
+                        if data.is_playing && data.duration_ms > 0 {
+                            set_local_progress_ms.update(|prev| {
+                                *prev = tick_progress_capped(*prev, data.duration_ms, 1000);
+                            });
+                        }
                     }
-                }
-            });
-            let tick_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    tick_closure.as_ref().unchecked_ref(),
-                    1000,
-                )
-                .ok();
-            tick_closure.forget();
+                },
+                Duration::from_millis(1000),
+            )
+            .ok();
 
             on_cleanup(move || {
-                if let Some(w) = web_sys::window() {
-                    if let Some(id) = fetch_interval {
-                        w.clear_interval_with_handle(id);
-                    }
-                    if let Some(id) = tick_interval {
-                        w.clear_interval_with_handle(id);
-                    }
+                if let Some(handle) = fetch_interval {
+                    handle.clear();
+                }
+                if let Some(handle) = tick_interval {
+                    handle.clear();
                 }
             });
         });

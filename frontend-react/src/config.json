@@ -50,11 +50,13 @@
     ],
     "Frameworks & Libs": [
       "Axum",
+      "Leptos",
       "Spring Boot",
       "React",
       "Flutter",
       "Vite",
-      "Tokio"
+      "Tokio",
+      "WebAssembly"
     ],
     "Observability & Tools": [
       "Prometheus",

@@ -95,17 +95,14 @@ jobs:
       matrix:
         include:
           - service: portfolio-frontend
-            dir: frontend-leptos
             context: .
             file: ./frontend-leptos/Dockerfile
             paths: frontend-leptos/ shared/portfolio-api-types/
           - service: portfolio-java-api
-            dir: backend-java
             context: ./backend-java
             file: ./backend-java/Dockerfile
             paths: backend-java/
           - service: portfolio-rust-api
-            dir: backend-rust
             context: .
             file: ./backend-rust/Dockerfile
             paths: backend-rust/ shared/portfolio-api-types/
