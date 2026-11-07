@@ -237,8 +237,8 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                             }}
                         </div>
 
-                        <div class="mt-6 pt-3 border-t border-[var(--color-border-primary)] text-[10px] text-[var(--color-text-muted)] font-mono flex items-center justify-between">
-                            <span>"DEPLOYMENT: live"</span>
+                        <div class="mt-6 pt-3 border-t border-[var(--color-border-primary)] text-[10px] text-[var(--color-text-muted)] font-mono flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                            <span class="whitespace-nowrap">"DEPLOYMENT: live"</span>
                             <span>"PLATFORM: Cloud Run (us-central1)"</span>
                         </div>
                     </div>
