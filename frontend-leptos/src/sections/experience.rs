@@ -14,13 +14,13 @@ pub fn Experience(config: &'static PortfolioConfig) -> impl IntoView {
             <div class="space-y-8">
                 {config.experience.iter().map(|exp| {
                     view! {
-                        <div class="relative pl-8 border-l-2 border-[var(--color-accent-emerald-border)] hover:border-[var(--color-accent-emerald)] transition-colors duration-300">
-                            <div class="absolute w-4 h-4 bg-[var(--color-accent-emerald-solid)] rounded-full -left-[9px] top-1 border-2 border-[var(--color-bg-primary)] shadow-[0_0_8px_var(--color-accent-emerald)]"></div>
+                        <div class="relative pl-8 border-l-2 border-[var(--color-accent-border)] hover:border-[var(--color-accent)] transition-colors duration-300">
+                            <div class="absolute w-4 h-4 bg-[var(--color-accent-solid)] rounded-full -left-[9px] top-1 border-2 border-[var(--color-bg-primary)] shadow-[0_0_8px_var(--color-accent)]"></div>
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
                                 <h4 class="text-[var(--color-text-primary)] font-bold text-base tracking-wide">
                                     {exp.role.as_str()}
                                 </h4>
-                                <p class="text-[var(--color-accent-emerald)] text-xs sm:text-sm font-semibold">
+                                <p class="text-[var(--color-accent)] text-xs sm:text-sm font-semibold">
                                     {exp.company.as_str()}
                                 </p>
                             </div>

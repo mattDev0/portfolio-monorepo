@@ -75,7 +75,7 @@ pub fn GitHubActivity() -> impl IntoView {
         <div class="card-surface p-6 mb-8 w-full transition-colors duration-300">
             <div class="flex items-center mb-6">
                 <svg
-                    class="w-6 h-6 text-[var(--color-accent-emerald)] mr-3 animate-pulse drop-shadow-[0_0_8px_var(--color-accent-emerald-border)]"
+                    class="w-6 h-6 text-[var(--color-accent)] mr-3 animate-pulse drop-shadow-[0_0_8px_var(--color-accent-border)]"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                 >
@@ -114,7 +114,7 @@ pub fn GitHubActivity() -> impl IntoView {
                                     <li class="pb-4 border-b border-[var(--color-border-primary)] last:border-0 last:pb-0 group/item">
                                         // Repo Name & Date
                                         <div class="flex justify-between items-center mb-1.5">
-                                            <span class="text-[var(--color-accent-emerald)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-emerald-solid-hover)] transition-colors">
+                                            <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-solid-hover)] transition-colors">
                                                 {commit.repo}
                                             </span>
                                             <span class="text-[var(--color-text-muted)] text-xs font-medium">
@@ -124,7 +124,7 @@ pub fn GitHubActivity() -> impl IntoView {
 
                                         // Hash Badge & Commit Message
                                         <div class="flex items-center space-x-2.5">
-                                            <span class="bg-[var(--color-bg-tag)] border border-[var(--color-accent-emerald-border)] text-[var(--color-accent-emerald)] font-mono text-[9px] px-2 py-0.5 rounded shadow-sm tracking-wider">
+                                            <span class="bg-[var(--color-bg-tag)] border border-[var(--color-accent-border)] text-[var(--color-accent)] font-mono text-[10px] px-2 py-0.5 rounded shadow-sm tracking-wider">
                                                 {commit.hash}
                                             </span>
                                             <span class="text-[var(--color-text-secondary)] text-sm truncate group-hover/item:text-[var(--color-text-primary)] transition-colors">

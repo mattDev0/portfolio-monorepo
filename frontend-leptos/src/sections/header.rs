@@ -47,7 +47,7 @@ pub fn Navigation(
                         let is_active = move || active_section.get() == sec;
                         let link_class = move || {
                             if is_active() {
-                                "text-xs font-bold tracking-wide uppercase transition-all duration-300 hover:text-[var(--color-hover-text)] hover:scale-105 text-[var(--color-accent-emerald)] border-b border-[var(--color-accent-emerald)] pb-1"
+                                "text-xs font-bold tracking-wide uppercase transition-all duration-300 hover:text-[var(--color-hover-text)] hover:scale-105 text-[var(--color-accent)] border-b border-[var(--color-accent)] pb-1"
                             } else {
                                 "text-xs font-bold tracking-wide uppercase transition-all duration-300 hover:text-[var(--color-hover-text)] hover:scale-105 text-[var(--color-text-tertiary)]"
                             }
@@ -64,7 +64,7 @@ pub fn Navigation(
                 </div>
                 // Subtle Mobile indicators
                 <div class="md:hidden flex items-center space-x-3">
-                    <div class="flex items-center space-x-2 bg-[var(--color-bg-surface)] px-3 py-1 rounded-full border border-[var(--color-border-primary)] text-[10px] text-[var(--color-accent-emerald)] font-bold uppercase tracking-wider font-mono">
+                    <div class="flex items-center space-x-2 bg-[var(--color-bg-surface)] px-3 py-1 rounded-full border border-[var(--color-border-primary)] text-[10px] text-[var(--color-accent)] font-bold uppercase tracking-wider font-mono">
                         <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-status-online)] animate-ping"></span>
                         <span>{move || active_section.get()}</span>
                     </div>
@@ -88,7 +88,7 @@ pub fn Header(config: &'static PortfolioConfig) -> impl IntoView {
                 <img
                     src="https://github.com/mattDev0.png"
                     alt=config.name.as_str()
-                    class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-[var(--color-accent-emerald-border)] p-1 bg-[var(--color-bg-primary)] shadow-2xl transition-transform duration-500 group-hover:scale-105"
+                    class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-[var(--color-accent-border)] p-1 bg-[var(--color-bg-primary)] shadow-2xl transition-transform duration-500 group-hover:scale-105"
                 />
             </div>
 
@@ -105,7 +105,7 @@ pub fn Header(config: &'static PortfolioConfig) -> impl IntoView {
             // Location and Remote Status
             <div class="flex items-center justify-center text-[var(--color-text-tertiary)] mb-6 text-sm">
                 <svg
-                    class="w-4 h-4 mr-2 text-[var(--color-accent-emerald)]"
+                    class="w-4 h-4 mr-2 text-[var(--color-accent)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -129,7 +129,7 @@ pub fn Header(config: &'static PortfolioConfig) -> impl IntoView {
                 {if config.open_to_remote {
                     Some(view! {
                         <span class="mx-3 text-[var(--color-text-faint)]">"•"</span>
-                        <span class="bg-[var(--color-accent-emerald-bg)] text-[var(--color-accent-emerald)] border border-[var(--color-accent-emerald-border)] px-2 py-0.5 rounded-full text-xs font-semibold tracking-wider uppercase">
+                        <span class="bg-[var(--color-accent-bg)] text-[var(--color-accent)] border border-[var(--color-accent-border)] px-2 py-0.5 rounded-full text-xs font-semibold tracking-wider uppercase">
                             "Open to Remote"
                         </span>
                     })
@@ -149,7 +149,7 @@ pub fn Header(config: &'static PortfolioConfig) -> impl IntoView {
                     href=config.github_url.as_str()
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center justify-center space-x-2 px-6 py-2.5 bg-[var(--color-accent-emerald-solid)] border border-[var(--color-accent-emerald-solid)] text-white hover:bg-[var(--color-accent-emerald-solid-hover)] rounded-xl transition-all duration-300 w-full sm:w-auto"
+                    class="flex items-center justify-center space-x-2 px-6 py-2.5 bg-[var(--color-accent-solid)] border border-[var(--color-accent-solid)] text-white hover:bg-[var(--color-accent-solid-hover)] rounded-xl transition-all duration-300 w-full sm:w-auto"
                     style="box-shadow: var(--shadow-button)"
                 >
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -185,7 +185,7 @@ pub fn Header(config: &'static PortfolioConfig) -> impl IntoView {
                     href=config.resume_url.as_str()
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center justify-center space-x-2 px-6 py-2.5 bg-[var(--color-accent-emerald-solid)] border border-[var(--color-accent-emerald-solid)] text-white hover:bg-[var(--color-accent-emerald-solid-hover)] rounded-xl transition-all duration-300 w-full sm:w-auto"
+                    class="flex items-center justify-center space-x-2 px-6 py-2.5 bg-[var(--color-accent-solid)] border border-[var(--color-accent-solid)] text-white hover:bg-[var(--color-accent-solid-hover)] rounded-xl transition-all duration-300 w-full sm:w-auto"
                     style="box-shadow: var(--shadow-button)"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
