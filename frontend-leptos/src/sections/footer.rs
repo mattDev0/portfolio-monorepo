@@ -27,7 +27,7 @@ pub fn Footer(config: &'static PortfolioConfig) -> impl IntoView {
                 <span>"•"</span>
                 <span class="text-[var(--color-accent-emerald)] font-semibold font-mono">"Spring Boot"</span>
                 <span>"•"</span>
-                <span class="text-[var(--color-accent-teal)] font-semibold font-mono">"React"</span>
+                <span class="text-[var(--color-accent-teal)] font-semibold font-mono">"Leptos"</span>
             </div>
             <div class="flex items-center space-x-4">
                 <a

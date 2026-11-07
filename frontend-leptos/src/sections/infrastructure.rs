@@ -57,7 +57,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                     id="client"
                                     icon="🌐"
                                     title="Client Browser"
-                                    tech="React 19 + Vite"
+                                    tech="Rust + Leptos"
                                     hovered_node=hovered_topology_node
                                     set_hovered_node=set_hovered_topology_node
                                 />
@@ -109,7 +109,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 <div class="grid grid-cols-3 gap-2">
                                     <TopologyNode
                                         id="frontend"
-                                        icon="⚛️"
+                                        icon="🦀"
                                         title="Frontend Service"
                                         tech="Cloud Run"
                                         hovered_node=hovered_topology_node
