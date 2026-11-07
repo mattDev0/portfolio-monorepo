@@ -1,0 +1,4 @@
+*
+!shared/portfolio-api-types/
+!backend-rust/
+**/target/
