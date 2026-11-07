@@ -100,8 +100,7 @@ pub fn Projects(
                                         <div class="flex flex-wrap gap-1.5 pt-2">
                                             {devops_project.tech.iter().map(|tech| {
                                                 let tech_str = tech.as_str();
-                                                let t_active = tech.clone();
-                                                let is_tag_active = move || selected_tech.get().as_ref() == Some(&t_active);
+                                                let is_tag_active = move || selected_tech.get().as_deref() == Some(tech_str);
                                                 let tag_class = move || {
                                                     if is_tag_active() {
                                                         "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-solid)] text-[var(--color-accent)]"
@@ -110,12 +109,14 @@ pub fn Projects(
                                                     }
                                                 };
                                                 view! {
-                                                    <span
+                                                    <button
+                                                        type="button"
+                                                        aria-pressed=move || is_tag_active().to_string()
                                                         on:click=move |_| toggle_tech(tech_str)
                                                         class=tag_class
                                                     >
                                                         {tech_str}
-                                                    </span>
+                                                    </button>
                                                 }
                                             }).collect_view()}
                                         </div>
@@ -257,8 +258,7 @@ where
                 <div class="flex flex-wrap gap-1.5 mb-5">
                     {project.tech.iter().map(|tech| {
                         let tech_str = tech.as_str();
-                        let t_active = tech.clone();
-                        let is_tag_active = move || selected_tech.get().as_ref() == Some(&t_active);
+                        let is_tag_active = move || selected_tech.get().as_deref() == Some(tech_str);
                         let tag_class = move || {
                             if is_tag_active() {
                                 "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-solid)] text-[var(--color-accent)]"
@@ -267,12 +267,14 @@ where
                             }
                         };
                         view! {
-                            <span
+                            <button
+                                type="button"
+                                aria-pressed=move || is_tag_active().to_string()
                                 on:click=move |_| toggle_tech(tech_str)
                                 class=tag_class
                             >
                                 {tech_str}
-                            </span>
+                            </button>
                         }
                     }).collect_view()}
                 </div>
