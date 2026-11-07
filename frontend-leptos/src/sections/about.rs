@@ -1,3 +1,4 @@
+use crate::components::SectionHeading;
 use crate::config::PortfolioConfig;
 use leptos::prelude::*;
 
@@ -9,9 +10,7 @@ pub fn About(config: &'static PortfolioConfig) -> impl IntoView {
             class="reveal-in card-surface p-6 md:p-8 rounded-2xl flex flex-col justify-between transition-colors duration-300"
         >
             <div>
-                <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-4 border-b border-[var(--color-border-primary)] pb-3 tracking-wide">
-                    "About the Developer"
-                </h3>
+                <SectionHeading eyebrow="About" title="About the Developer" />
                 <p class="text-[var(--color-text-secondary)] leading-relaxed text-sm whitespace-pre-line">
                     {config.about.as_str()}
                 </p>

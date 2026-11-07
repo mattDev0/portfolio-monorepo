@@ -1,3 +1,4 @@
+use crate::components::SectionHeading;
 use crate::config::PortfolioConfig;
 use leptos::prelude::*;
 
@@ -8,9 +9,7 @@ pub fn Experience(config: &'static PortfolioConfig) -> impl IntoView {
             id="experience"
             class="reveal-in card-surface p-6 md:p-8 rounded-2xl transition-colors duration-300"
         >
-            <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-6 border-b border-[var(--color-border-primary)] pb-3 tracking-wide">
-                "Professional Experience"
-            </h3>
+            <SectionHeading eyebrow="Experience" title="Professional Experience" />
             <div class="space-y-8">
                 {config.experience.iter().map(|exp| {
                     view! {

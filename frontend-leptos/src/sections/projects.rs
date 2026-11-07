@@ -1,3 +1,4 @@
+use crate::components::SectionHeading;
 use crate::config::{PortfolioConfig, ProjectItem};
 use leptos::prelude::*;
 
@@ -25,47 +26,43 @@ pub fn Projects(
 
     view! {
         <section id="projects" class="reveal-in space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--color-border-primary)] pb-3">
-                <h3 class="text-2xl font-extrabold text-[var(--color-text-primary)] tracking-wide">
-                    "Featured Projects"
-                </h3>
+            <SectionHeading eyebrow="Projects" title="Featured Projects" />
 
-                // Project Filter Controls
-                <div class="flex flex-wrap gap-2">
-                    <button
-                        on:click=move |_| set_selected_tech.set(None)
-                        class=move || {
-                            if selected_tech.get().is_none() {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
-                            } else {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]"
-                            }
+            // Project Filter Controls
+            <div class="flex gap-2 overflow-x-auto sm:overflow-visible sm:flex-wrap pb-2 sm:pb-0 custom-scrollbar">
+                <button
+                    on:click=move |_| set_selected_tech.set(None)
+                    class=move || {
+                        if selected_tech.get().is_none() {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
+                        } else {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]"
                         }
-                    >
-                        "All"
-                    </button>
-                    {all_tech_tags.into_iter().map(|tag| {
-                        let tag_str = tag.clone();
-                        let tag_for_click = tag.clone();
-                        let tag_for_active = tag.clone();
-                        let is_active = move || selected_tech.get().as_ref() == Some(&tag_for_active);
-                        let btn_class = move || {
-                            if is_active() {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
-                            } else {
-                                "px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
-                            }
-                        };
-                        view! {
-                            <button
-                                on:click=move |_| toggle_tech(&tag_for_click)
-                                class=btn_class
-                            >
-                                {tag_str}
-                            </button>
+                    }
+                >
+                    "All"
+                </button>
+                {all_tech_tags.into_iter().map(|tag| {
+                    let tag_str = tag.clone();
+                    let tag_for_click = tag.clone();
+                    let tag_for_active = tag.clone();
+                    let is_active = move || selected_tech.get().as_ref() == Some(&tag_for_active);
+                    let btn_class = move || {
+                        if is_active() {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
+                        } else {
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                         }
-                    }).collect_view()}
-                </div>
+                    };
+                    view! {
+                        <button
+                            on:click=move |_| toggle_tech(&tag_for_click)
+                            class=btn_class
+                        >
+                            {tag_str}
+                        </button>
+                    }
+                }).collect_view()}
             </div>
 
             // Featured Card or Grid Layout
@@ -167,7 +164,7 @@ pub fn Projects(
                 }}
 
                 // Other Projects Grid
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-start">
                     {move || {
                         let current_filter = selected_tech.get();
                         config.projects
@@ -225,7 +222,7 @@ where
     let card_class = move || {
         let is_matched = is_card_matched();
         format!(
-            "hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border-t-2 {} border-x border-b transition-all duration-500 flex flex-col justify-between group {}",
+            "hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border-t-2 {} border-x border-b transition-all duration-500 flex flex-col justify-between group md:[&:last-child:nth-child(odd)]:col-span-2 {}",
             accent_class,
             if is_matched {
                 "border-[var(--color-accent-border)]"

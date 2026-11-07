@@ -1,3 +1,4 @@
+use crate::components::SectionHeading;
 use crate::config::PortfolioConfig;
 use leptos::prelude::*;
 
@@ -8,9 +9,7 @@ pub fn Skills(config: &'static PortfolioConfig) -> impl IntoView {
             id="skills"
             class="reveal-in card-surface p-6 md:p-8 rounded-2xl transition-colors duration-300"
         >
-            <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-6 border-b border-[var(--color-border-primary)] pb-3 tracking-wide">
-                "Technical Skills"
-            </h3>
+            <SectionHeading eyebrow="Skills" title="Technical Skills" />
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 {config.skills.categories().into_iter().map(|(category, skills)| {
                     view! {
