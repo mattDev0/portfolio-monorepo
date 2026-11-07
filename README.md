@@ -5,7 +5,7 @@ A high-performance, microservice-backed personal portfolio demonstrating full-st
 **🌐 Live Production Site:** [https://mattdev0.tech](https://mattdev0.tech)
 
 ![Live Status](https://img.shields.io/badge/Status-Live_on_GCP-success)
-![Frontend](https://img.shields.io/badge/Frontend-React_%2B_Vite-blue)
+![Frontend](https://img.shields.io/badge/Frontend-Leptos_%28WASM%29-blue)
 ![Backend](https://img.shields.io/badge/Backends-Java_Spring_%7C_Rust-orange)
 ![Security](https://img.shields.io/badge/Security-Trivy_Scanned-brightgreen)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions_%2B_Cloud_Run-blueviolet)
@@ -30,8 +30,8 @@ graph TD
     Java -->|GitHub API| GitHub[GitHub REST API]
 ```
 
-### 1. Frontend Gateway (React / Vite)
-A responsive, dark-themed UI built with Tailwind CSS. It dynamically polls the backend services for real-time telemetry and GitHub activity.
+### 1. Frontend Gateway (Leptos / WebAssembly)
+A responsive, dark-themed UI built with Leptos 0.8 (CSR) and Tailwind CSS v4, compiled to WebAssembly. It dynamically polls the backend services for real-time telemetry and GitHub activity.
 
 ### 2. Java Engine (Spring Boot 4.1.1 / Java 25)
 Handles external third-party API integration.
@@ -77,7 +77,12 @@ portfolio-monorepo/
 │   ├── java-api.yaml
 │   └── rust-api.yaml
 │
-├── frontend-react/                 # React UI ⚛️
+├── shared/portfolio-api-types/     # Shared Serde API contracts 📦
+│
+├── frontend-leptos/                # Leptos (CSR) WebAssembly UI 🦀
+│   └── src/
+│
+├── frontend-react/                 # React UI ⚛️ (kept alongside Leptos until cutover transition concludes)
 │   ├── src/__tests__/              # Vitest + React Testing Library Suite
 │   └── src/
 │
@@ -98,9 +103,10 @@ portfolio-monorepo/
 
 The repository maintains rigorous automated testing standards across all microservices.
 
-* **Frontend (React):** Uses `Vitest` and `@testing-library/react`. Tests cover UI component rendering, asynchronous API fetching, and complex polling intervals utilizing mocked native timers (`vi.useFakeTimers()`).
+* **Frontend (Leptos):** Unit tests powered by `cargo test` covering URL construction, time formatting, telemetry math, and config parsing.
+* **Frontend (React):** Uses `Vitest` and `@testing-library/react` (retained alongside Leptos until cutover transition concludes).
 * **Backend (Java):** Uses `JUnit 5`, `MockMvc`, and `MockRestServiceServer`. Ensures reliable integration with external REST APIs and correct JSON payload serialization.
-* **Backend (Rust):** Unit tests powered by `cargo test` and `mockall`. Validates robust error handling, concurrency states, and mock Prometheus responses.
+* **Backend (Rust):** Unit tests powered by `cargo test` and `wiremock`. Validates robust error handling, concurrency states, and mock Prometheus responses.
 
 ---
 
@@ -167,24 +173,23 @@ sequenceDiagram
 ## 🛠️ Local Development Setup
 
 ### Prerequisites
-* Node.js (v18+)
+* Rust & Cargo (1.95.0, with wasm32-unknown-unknown target)
+* Trunk (0.22.1) & Tailwind CSS standalone CLI (v4.3.3)
 * Java 25+ (Maven via the included ./mvnw wrapper)
-* Rust & Cargo
+* Node.js (v18+, for frontend-react legacy baseline)
 * Docker & Docker Compose
 
 ### Local Runtime Flag
-The React frontend automatically detects local runtime when served by Vite or accessed via `localhost`. API calls intelligently map to local endpoints:
+The Leptos frontend automatically detects local runtime when running under debug mode, served by Trunk, or accessed via `localhost`. API calls intelligently map to local endpoints:
 * Rust API: `http://localhost:8080`
 * Java API: `http://localhost:8081`
 
-To override local mode manually, copy `frontend-react/.env.example` to `frontend-react/.env.local`.
-
 ### 1. Start the Frontend
 ```bash
-cd frontend-react
-npm install
-npm run dev
+cd frontend-leptos
+trunk serve
 ```
+*(Note: `frontend-react` is preserved in the repository alongside `frontend-leptos` until the cutover transition concludes.)*
 
 ### 2. Start the Java Microservice
 ```bash
