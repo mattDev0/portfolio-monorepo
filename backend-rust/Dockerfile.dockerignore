@@ -1,0 +1,6 @@
+*
+!shared/portfolio-api-types/
+!backend-rust/
+**/target/
+backend-rust/.env
+backend-rust/.env.*

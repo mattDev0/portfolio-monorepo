@@ -11,7 +11,8 @@ services:
 
   rust-api:
     build:
-      context: ./backend-rust
+      context: .
+      dockerfile: backend-rust/Dockerfile
     env_file:
       - ./backend-rust/.env
     environment:
