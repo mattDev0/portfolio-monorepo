@@ -86,7 +86,7 @@ To run the container locally:
 docker run --rm -p 3001:8080 portfolio-frontend-leptos:local
 ```
 
-## Bundle Size Comparison (Stage 1)
+## Bundle Size Comparison
 
 Measured production release bundle sizes comparing the React baseline to Leptos CSR:
 
