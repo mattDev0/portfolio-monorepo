@@ -71,10 +71,19 @@ jobs:
         include:
           - service: portfolio-frontend
             dir: frontend-react
+            context: ./frontend-react
+            file: ./frontend-react/Dockerfile
+            paths: frontend-react/
           - service: portfolio-java-api
             dir: backend-java
+            context: ./backend-java
+            file: ./backend-java/Dockerfile
+            paths: backend-java/
           - service: portfolio-rust-api
             dir: backend-rust
+            context: .
+            file: ./backend-rust/Dockerfile
+            paths: backend-rust/ shared/portfolio-api-types/
     steps:
       - uses: actions/checkout@v7
         with:
@@ -97,14 +106,15 @@ jobs:
 
       - name: Compute Component SHA
         id: sha
-        run: echo "sha=$(git log -1 --format=%H -- ${{ matrix.dir }}/)" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git log -1 --format=%H -- ${{ matrix.paths }})" >> "$GITHUB_OUTPUT"
 
       # Each image gets its own cache scope. Without one, every build overwrites the
       # shared cache entry and only the last image built ever gets a cache hit.
       - name: Build and Push ${{ matrix.service }}
         uses: docker/build-push-action@v7
         with:
-          context: ./${{ matrix.dir }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           pull: true
           push: true
           provenance: false
@@ -151,7 +161,7 @@ jobs:
         run: |
           FRONTEND_SHA=$(git log -1 --format=%H -- frontend-react/)
           JAVA_SHA=$(git log -1 --format=%H -- backend-java/)
-          RUST_SHA=$(git log -1 --format=%H -- backend-rust/)
+          RUST_SHA=$(git log -1 --format=%H -- backend-rust/ shared/portfolio-api-types/)
           echo "frontend_sha=$FRONTEND_SHA" >> $GITHUB_OUTPUT
           echo "java_sha=$JAVA_SHA" >> $GITHUB_OUTPUT
           echo "rust_sha=$RUST_SHA" >> $GITHUB_OUTPUT
