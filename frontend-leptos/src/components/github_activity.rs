@@ -19,6 +19,8 @@ pub fn format_commit_date(date_str: &str) -> String {
     }
 }
 
+// The signal setters are only used in the browser (wasm32) code below.
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 #[component]
 pub fn GitHubActivity() -> impl IntoView {
     let (commits, set_commits) = signal(Vec::<GitHubCommitActivity>::new());

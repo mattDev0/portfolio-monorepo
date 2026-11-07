@@ -1,4 +1,4 @@
-#![allow(clippy::collapsible_if, unused_variables)]
+#![allow(clippy::collapsible_if)]
 
 pub mod api;
 pub mod app;

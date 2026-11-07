@@ -4,9 +4,7 @@ use portfolio_api_types::{
 };
 
 #[cfg(target_arch = "wasm32")]
-use wasm_bindgen::JsCast;
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::closure::Closure;
+use std::time::Duration;
 
 pub const MAX_TELEMETRY_HISTORY: usize = 20;
 
@@ -70,6 +68,8 @@ pub struct TelemetrySignals {
     pub set_network_history: WriteSignal<Vec<NetworkHistoryPoint>>,
 }
 
+// The signal setters are only used in the browser (wasm32) code below.
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
     let (rust_status, set_rust_status) = signal(None::<SystemMetrics>);
     let (java_status, set_java_status) = signal(None::<InfrastructureMetrics>);
@@ -81,6 +81,7 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
     {
         use crate::api::api_url;
         use gloo_net::http::Request;
+        use leptos::prelude::set_interval_with_handle;
 
         // One-time history fetches on visibility change to true
         Effect::new(move |_| {
@@ -113,10 +114,6 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
                 return;
             }
 
-            let Some(window) = web_sys::window() else {
-                return;
-            };
-
             // 1. Rust Hardware Status (every 5s)
             let fetch_rust = move || {
                 leptos::task::spawn_local(async move {
@@ -146,14 +143,8 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
             };
             fetch_rust();
 
-            let rust_closure = Closure::<dyn FnMut()>::new(fetch_rust);
-            let rust_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    rust_closure.as_ref().unchecked_ref(),
-                    5000,
-                )
-                .ok();
-            rust_closure.forget();
+            let rust_interval =
+                set_interval_with_handle(fetch_rust, Duration::from_millis(5000)).ok();
 
             // 2. Rust Network Status (every 5s)
             let fetch_network = move || {
@@ -182,14 +173,8 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
             };
             fetch_network();
 
-            let net_closure = Closure::<dyn FnMut()>::new(fetch_network);
-            let net_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    net_closure.as_ref().unchecked_ref(),
-                    5000,
-                )
-                .ok();
-            net_closure.forget();
+            let net_interval =
+                set_interval_with_handle(fetch_network, Duration::from_millis(5000)).ok();
 
             // 3. Java JVM Status (every 10s)
             let fetch_java = move || {
@@ -212,27 +197,19 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
             };
             fetch_java();
 
-            let java_closure = Closure::<dyn FnMut()>::new(fetch_java);
-            let java_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    java_closure.as_ref().unchecked_ref(),
-                    10000,
-                )
-                .ok();
-            java_closure.forget();
+            let java_interval =
+                set_interval_with_handle(fetch_java, Duration::from_millis(10000)).ok();
 
             // Cleanup when visibility changes to false or on effect rerun
             on_cleanup(move || {
-                if let Some(w) = web_sys::window() {
-                    if let Some(id) = rust_interval {
-                        w.clear_interval_with_handle(id);
-                    }
-                    if let Some(id) = net_interval {
-                        w.clear_interval_with_handle(id);
-                    }
-                    if let Some(id) = java_interval {
-                        w.clear_interval_with_handle(id);
-                    }
+                if let Some(handle) = rust_interval {
+                    handle.clear();
+                }
+                if let Some(handle) = net_interval {
+                    handle.clear();
+                }
+                if let Some(handle) = java_interval {
+                    handle.clear();
                 }
             });
         });
