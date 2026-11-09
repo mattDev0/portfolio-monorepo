@@ -1,4 +1,7 @@
-use crate::components::{GitHubActivity, Icon, Sparkline, SpotifyPlayer, TopologyNode};
+use crate::components::{
+    DotAccent, FeedDot, FeedPending, GitHubActivity, Icon, Sparkline, SpotifyPlayer, StaleNotice,
+    TopologyNode,
+};
 use crate::constants::get_topology_info;
 use crate::spotify::SpotifySignals;
 use crate::telemetry::TelemetrySignals;
@@ -13,6 +16,9 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
     let telemetry_history = telemetry.telemetry_history;
     let network_status = telemetry.network_status;
     let network_history = telemetry.network_history;
+    let rust_health = telemetry.rust_health;
+    let java_health = telemetry.java_health;
+    let network_health = telemetry.network_health;
 
     let k8s_box_class = move || {
         if hovered_topology_node.get() == Some("k8s") {
@@ -259,11 +265,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                         style="box-shadow: var(--shadow-card)"
                     >
                         <div class="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                            <span class="flex h-3 w-3 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-orange)] opacity-75"></span>
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-orange)]/40 opacity-40 delay-300"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-accent-orange)] border border-[var(--color-bg-primary)] shadow-[0_0_8px_var(--color-accent-orange)]"></span>
-                            </span>
+                            <FeedDot health=rust_health accent=DotAccent::Orange />
                             <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-orange-border)] p-2 text-center text-[10px] text-[var(--color-accent-orange)] font-mono shadow-xl z-20">
                                 "Live Axum Service"
                             </div>
@@ -274,6 +276,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                         <p class="text-[10px] text-[var(--color-text-muted)] font-medium mb-5">
                             "Low-level OS telemetry & Spotify API gateway"
                         </p>
+                        <StaleNotice health=rust_health />
 
                         {move || {
                             if let Some(rust) = rust_status.get() {
@@ -325,11 +328,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                     </div>
                                 }.into_any()
                             } else {
-                                view! {
-                                    <p class="text-[var(--color-text-muted)] animate-pulse font-mono text-xs mt-2">
-                                        "Handshake pending..."
-                                    </p>
-                                }.into_any()
+                                view! { <FeedPending health=rust_health label="Handshake pending..." /> }.into_any()
                             }
                         }}
                     </section>
@@ -340,11 +339,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                         style="box-shadow: var(--shadow-card)"
                     >
                         <div class="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                            <span class="flex h-3 w-3 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)] opacity-75"></span>
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)]/40 opacity-40 delay-300"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_var(--color-status-online)]"></span>
-                            </span>
+                            <FeedDot health=java_health accent=DotAccent::Online />
                             <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-border)] p-2 text-center text-[10px] text-[var(--color-accent)] font-mono shadow-xl z-20">
                                 "Live Spring Service"
                             </div>
@@ -355,6 +350,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                         <p class="text-[10px] text-[var(--color-text-muted)] font-medium mb-5">
                             "Spring Cache engine driving GitHub API events"
                         </p>
+                        <StaleNotice health=java_health />
 
                         {move || {
                             if let Some(java) = java_status.get() {
@@ -385,11 +381,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                     </div>
                                 }.into_any()
                             } else {
-                                view! {
-                                    <p class="text-[var(--color-text-muted)] animate-pulse font-mono text-xs mt-2">
-                                        "Handshake pending..."
-                                    </p>
-                                }.into_any()
+                                view! { <FeedPending health=java_health label="Handshake pending..." /> }.into_any()
                             }
                         }}
                     </section>
@@ -400,11 +392,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                         style="box-shadow: var(--shadow-card)"
                     >
                         <div class="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                            <span class="flex h-3 w-3 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)] opacity-75"></span>
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)]/40 opacity-40 delay-300"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_var(--color-status-online)]"></span>
-                            </span>
+                            <FeedDot health=network_health accent=DotAccent::Online />
                             <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-border)] p-2 text-center text-[10px] text-[var(--color-accent)] font-mono shadow-xl z-20">
                                 "Blackbox Exporter"
                             </div>
@@ -415,6 +403,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                         <p class="text-[10px] text-[var(--color-text-muted)] font-medium mb-5">
                             "Synthetic latency probes via ICMP (Ping)"
                         </p>
+                        <StaleNotice health=network_health />
 
                         {move || {
                             if let Some(net) = network_status.get() {
@@ -489,11 +478,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                     </div>
                                 }.into_any()
                             } else {
-                                view! {
-                                    <p class="text-[var(--color-text-muted)] animate-pulse font-mono text-xs mt-2">
-                                        "Ping diagnostics pending..."
-                                    </p>
-                                }.into_any()
+                                view! { <FeedPending health=network_health label="Ping diagnostics pending..." /> }.into_any()
                             }
                         }}
                     </section>
@@ -502,6 +487,7 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                     <SpotifyPlayer
                         spotify_data=spotify.spotify_data
                         local_progress_ms=spotify.local_progress_ms
+                        spotify_health=spotify.spotify_health
                     />
                 </div>
             </div>
