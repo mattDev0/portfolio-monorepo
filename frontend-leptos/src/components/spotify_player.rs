@@ -1,3 +1,4 @@
+use crate::feed::{FeedHealth, FeedState, format_age, now_ms};
 use crate::spotify::{
     calculate_progress_percent, format_time, get_spotify_state_label, get_spotify_tooltip,
 };
@@ -8,16 +9,23 @@ use portfolio_api_types::SpotifyStatus;
 pub fn SpotifyPlayer(
     spotify_data: ReadSignal<Option<SpotifyStatus>>,
     local_progress_ms: ReadSignal<u64>,
+    spotify_health: ReadSignal<FeedHealth>,
 ) -> impl IntoView {
     let view_content = move || {
         let data_opt = spotify_data.get();
-        let is_playing = data_opt.as_ref().map(|d| d.is_playing).unwrap_or(false);
-        let is_recently_played = data_opt
-            .as_ref()
-            .map(|d| d.is_recently_played)
-            .unwrap_or(false);
+        let feed_state = spotify_health.get().state(now_ms());
+        let is_stale = matches!(feed_state, FeedState::Stale { .. });
+        // Stale data must not look live: no "Now Playing", no ticking progress.
+        let is_playing = !is_stale && data_opt.as_ref().map(|d| d.is_playing).unwrap_or(false);
+        let is_recently_played = !is_stale
+            && data_opt
+                .as_ref()
+                .map(|d| d.is_recently_played)
+                .unwrap_or(false);
 
-        let ping_bg_class = if is_playing {
+        let ping_bg_class = if is_stale {
+            "hidden"
+        } else if is_playing {
             "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-status-online)]"
         } else if is_recently_played {
             "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-accent-amber)]"
@@ -33,7 +41,7 @@ pub fn SpotifyPlayer(
             "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-muted)]"
         };
 
-        let tooltip_text = get_spotify_tooltip(is_playing, is_recently_played);
+        let tooltip_text = get_spotify_tooltip(is_playing, is_recently_played, is_stale);
         let anim_duration = if is_playing { "6s" } else { "0s" };
 
         view! {
@@ -91,7 +99,9 @@ pub fn SpotifyPlayer(
                         "w-full h-full object-cover transition-all duration-500 grayscale opacity-60"
                     };
 
-                    let state_text_class = if is_playing {
+                    let state_text_class = if is_stale {
+                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-status-warning)]"
+                    } else if is_playing {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent)]"
                     } else if is_recently_played {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent-amber)]"
@@ -99,7 +109,11 @@ pub fn SpotifyPlayer(
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-text-muted)]"
                     };
 
-                    let state_label = get_spotify_state_label(is_playing, is_recently_played);
+                    let state_label = get_spotify_state_label(is_playing, is_recently_played, is_stale);
+                    let stale_age = match feed_state {
+                        FeedState::Stale { age_secs } => Some(format!("Updated {}", format_age(age_secs))),
+                        _ => None,
+                    };
 
                     view! {
                         <div>
@@ -125,6 +139,9 @@ pub fn SpotifyPlayer(
                                     <p class=state_text_class>
                                         {state_label}
                                     </p>
+                                    {stale_age.map(|age| view! {
+                                        <p class="text-[10px] font-mono text-[var(--color-text-muted)]">{age}</p>
+                                    })}
                                 </div>
                             </div>
 
@@ -147,6 +164,13 @@ pub fn SpotifyPlayer(
                                 None
                             }}
                         </div>
+                    }.into_any()
+                }
+                None if feed_state == FeedState::Unavailable => {
+                    view! {
+                        <p class="text-[var(--color-text-muted)] font-mono text-xs mt-2">
+                            "Spotify feed unavailable"
+                        </p>
                     }.into_any()
                 }
                 None => {

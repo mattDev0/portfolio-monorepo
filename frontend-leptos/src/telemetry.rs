@@ -1,3 +1,4 @@
+use crate::feed::FeedHealth;
 use leptos::prelude::*;
 use portfolio_api_types::{
     InfrastructureMetrics, NetworkHistoryPoint, NetworkMetrics, SystemMetrics, TelemetryPoint,
@@ -54,6 +55,13 @@ pub fn append_network_history_point(
     true
 }
 
+/// Request timeouts. The 5 s Rust polls stay shorter than their interval so
+/// requests never overlap; the Java timeout leaves room for a cold start.
+#[cfg(target_arch = "wasm32")]
+const RUST_TIMEOUT_MS: u32 = 4_500;
+#[cfg(target_arch = "wasm32")]
+const JAVA_TIMEOUT_MS: u32 = 8_000;
+
 #[derive(Clone, Copy)]
 pub struct TelemetrySignals {
     pub rust_status: ReadSignal<Option<SystemMetrics>>,
@@ -66,6 +74,9 @@ pub struct TelemetrySignals {
     pub set_network_status: WriteSignal<Option<NetworkMetrics>>,
     pub network_history: ReadSignal<Vec<NetworkHistoryPoint>>,
     pub set_network_history: WriteSignal<Vec<NetworkHistoryPoint>>,
+    pub rust_health: ReadSignal<FeedHealth>,
+    pub java_health: ReadSignal<FeedHealth>,
+    pub network_health: ReadSignal<FeedHealth>,
 }
 
 // The signal setters are only used in the browser (wasm32) code below.
@@ -76,12 +87,19 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
     let (telemetry_history, set_telemetry_history) = signal(Vec::<TelemetryPoint>::new());
     let (network_status, set_network_status) = signal(None::<NetworkMetrics>);
     let (network_history, set_network_history) = signal(Vec::<NetworkHistoryPoint>::new());
+    let (rust_health, set_rust_health) = signal(FeedHealth::default());
+    let (java_health, set_java_health) = signal(FeedHealth::default());
+    let (network_health, set_network_health) = signal(FeedHealth::default());
 
     #[cfg(target_arch = "wasm32")]
     {
-        use crate::api::api_url;
-        use gloo_net::http::Request;
+        use crate::api::{api_url, fetch_json};
+        use crate::feed::now_ms;
         use leptos::prelude::set_interval_with_handle;
+
+        fn log_error(label: &str, err: &str) {
+            web_sys::console::error_2(&label.into(), &err.into());
+        }
 
         // One-time history fetches on visibility change to true
         Effect::new(move |_| {
@@ -89,20 +107,19 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
                 // Fetch Rust Telemetry History
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status/history");
-                    if let Ok(resp) = Request::get(&url).send().await {
-                        if let Ok(data) = resp.json::<Vec<TelemetryPoint>>().await {
-                            set_telemetry_history.set(data);
-                        }
+                    if let Ok(data) = fetch_json::<Vec<TelemetryPoint>>(&url, RUST_TIMEOUT_MS).await
+                    {
+                        set_telemetry_history.set(data);
                     }
                 });
 
                 // Fetch Rust Network History
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status/network/history");
-                    if let Ok(resp) = Request::get(&url).send().await {
-                        if let Ok(data) = resp.json::<Vec<NetworkHistoryPoint>>().await {
-                            set_network_history.set(data);
-                        }
+                    if let Ok(data) =
+                        fetch_json::<Vec<NetworkHistoryPoint>>(&url, RUST_TIMEOUT_MS).await
+                    {
+                        set_network_history.set(data);
                     }
                 });
             }
@@ -118,25 +135,20 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
             let fetch_rust = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<SystemMetrics>().await {
-                                let cpu = data.cpu_usage_percent;
-                                let mem = calculate_memory_percent(
-                                    data.memory_used_mb,
-                                    data.memory_total_mb,
-                                );
-                                set_rust_status.set(Some(data));
-                                set_telemetry_history.update(|h| {
-                                    append_telemetry_point(h, cpu, mem);
-                                });
-                            }
+                    match fetch_json::<SystemMetrics>(&url, RUST_TIMEOUT_MS).await {
+                        Ok(data) => {
+                            let cpu = data.cpu_usage_percent;
+                            let mem =
+                                calculate_memory_percent(data.memory_used_mb, data.memory_total_mb);
+                            set_rust_status.set(Some(data));
+                            set_telemetry_history.update(|h| {
+                                append_telemetry_point(h, cpu, mem);
+                            });
+                            set_rust_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
-                            web_sys::console::error_2(
-                                &"Error fetching from Rust API:".into(),
-                                &e.to_string().into(),
-                            );
+                            log_error("Error fetching from Rust API:", &e);
+                            set_rust_health.update(|h| h.record_failure());
                         }
                     }
                 });
@@ -150,23 +162,20 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
             let fetch_network = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status/network");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<NetworkMetrics>().await {
-                                let google = data.google_dns.latency_ms;
-                                let cloudflare = data.cloudflare_dns.latency_ms;
-                                let riot = data.riot_games.latency_ms;
-                                set_network_status.set(Some(data));
-                                set_network_history.update(|h| {
-                                    append_network_history_point(h, google, cloudflare, riot);
-                                });
-                            }
+                    match fetch_json::<NetworkMetrics>(&url, RUST_TIMEOUT_MS).await {
+                        Ok(data) => {
+                            let google = data.google_dns.latency_ms;
+                            let cloudflare = data.cloudflare_dns.latency_ms;
+                            let riot = data.riot_games.latency_ms;
+                            set_network_status.set(Some(data));
+                            set_network_history.update(|h| {
+                                append_network_history_point(h, google, cloudflare, riot);
+                            });
+                            set_network_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
-                            web_sys::console::error_2(
-                                &"Error fetching from Rust Network API:".into(),
-                                &e.to_string().into(),
-                            );
+                            log_error("Error fetching from Rust Network API:", &e);
+                            set_network_health.update(|h| h.record_failure());
                         }
                     }
                 });
@@ -180,17 +189,14 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
             let fetch_java = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("java", "/api/infrastructure/metrics");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<InfrastructureMetrics>().await {
-                                set_java_status.set(Some(data));
-                            }
+                    match fetch_json::<InfrastructureMetrics>(&url, JAVA_TIMEOUT_MS).await {
+                        Ok(data) => {
+                            set_java_status.set(Some(data));
+                            set_java_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
-                            web_sys::console::error_2(
-                                &"Error fetching from Java API:".into(),
-                                &e.to_string().into(),
-                            );
+                            log_error("Error fetching from Java API:", &e);
+                            set_java_health.update(|h| h.record_failure());
                         }
                     }
                 });
@@ -226,6 +232,9 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
         set_network_status,
         network_history,
         set_network_history,
+        rust_health,
+        java_health,
+        network_health,
     }
 }
 

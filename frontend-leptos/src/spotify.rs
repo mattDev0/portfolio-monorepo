@@ -1,3 +1,4 @@
+use crate::feed::FeedHealth;
 use leptos::prelude::*;
 use portfolio_api_types::SpotifyStatus;
 
@@ -27,8 +28,14 @@ pub fn calculate_progress_percent(local_ms: u64, duration_ms: u64) -> f32 {
     }
 }
 
-pub fn get_spotify_state_label(is_playing: bool, is_recently_played: bool) -> &'static str {
-    if is_playing {
+pub fn get_spotify_state_label(
+    is_playing: bool,
+    is_recently_played: bool,
+    is_stale: bool,
+) -> &'static str {
+    if is_stale {
+        "Connection Lost"
+    } else if is_playing {
         "Now Playing"
     } else if is_recently_played {
         "Last Played"
@@ -37,8 +44,14 @@ pub fn get_spotify_state_label(is_playing: bool, is_recently_played: bool) -> &'
     }
 }
 
-pub fn get_spotify_tooltip(is_playing: bool, is_recently_played: bool) -> &'static str {
-    if is_playing {
+pub fn get_spotify_tooltip(
+    is_playing: bool,
+    is_recently_played: bool,
+    is_stale: bool,
+) -> &'static str {
+    if is_stale {
+        "Showing the last known track"
+    } else if is_playing {
         "Live playback"
     } else if is_recently_played {
         "Last played song"
@@ -60,6 +73,7 @@ pub fn tick_progress_capped(current_ms: u64, duration_ms: u64, delta_ms: u64) ->
 pub struct SpotifySignals {
     pub spotify_data: ReadSignal<Option<SpotifyStatus>>,
     pub local_progress_ms: ReadSignal<u64>,
+    pub spotify_health: ReadSignal<FeedHealth>,
 }
 
 // The signal setters are only used in the browser (wasm32) code below.
@@ -67,11 +81,12 @@ pub struct SpotifySignals {
 pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
     let (spotify_data, set_spotify_data) = signal(None::<SpotifyStatus>);
     let (local_progress_ms, set_local_progress_ms) = signal(0u64);
+    let (spotify_health, set_spotify_health) = signal(FeedHealth::default());
 
     #[cfg(target_arch = "wasm32")]
     {
-        use crate::api::api_url;
-        use gloo_net::http::Request;
+        use crate::api::{api_url, fetch_json};
+        use crate::feed::now_ms;
         use leptos::prelude::set_interval_with_handle;
 
         // Fetch Spotify API every 10s (only when visible)
@@ -83,18 +98,18 @@ pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
             let fetch_spotify = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/spotify");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<SpotifyStatus>().await {
-                                set_local_progress_ms.set(data.progress_ms);
-                                set_spotify_data.set(Some(data));
-                            }
+                    match fetch_json::<SpotifyStatus>(&url, 8_000).await {
+                        Ok(data) => {
+                            set_local_progress_ms.set(data.progress_ms);
+                            set_spotify_data.set(Some(data));
+                            set_spotify_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
                             web_sys::console::error_2(
                                 &"Error fetching Spotify API:".into(),
-                                &e.to_string().into(),
+                                &e.into(),
                             );
+                            set_spotify_health.update(|h| h.record_failure());
                         }
                     }
                 });
@@ -104,9 +119,12 @@ pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
             let fetch_interval =
                 set_interval_with_handle(fetch_spotify, Duration::from_millis(10000)).ok();
 
-            // Progress tick every 1s while playing
+            // Progress tick every 1s while playing, stopped once the feed is stale
             let tick_interval = set_interval_with_handle(
                 move || {
+                    if spotify_health.get_untracked().is_stale() {
+                        return;
+                    }
                     if let Some(data) = spotify_data.get_untracked() {
                         if data.is_playing && data.duration_ms > 0 {
                             set_local_progress_ms.update(|prev| {
@@ -133,6 +151,7 @@ pub fn use_spotify(is_visible: Signal<bool>) -> SpotifySignals {
     SpotifySignals {
         spotify_data,
         local_progress_ms,
+        spotify_health,
     }
 }
 
@@ -160,9 +179,26 @@ mod tests {
 
     #[test]
     fn test_state_labels() {
-        assert_eq!(get_spotify_state_label(true, false), "Now Playing");
-        assert_eq!(get_spotify_state_label(false, true), "Last Played");
-        assert_eq!(get_spotify_state_label(false, false), "Offline");
+        assert_eq!(get_spotify_state_label(true, false, false), "Now Playing");
+        assert_eq!(get_spotify_state_label(false, true, false), "Last Played");
+        assert_eq!(get_spotify_state_label(false, false, false), "Offline");
+    }
+
+    #[test]
+    fn test_stale_overrides_playing() {
+        assert_eq!(
+            get_spotify_state_label(true, false, true),
+            "Connection Lost"
+        );
+        assert_eq!(
+            get_spotify_state_label(false, true, true),
+            "Connection Lost"
+        );
+        assert_eq!(
+            get_spotify_tooltip(true, false, true),
+            "Showing the last known track"
+        );
+        assert_eq!(get_spotify_tooltip(true, false, false), "Live playback");
     }
 
     #[test]
