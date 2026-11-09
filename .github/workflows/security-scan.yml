@@ -16,14 +16,18 @@ jobs:
       fail-fast: false
       matrix:
         service:
+          # Contexts and Dockerfiles match the build matrix in deploy-gcp.yml
           - name: portfolio-frontend
-            context: ./frontend-react
+            context: .
+            file: ./frontend-leptos/Dockerfile
             image: portfolio-scan/portfolio-frontend:scan
           - name: portfolio-java-api
             context: ./backend-java
+            file: ./backend-java/Dockerfile
             image: portfolio-scan/portfolio-java-api:scan
           - name: portfolio-rust-api
-            context: ./backend-rust
+            context: .
+            file: ./backend-rust/Dockerfile
             image: portfolio-scan/portfolio-rust-api:scan
     steps:
       - name: Checkout Code
@@ -36,11 +40,12 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.file }}
           pull: true
           load: true
           tags: ${{ matrix.service.image }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=scan-${{ matrix.service.name }}
+          cache-to: type=gha,mode=max,scope=scan-${{ matrix.service.name }}
 
       - name: Scan ${{ matrix.service.name }} Image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
