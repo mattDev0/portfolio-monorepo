@@ -1,4 +1,4 @@
-name: Deploy to Google Cloud Run
+name: Deploy
 
 on:
   push:
@@ -20,13 +20,14 @@ concurrency:
 
 jobs:
   test:
+    name: Test Before Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Set up Rust
+      - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@1.95.0
         with:
           targets: wasm32-unknown-unknown
@@ -58,11 +59,11 @@ jobs:
         working-directory: ./frontend-leptos
         run: cargo fmt --check
 
-      - name: Run Leptos Clippy
+      - name: Lint Leptos Frontend (Clippy)
         working-directory: ./frontend-leptos
         run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
 
-      - name: Run Leptos Tests
+      - name: Test Leptos Frontend
         working-directory: ./frontend-leptos
         run: cargo test
 
@@ -76,15 +77,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run Java Tests
+      - name: Test Java API
         working-directory: ./backend-java
         run: ./mvnw test
 
-      - name: Run Rust Tests
+      - name: Test Rust API
         working-directory: ./backend-rust
         run: cargo test
 
   build:
+    name: Build and Scan ${{ matrix.service }}
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -148,7 +150,7 @@ jobs:
 
       # Images are pushed before they are scanned, but nothing is deployed
       # until every scan passes: the deploy job needs every build to succeed.
-      - name: Scan ${{ matrix.service }} Image
+      - name: Scan ${{ matrix.service }} Image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/${{ matrix.service }}:${{ steps.sha.outputs.sha }}
@@ -158,6 +160,7 @@ jobs:
           severity: 'CRITICAL'
 
   deploy:
+    name: Deploy to Cloud Run
     needs: build
     runs-on: ubuntu-latest
     permissions:
