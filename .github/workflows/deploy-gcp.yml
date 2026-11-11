@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Rust Toolchain
-        uses: dtolnay/rust-toolchain@1.95.0
+        uses: dtolnay/rust-toolchain@1.120.0
         with:
           targets: wasm32-unknown-unknown
           components: clippy, rustfmt
