@@ -215,4 +215,83 @@ class GitHubServiceTest {
         assertThat(cachePut.value()).containsExactly("githubActivity");
         assertThat(cachePut.unless()).isEqualTo(cacheable.unless());
     }
+
+    @Test
+    void getRecentActivity_ShouldIgnoreUnknownFieldsInRealisticCommitPayload() {
+        mockServer.reset();
+
+        String mockEventsJson = """
+            [
+              {
+                "id": "1234567890",
+                "type": "PushEvent",
+                "created_at": "2026-11-12T10:00:00Z",
+                "repo": {
+                  "id": 999,
+                  "name": "mattDev0/portfolio-monorepo"
+                },
+                "payload": {
+                  "head": "deadbeef1234567",
+                  "ref": "refs/heads/main"
+                }
+              }
+            ]
+            """;
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andExpect(method(HttpMethod.GET))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(mockEventsJson, MediaType.APPLICATION_JSON));
+
+        String realisticCommitJson = """
+            {
+              "sha": "deadbeef1234567",
+              "node_id": "C_kwDOExampleNodeId",
+              "html_url": "https://github.com/mattDev0/portfolio-monorepo/commit/deadbeef1234567",
+              "author": {
+                "login": "mattDev0",
+                "id": 12345
+              },
+              "committer": {
+                "login": "mattDev0",
+                "id": 12345
+              },
+              "parents": [
+                {
+                  "sha": "000000000000000",
+                  "url": "https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/000000000000000"
+                }
+              ],
+              "commit": {
+                "message": "fix: deserialize full commit payload\\n\\nDetailed body line.",
+                "author": {
+                  "name": "mattDev0",
+                  "email": "amatthew642@gmail.com",
+                  "date": "2026-11-12T10:00:00Z"
+                },
+                "committer": {
+                  "name": "mattDev0",
+                  "email": "amatthew642@gmail.com",
+                  "date": "2026-11-12T10:00:00Z"
+                },
+                "tree": {
+                  "sha": "111111111111111",
+                  "url": "https://api.github.com/repos/mattDev0/portfolio-monorepo/git/trees/111111111111111"
+                },
+                "url": "https://api.github.com/repos/mattDev0/portfolio-monorepo/git/commits/deadbeef1234567"
+              }
+            }
+            """;
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/deadbeef1234567"))
+                  .andExpect(method(HttpMethod.GET))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(realisticCommitJson, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).hasSize(1);
+        assertThat(activity.get(0).message()).isEqualTo("fix: deserialize full commit payload");
+        assertThat(activity.get(0).hash()).isEqualTo("deadbee");
+
+        mockServer.verify();
+    }
 }
