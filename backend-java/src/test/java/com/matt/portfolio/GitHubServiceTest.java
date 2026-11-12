@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -195,5 +198,21 @@ class GitHubServiceTest {
         assertThat(activity.get(0).message()).isEqualTo("feat: add java tests");
         
         mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldHaveCacheableAnnotationWithUnlessCondition() throws NoSuchMethodException {
+        Method getActivityMethod = GitHubService.class.getMethod("getRecentActivity");
+        Cacheable cacheable = getActivityMethod.getAnnotation(Cacheable.class);
+
+        assertThat(cacheable).isNotNull();
+        assertThat(cacheable.value()).containsExactly("githubActivity");
+        assertThat(cacheable.unless()).isEqualTo("#result == null or #result.isEmpty()");
+
+        Method refreshCacheMethod = GitHubService.class.getMethod("refreshGitHubCache");
+        CachePut cachePut = refreshCacheMethod.getAnnotation(CachePut.class);
+        assertThat(cachePut).isNotNull();
+        assertThat(cachePut.value()).containsExactly("githubActivity");
+        assertThat(cachePut.unless()).isEqualTo(cacheable.unless());
     }
 }
