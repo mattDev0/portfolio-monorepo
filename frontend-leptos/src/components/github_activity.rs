@@ -42,10 +42,7 @@ pub fn GitHubActivity() -> impl IntoView {
                         set_loading.set(false);
                     }
                     Err(e) => {
-                        web_sys::console::error_2(
-                            &"GitHub fetch error:".into(),
-                            &e.into(),
-                        );
+                        web_sys::console::error_2(&"GitHub fetch error:".into(), &e.into());
                         set_error.set(Some("Activity feed temporarily unavailable."));
                         set_loading.set(false);
                     }
