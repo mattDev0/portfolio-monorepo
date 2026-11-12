@@ -4,12 +4,20 @@ use tokio::time::{sleep, Duration};
 use crate::models::{AppState, NetworkMetrics, NetworkTarget, NetworkHistoryPoint};
 use tokio_util::sync::CancellationToken;
 
+fn monitor_client() -> Client {
+    Client::builder()
+        .connect_timeout(Duration::from_secs(3))
+        .timeout(Duration::from_secs(5))
+        .build()
+        .unwrap_or_else(|_| Client::new())
+}
+
 pub fn start_network_monitor(state: AppState, cancel_token: CancellationToken) -> tokio::task::JoinHandle<()> {
     let net_metrics_clone = state.network_metrics.clone();
     let net_history_clone = state.network_history.clone();
 
     tokio::spawn(async move {
-        let client = Client::new();
+        let client = monitor_client();
         let prometheus_url = env::var("PROMETHEUS_URL")
             .unwrap_or_else(|_| "http://localhost:9090".to_string());
 
@@ -268,6 +276,31 @@ mod tests {
     fn test_get_metric_value_for_instance_missing_data() {
         let json = json!({"status": "error"});
         assert_eq!(get_metric_value_for_instance(&json, "8.8.8.8"), None);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_network_metrics_times_out_on_slow_prometheus() {
+        let mock_server = MockServer::start().await;
+        let client = monitor_client();
+
+        Mock::given(method("GET"))
+            .and(path("/api/v1/query"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(json!({"status": "success"}))
+                    .set_delay(Duration::from_secs(10)),
+            )
+            .mount(&mock_server)
+            .await;
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(8),
+            fetch_network_metrics(&client, &mock_server.uri()),
+        )
+        .await
+        .expect("fetch_network_metrics should time out within 8s via monitor_client");
+
+        assert!(result.is_none());
     }
 }
 
