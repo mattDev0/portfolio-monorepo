@@ -290,6 +290,11 @@ async fn fetch_spotify_status(state: &AppState) -> SpotifyStatus {
         return cached_or_offline(state, "Scope Error").await;
     }
 
+    if !status.is_success() {
+        tracing::warn!(status = %status, "Spotify currently-playing returned an error status");
+        return cached_or_offline(state, "API Error").await;
+    }
+
     let raw_response = match response.text().await {
         Ok(text) => text,
         Err(e) => {
@@ -761,5 +766,97 @@ mod tests {
             env::remove_var("SPOTIFY_AUTH_BASE_URL");
             env::remove_var("SPOTIFY_API_BASE_URL");
         }
+    }
+
+    async fn run_currently_playing_503(cached: Option<SpotifyStatus>) -> SpotifyStatus {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        clear_env();
+
+        let auth_server = MockServer::start().await;
+        let api_server = MockServer::start().await;
+
+        unsafe {
+            env::set_var("SPOTIFY_CLIENT_ID", "mock_id");
+            env::set_var("SPOTIFY_CLIENT_SECRET", "mock_secret");
+            env::set_var("SPOTIFY_REFRESH_TOKEN", "mock_refresh");
+            env::set_var("SPOTIFY_AUTH_BASE_URL", auth_server.uri());
+            env::set_var("SPOTIFY_API_BASE_URL", api_server.uri());
+            env::set_var("APP_ENV", "production");
+        }
+
+        Mock::given(method("POST"))
+            .and(path("/api/token"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "access_token": "mock_access_token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "scope": "user-read-currently-playing user-read-recently-played"
+            })))
+            .mount(&auth_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/v1/me/player/currently-playing"))
+            .respond_with(ResponseTemplate::new(503).set_body_json(json!({
+                "error": { "status": 503, "message": "Service Unavailable" }
+            })))
+            .expect(1)
+            .mount(&api_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/v1/me/player/recently-played"))
+            .respond_with(ResponseTemplate::new(200))
+            .expect(0)
+            .mount(&api_server)
+            .await;
+
+        let state = test_state();
+        if let Some(track) = cached {
+            *state.spotify_cache.write().await = Some(track);
+        }
+
+        let res = get_spotify_status(&state).await;
+
+        drop(api_server); // verifies recently-played expect(0)
+
+        unsafe {
+            env::remove_var("SPOTIFY_AUTH_BASE_URL");
+            env::remove_var("SPOTIFY_API_BASE_URL");
+        }
+
+        res.0
+    }
+
+    #[tokio::test]
+    async fn test_currently_playing_503_reports_api_error_without_calling_recently_played() {
+        let res = run_currently_playing_503(None).await;
+
+        assert!(!res.is_playing);
+        assert!(!res.is_recently_played);
+        assert_eq!(res.title, "Offline");
+        assert_eq!(res.artist, "API Error");
+    }
+
+    #[tokio::test]
+    async fn test_currently_playing_503_serves_cached_track_without_calling_recently_played() {
+        let cached = SpotifyStatus {
+            is_playing: true,
+            is_recently_played: false,
+            title: "Cached Track".to_string(),
+            artist: "Cached Artist".to_string(),
+            album_art: "https://spotify.com/cached.jpg".to_string(),
+            progress_ms: 42000,
+            duration_ms: 210000,
+            track_url: "https://spotify.com/cached".to_string(),
+        };
+        let res = run_currently_playing_503(Some(cached)).await;
+
+        assert!(!res.is_playing);
+        assert!(res.is_recently_played);
+        assert_eq!(res.title, "Cached Track");
+        assert_eq!(res.artist, "Cached Artist");
+        assert_eq!(res.progress_ms, 0);
+        assert_eq!(res.duration_ms, 210000);
     }
 }
