@@ -64,10 +64,27 @@ public class GitHubService {
         }
     }
 
-    // Merge commits ("Merge branch ...", "Merge pull request #N ...") repeat work
-    // already shown by the branch's own commits, so the feed skips them.
-    static boolean isMergeCommitMessage(String message) {
-        return message.startsWith("Merge branch") || message.startsWith("Merge pull request");
+    /**
+     * The line to show for a commit, or null to leave it out of the feed.
+     * A "Merge pull request #N from ..." commit shows the pull request title, which
+     * GitHub puts in the message body. "Merge branch ..." commits (updating a branch
+     * from main) carry no new work, so they are skipped.
+     */
+    static String feedMessage(String fullMessage) {
+        String[] lines = fullMessage.split("\\R");
+        String first = lines[0].trim();
+        if (first.startsWith("Merge pull request")) {
+            for (int i = 1; i < lines.length; i++) {
+                if (!lines[i].isBlank()) {
+                    return lines[i].trim();
+                }
+            }
+            return null;
+        }
+        if (first.startsWith("Merge branch") || first.startsWith("Merge remote-tracking branch")) {
+            return null;
+        }
+        return first;
     }
 
     @Cacheable(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
@@ -116,8 +133,7 @@ public class GitHubService {
                                 if (commitJson != null) {
                                     CommitResponse commitRes = objectMapper.readValue(commitJson, CommitResponse.class);
                                     if (commitRes != null && commitRes.commit() != null && commitRes.commit().message() != null) {
-                                        String fullMessage = commitRes.commit().message();
-                                        message = fullMessage.split("\n")[0]; // Grab just the first line
+                                        message = feedMessage(commitRes.commit().message());
                                         messageFound = true;
                                     }
                                 }
@@ -133,7 +149,7 @@ public class GitHubService {
                             message = "Pushed updates to branch: " + ref.replace("refs/heads/", "");
                         }
 
-                        if (!isMergeCommitMessage(message)) {
+                        if (message != null) {
                             recentCommits.add(new GitHubCommitActivity(
                                 repoName.replace("mattDev0/", ""), 
                                 message,
