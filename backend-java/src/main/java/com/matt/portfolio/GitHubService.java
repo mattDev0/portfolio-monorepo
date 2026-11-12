@@ -64,6 +64,12 @@ public class GitHubService {
         }
     }
 
+    // Merge commits ("Merge branch ...", "Merge pull request #N ...") repeat work
+    // already shown by the branch's own commits, so the feed skips them.
+    static boolean isMergeCommitMessage(String message) {
+        return message.startsWith("Merge branch") || message.startsWith("Merge pull request");
+    }
+
     @Cacheable(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
     public List<GitHubCommitActivity> getRecentActivity() {
         return fetchRecentActivity();
@@ -127,7 +133,7 @@ public class GitHubService {
                             message = "Pushed updates to branch: " + ref.replace("refs/heads/", "");
                         }
 
-                        if (!message.startsWith("Merge branch")) {
+                        if (!isMergeCommitMessage(message)) {
                             recentCommits.add(new GitHubCommitActivity(
                                 repoName.replace("mattDev0/", ""), 
                                 message,
