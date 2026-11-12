@@ -296,22 +296,28 @@ class GitHubServiceTest {
     }
 
     @Test
-    void getRecentActivity_ShouldSkipMergeCommits() {
+    void getRecentActivity_ShouldShowPullRequestTitlesAndSkipBranchMerges() {
         mockServer.reset();
 
         String mockEventsJson = """
             [
               {
                 "type": "PushEvent",
-                "created_at": "2026-11-12T11:00:00Z",
+                "created_at": "2026-11-12T12:00:00Z",
                 "repo": { "name": "mattDev0/portfolio-monorepo" },
                 "payload": { "head": "aaaaaaa1111111", "ref": "refs/heads/main" }
               },
               {
                 "type": "PushEvent",
-                "created_at": "2026-11-12T10:00:00Z",
+                "created_at": "2026-11-12T11:00:00Z",
                 "repo": { "name": "mattDev0/portfolio-monorepo" },
                 "payload": { "head": "bbbbbbb2222222", "ref": "refs/heads/fix/thing" }
+              },
+              {
+                "type": "PushEvent",
+                "created_at": "2026-11-12T10:00:00Z",
+                "repo": { "name": "mattDev0/portfolio-monorepo" },
+                "payload": { "head": "ccccccc3333333", "ref": "refs/heads/fix/thing" }
               }
             ]
             """;
@@ -319,26 +325,33 @@ class GitHubServiceTest {
                   .andRespond(withSuccess(mockEventsJson, MediaType.APPLICATION_JSON));
         mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/aaaaaaa1111111"))
                   .andRespond(withSuccess("""
-                      {"sha": "aaaaaaa1111111", "commit": {"message": "Merge pull request #64 from mattDev0/fix/thing\\n\\nfix: thing"}}
+                      {"sha": "aaaaaaa1111111", "commit": {"message": "Merge pull request #64 from mattDev0/fix/thing\\n\\nfix: report Spotify errors correctly"}}
                       """, MediaType.APPLICATION_JSON));
         mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/bbbbbbb2222222"))
                   .andRespond(withSuccess("""
-                      {"sha": "bbbbbbb2222222", "commit": {"message": "fix: thing"}}
+                      {"sha": "bbbbbbb2222222", "commit": {"message": "Merge branch 'main' into fix/thing"}}
+                      """, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/ccccccc3333333"))
+                  .andRespond(withSuccess("""
+                      {"sha": "ccccccc3333333", "commit": {"message": "fix: thing\\n\\nLonger body."}}
                       """, MediaType.APPLICATION_JSON));
 
         List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
 
-        assertThat(activity).hasSize(1);
-        assertThat(activity.get(0).message()).isEqualTo("fix: thing");
-        assertThat(activity.get(0).hash()).isEqualTo("bbbbbbb");
+        assertThat(activity).extracting(GitHubCommitActivity::message)
+                .containsExactly("fix: report Spotify errors correctly", "fix: thing");
+        assertThat(activity).extracting(GitHubCommitActivity::hash)
+                .containsExactly("aaaaaaa", "ccccccc");
 
         mockServer.verify();
     }
 
     @Test
-    void isMergeCommitMessage_ShouldMatchBranchAndPullRequestMerges() {
-        assertThat(GitHubService.isMergeCommitMessage("Merge branch 'main' into feature")).isTrue();
-        assertThat(GitHubService.isMergeCommitMessage("Merge pull request #64 from mattDev0/fix/thing")).isTrue();
-        assertThat(GitHubService.isMergeCommitMessage("fix: merge pull request handling")).isFalse();
+    void feedMessage_ShouldUseTitlesAndSkipBranchMerges() {
+        assertThat(GitHubService.feedMessage("Merge pull request #64 from mattDev0/fix/thing\n\nfix: thing")).isEqualTo("fix: thing");
+        assertThat(GitHubService.feedMessage("Merge pull request #64 from mattDev0/fix/thing")).isNull();
+        assertThat(GitHubService.feedMessage("Merge branch 'main' into feature")).isNull();
+        assertThat(GitHubService.feedMessage("Merge remote-tracking branch 'origin/main'")).isNull();
+        assertThat(GitHubService.feedMessage("fix: merge pull request handling\r\n\r\nbody")).isEqualTo("fix: merge pull request handling");
     }
 }
