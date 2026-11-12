@@ -1,5 +1,6 @@
 package com.matt.portfolio;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cache.annotation.CachePut;
@@ -31,7 +32,10 @@ public class GitHubService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record CommitInfo(String message) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record CommitResponse(CommitInfo commit) {}
 
     public GitHubService(RestTemplate restTemplate, ObjectMapper objectMapper) {
