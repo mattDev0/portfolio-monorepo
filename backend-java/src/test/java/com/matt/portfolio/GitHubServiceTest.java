@@ -294,4 +294,51 @@ class GitHubServiceTest {
 
         mockServer.verify();
     }
+
+    @Test
+    void getRecentActivity_ShouldSkipMergeCommits() {
+        mockServer.reset();
+
+        String mockEventsJson = """
+            [
+              {
+                "type": "PushEvent",
+                "created_at": "2026-11-12T11:00:00Z",
+                "repo": { "name": "mattDev0/portfolio-monorepo" },
+                "payload": { "head": "aaaaaaa1111111", "ref": "refs/heads/main" }
+              },
+              {
+                "type": "PushEvent",
+                "created_at": "2026-11-12T10:00:00Z",
+                "repo": { "name": "mattDev0/portfolio-monorepo" },
+                "payload": { "head": "bbbbbbb2222222", "ref": "refs/heads/fix/thing" }
+              }
+            ]
+            """;
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andRespond(withSuccess(mockEventsJson, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/aaaaaaa1111111"))
+                  .andRespond(withSuccess("""
+                      {"sha": "aaaaaaa1111111", "commit": {"message": "Merge pull request #64 from mattDev0/fix/thing\\n\\nfix: thing"}}
+                      """, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/bbbbbbb2222222"))
+                  .andRespond(withSuccess("""
+                      {"sha": "bbbbbbb2222222", "commit": {"message": "fix: thing"}}
+                      """, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).hasSize(1);
+        assertThat(activity.get(0).message()).isEqualTo("fix: thing");
+        assertThat(activity.get(0).hash()).isEqualTo("bbbbbbb");
+
+        mockServer.verify();
+    }
+
+    @Test
+    void isMergeCommitMessage_ShouldMatchBranchAndPullRequestMerges() {
+        assertThat(GitHubService.isMergeCommitMessage("Merge branch 'main' into feature")).isTrue();
+        assertThat(GitHubService.isMergeCommitMessage("Merge pull request #64 from mattDev0/fix/thing")).isTrue();
+        assertThat(GitHubService.isMergeCommitMessage("fix: merge pull request handling")).isFalse();
+    }
 }
