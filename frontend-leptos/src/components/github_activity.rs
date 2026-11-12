@@ -29,40 +29,20 @@ pub fn GitHubActivity() -> impl IntoView {
 
     #[cfg(target_arch = "wasm32")]
     {
-        use crate::api::api_url;
-        use gloo_net::http::Request;
+        use crate::api::{api_url, fetch_json};
+
+        const GITHUB_TIMEOUT_MS: u32 = 8_000;
 
         Effect::new(move |_| {
             leptos::task::spawn_local(async move {
                 let url = api_url("java", "/api/github/activity");
-                match Request::get(&url).send().await {
-                    Ok(resp) if resp.ok() => match resp.json::<Vec<GitHubCommitActivity>>().await {
-                        Ok(data) => {
-                            set_commits.set(data);
-                            set_loading.set(false);
-                        }
-                        Err(e) => {
-                            web_sys::console::error_2(
-                                &"GitHub fetch error:".into(),
-                                &e.to_string().into(),
-                            );
-                            set_error.set(Some("Activity feed temporarily unavailable."));
-                            set_loading.set(false);
-                        }
-                    },
-                    Ok(resp) => {
-                        web_sys::console::error_2(
-                            &"GitHub fetch error: non-ok status".into(),
-                            &resp.status().into(),
-                        );
-                        set_error.set(Some("Activity feed temporarily unavailable."));
+                match fetch_json::<Vec<GitHubCommitActivity>>(&url, GITHUB_TIMEOUT_MS).await {
+                    Ok(data) => {
+                        set_commits.set(data);
                         set_loading.set(false);
                     }
                     Err(e) => {
-                        web_sys::console::error_2(
-                            &"GitHub fetch error:".into(),
-                            &e.to_string().into(),
-                        );
+                        web_sys::console::error_2(&"GitHub fetch error:".into(), &e.into());
                         set_error.set(Some("Activity feed temporarily unavailable."));
                         set_loading.set(false);
                     }

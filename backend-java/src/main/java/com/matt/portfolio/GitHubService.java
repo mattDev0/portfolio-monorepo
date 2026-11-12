@@ -60,7 +60,7 @@ public class GitHubService {
         }
     }
 
-    @Cacheable("githubActivity")
+    @Cacheable(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
     public List<GitHubCommitActivity> getRecentActivity() {
         return fetchRecentActivity();
     }
