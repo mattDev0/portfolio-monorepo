@@ -430,6 +430,76 @@ class GitHubServiceTest {
     }
 
     @Test
+    void getRecentActivity_ShouldSkipBotWork() {
+        mockServer.reset();
+
+        mockServer.expect(requestTo(REPOS_URL))
+                  .andRespond(withSuccess("""
+            [ { "name": "portfolio-monorepo", "fork": false } ]
+            """, MediaType.APPLICATION_JSON));
+
+        String mockCommitsJson = """
+            [
+              {
+                "sha": "aaaaaaa1111111",
+                "author": { "login": "mattDev0" },
+                "commit": {
+                  "message": "Merge pull request #59 from mattDev0/dependabot/npm_and_yarn/x\\n\\nchore(deps): bump things",
+                  "committer": { "date": "2026-11-13T06:00:00Z" }
+                }
+              },
+              {
+                "sha": "bbbbbbb2222222",
+                "author": { "login": "mattDev0" },
+                "commit": {
+                  "message": "Merge pull request #47 from mattDev0/imgbot\\n\\n[ImgBot] Optimize images",
+                  "committer": { "date": "2026-11-13T05:59:00Z" }
+                }
+              },
+              {
+                "sha": "ccccccc3333333",
+                "author": { "login": "dependabot[bot]" },
+                "commit": {
+                  "message": "chore(deps): bump other things",
+                  "committer": { "date": "2026-11-13T05:58:00Z" }
+                }
+              },
+              {
+                "sha": "ddddddd4444444",
+                "author": null,
+                "commit": {
+                  "message": "[ImgBot] Optimize images",
+                  "committer": { "date": "2026-11-13T05:57:00Z" }
+                }
+              },
+              {
+                "sha": "eeeeeee5555555",
+                "author": { "login": "mattDev0" },
+                "commit": {
+                  "message": "fix: real work",
+                  "committer": { "date": "2026-11-13T05:56:00Z" }
+                }
+              }
+            ]
+            """;
+        mockServer.expect(requestTo(commitsUrl("portfolio-monorepo")))
+                  .andRespond(withSuccess(mockCommitsJson, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).extracting(GitHubCommitActivity::message).containsExactly("fix: real work");
+        mockServer.verify();
+    }
+
+    @Test
+    void feedMessage_ShouldSkipBotBranchMerges() {
+        assertThat(GitHubService.feedMessage("Merge pull request #59 from mattDev0/dependabot/npm_and_yarn/x\n\nchore(deps): bump")).isNull();
+        assertThat(GitHubService.feedMessage("Merge pull request #47 from mattDev0/imgbot\n\n[ImgBot] Optimize images")).isNull();
+        assertThat(GitHubService.feedMessage("[ImgBot] Optimize images")).isNull();
+        assertThat(GitHubService.feedMessage("Merge pull request #68 from mattDev0/deps/sysinfo\n\nchore(rust): upgrade sysinfo")).isEqualTo("chore(rust): upgrade sysinfo");
+    }
+
+    @Test
     void feedMessage_ShouldUseTitlesAndSkipBranchMerges() {
         assertThat(GitHubService.feedMessage("Merge pull request #64 from mattDev0/fix/thing\n\nfix: thing")).isEqualTo("fix: thing");
         assertThat(GitHubService.feedMessage("Merge pull request #64 from mattDev0/fix/thing")).isNull();

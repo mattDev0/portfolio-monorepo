@@ -30,7 +30,7 @@ public class GitHubService {
     private static final Logger logger = LoggerFactory.getLogger(GitHubService.class);
 
     static final String REPOS_URL = "https://api.github.com/users/mattDev0/repos?type=owner&sort=pushed&per_page=4";
-    static final int COMMITS_PER_REPO = 6;
+    static final int COMMITS_PER_REPO = 10;
     private static final int FEED_LIMIT = 4;
 
     @Value("${github.token:}")
@@ -49,7 +49,10 @@ public class GitHubService {
     public record CommitInfo(String message, CommitActor author, CommitActor committer) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record CommitResponse(String sha, CommitInfo commit) {}
+    public record GitHubUser(String login) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CommitResponse(String sha, CommitInfo commit, GitHubUser author) {}
 
     public GitHubService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
@@ -102,12 +105,16 @@ public class GitHubService {
      * The line to show for a commit, or null to leave it out of the feed.
      * A "Merge pull request #N from ..." commit shows the pull request title, which
      * GitHub puts in the message body. "Merge branch ..." commits (updating a branch
-     * from main) carry no new work, so they are skipped.
+     * from main) carry no new work, so they are skipped, as are merges of bot
+     * branches (Dependabot, ImgBot) and ImgBot's own commits.
      */
     static String feedMessage(String fullMessage) {
         String[] lines = fullMessage.split("\\R");
         String first = lines[0].trim();
         if (first.startsWith("Merge pull request")) {
+            if (isBotBranchMerge(first)) {
+                return null;
+            }
             for (int i = 1; i < lines.length; i++) {
                 if (!lines[i].isBlank()) {
                     return lines[i].trim();
@@ -118,7 +125,24 @@ public class GitHubService {
         if (first.startsWith("Merge branch") || first.startsWith("Merge remote-tracking branch")) {
             return null;
         }
+        if (first.startsWith("[ImgBot]")) {
+            return null;
+        }
         return first;
+    }
+
+    private static boolean isBotBranchMerge(String firstLine) {
+        int from = firstLine.indexOf(" from ");
+        if (from < 0) {
+            return false;
+        }
+        String source = firstLine.substring(from + 6).trim();
+        String branch = source.contains("/") ? source.substring(source.indexOf('/') + 1) : source;
+        return branch.startsWith("dependabot/") || branch.startsWith("imgbot");
+    }
+
+    static boolean isBotAuthor(CommitResponse item) {
+        return item.author() != null && item.author().login() != null && item.author().login().endsWith("[bot]");
     }
 
     @Cacheable(value = "githubActivity", unless = "#result == null or #result.isEmpty()")
@@ -159,7 +183,7 @@ public class GitHubService {
 
                     Set<String> seenMessages = new HashSet<>();
                     for (CommitResponse item : commits) {
-                        if (item == null || item.commit() == null || item.commit().message() == null) {
+                        if (item == null || item.commit() == null || item.commit().message() == null || isBotAuthor(item)) {
                             continue;
                         }
 
