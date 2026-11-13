@@ -8,7 +8,13 @@ pub fn start_system_monitor(state: AppState, cancel_token: CancellationToken) ->
     let history_clone = state.history.clone();
 
     tokio::spawn(async move {
-        let mut sys = System::new_all();
+        let mut sys = match System::new_all() {
+            Ok(sys) => sys,
+            Err(e) => {
+                tracing::error!("System monitor could not read host metrics: {e}");
+                return;
+            }
+        };
         // Warm up the CPU readings
         sys.refresh_cpu_all();
         sleep(Duration::from_millis(200)).await;
@@ -19,7 +25,7 @@ pub fn start_system_monitor(state: AppState, cancel_token: CancellationToken) ->
 
             let total_mem_mb = sys.total_memory() / 1024 / 1024;
             let used_mem_mb = sys.used_memory() / 1024 / 1024;
-            let os_name = System::name().unwrap_or_else(|| "Unknown OS".to_string());
+            let os_name = System::name().unwrap_or_else(|_| "Unknown OS".to_string());
             let cpu_count = sys.cpus().len();
             let cpu_usage = sys.global_cpu_usage();
             let memory_pct = if sys.total_memory() > 0 {
