@@ -97,46 +97,54 @@ pub fn GitHubActivity() -> impl IntoView {
                     }.into_any()
                 } else {
                     let commit_items = commits.get();
-                    view! {
-                        <ul class="space-y-4">
-                            {commit_items.into_iter().map(|commit| {
-                                let formatted_date = format_commit_date(&commit.date);
-                                let url = commit_url(&commit.repo, &commit.hash);
-                                let is_link = url.is_some();
-                                view! {
-                                    <li class="pb-4 border-b border-[var(--color-border-primary)] last:border-0 last:pb-0">
-                                        <a
-                                            href=url
-                                            target=is_link.then_some("_blank")
-                                            rel=is_link.then_some("noopener noreferrer")
-                                            title=is_link.then_some("View commit on GitHub")
-                                            class="block group/item rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
-                                        >
-                                            // Repo Name & Date
-                                            <div class="flex justify-between items-center mb-1.5">
-                                                <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-solid-hover)] transition-colors">
-                                                    {commit.repo}
-                                                </span>
-                                                <span class="text-[var(--color-text-muted)] text-xs font-medium">
-                                                    {formatted_date}
-                                                </span>
-                                            </div>
+                    if commit_items.is_empty() {
+                        view! {
+                            <p class="text-[var(--color-text-tertiary)] italic text-sm">
+                                "No recent commits available."
+                            </p>
+                        }.into_any()
+                    } else {
+                        view! {
+                            <ul class="space-y-4">
+                                {commit_items.into_iter().map(|commit| {
+                                    let formatted_date = format_commit_date(&commit.date);
+                                    let url = commit_url(&commit.repo, &commit.hash);
+                                    let is_link = url.is_some();
+                                    view! {
+                                        <li class="pb-4 border-b border-[var(--color-border-primary)] last:border-0 last:pb-0">
+                                            <a
+                                                href=url
+                                                target=is_link.then_some("_blank")
+                                                rel=is_link.then_some("noopener noreferrer")
+                                                title=is_link.then_some("View commit on GitHub")
+                                                class="block group/item rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
+                                            >
+                                                // Repo Name & Date
+                                                <div class="flex justify-between items-center mb-1.5">
+                                                    <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-solid-hover)] transition-colors">
+                                                        {commit.repo}
+                                                    </span>
+                                                    <span class="text-[var(--color-text-muted)] text-xs font-medium">
+                                                        {formatted_date}
+                                                    </span>
+                                                </div>
 
-                                            // Hash Badge & Commit Message
-                                            <div class="flex items-center space-x-2.5">
-                                                <span class="bg-[var(--color-bg-tag)] border border-[var(--color-accent-border)] text-[var(--color-accent)] font-mono text-[10px] px-2 py-0.5 rounded shadow-sm tracking-wider">
-                                                    {commit.hash}
-                                                </span>
-                                                <span class="text-[var(--color-text-secondary)] text-sm truncate group-hover/item:text-[var(--color-text-primary)] transition-colors">
-                                                    {commit.message}
-                                                </span>
-                                            </div>
-                                        </a>
-                                    </li>
-                                }
-                            }).collect_view()}
-                        </ul>
-                    }.into_any()
+                                                // Hash Badge & Commit Message
+                                                <div class="flex items-center space-x-2.5">
+                                                    <span class="bg-[var(--color-bg-tag)] border border-[var(--color-accent-border)] text-[var(--color-accent)] font-mono text-[10px] px-2 py-0.5 rounded shadow-sm tracking-wider">
+                                                        {commit.hash}
+                                                    </span>
+                                                    <span class="text-[var(--color-text-secondary)] text-sm truncate group-hover/item:text-[var(--color-text-primary)] transition-colors">
+                                                        {commit.message}
+                                                    </span>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    }
+                                }).collect_view()}
+                            </ul>
+                        }.into_any()
+                    }
                 }
             }}
         </div>
