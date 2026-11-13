@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -195,5 +198,160 @@ class GitHubServiceTest {
         assertThat(activity.get(0).message()).isEqualTo("feat: add java tests");
         
         mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldHaveCacheableAnnotationWithUnlessCondition() throws NoSuchMethodException {
+        Method getActivityMethod = GitHubService.class.getMethod("getRecentActivity");
+        Cacheable cacheable = getActivityMethod.getAnnotation(Cacheable.class);
+
+        assertThat(cacheable).isNotNull();
+        assertThat(cacheable.value()).containsExactly("githubActivity");
+        assertThat(cacheable.unless()).isEqualTo("#result == null or #result.isEmpty()");
+
+        Method refreshCacheMethod = GitHubService.class.getMethod("refreshGitHubCache");
+        CachePut cachePut = refreshCacheMethod.getAnnotation(CachePut.class);
+        assertThat(cachePut).isNotNull();
+        assertThat(cachePut.value()).containsExactly("githubActivity");
+        assertThat(cachePut.unless()).isEqualTo(cacheable.unless());
+    }
+
+    @Test
+    void getRecentActivity_ShouldIgnoreUnknownFieldsInRealisticCommitPayload() {
+        mockServer.reset();
+
+        String mockEventsJson = """
+            [
+              {
+                "id": "1234567890",
+                "type": "PushEvent",
+                "created_at": "2026-11-12T10:00:00Z",
+                "repo": {
+                  "id": 999,
+                  "name": "mattDev0/portfolio-monorepo"
+                },
+                "payload": {
+                  "head": "deadbeef1234567",
+                  "ref": "refs/heads/main"
+                }
+              }
+            ]
+            """;
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andExpect(method(HttpMethod.GET))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(mockEventsJson, MediaType.APPLICATION_JSON));
+
+        String realisticCommitJson = """
+            {
+              "sha": "deadbeef1234567",
+              "node_id": "C_kwDOExampleNodeId",
+              "html_url": "https://github.com/mattDev0/portfolio-monorepo/commit/deadbeef1234567",
+              "author": {
+                "login": "mattDev0",
+                "id": 12345
+              },
+              "committer": {
+                "login": "mattDev0",
+                "id": 12345
+              },
+              "parents": [
+                {
+                  "sha": "000000000000000",
+                  "url": "https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/000000000000000"
+                }
+              ],
+              "commit": {
+                "message": "fix: deserialize full commit payload\\n\\nDetailed body line.",
+                "author": {
+                  "name": "mattDev0",
+                  "email": "amatthew642@gmail.com",
+                  "date": "2026-11-12T10:00:00Z"
+                },
+                "committer": {
+                  "name": "mattDev0",
+                  "email": "amatthew642@gmail.com",
+                  "date": "2026-11-12T10:00:00Z"
+                },
+                "tree": {
+                  "sha": "111111111111111",
+                  "url": "https://api.github.com/repos/mattDev0/portfolio-monorepo/git/trees/111111111111111"
+                },
+                "url": "https://api.github.com/repos/mattDev0/portfolio-monorepo/git/commits/deadbeef1234567"
+              }
+            }
+            """;
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/deadbeef1234567"))
+                  .andExpect(method(HttpMethod.GET))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(realisticCommitJson, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).hasSize(1);
+        assertThat(activity.get(0).message()).isEqualTo("fix: deserialize full commit payload");
+        assertThat(activity.get(0).hash()).isEqualTo("deadbee");
+
+        mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldShowPullRequestTitlesAndSkipBranchMerges() {
+        mockServer.reset();
+
+        String mockEventsJson = """
+            [
+              {
+                "type": "PushEvent",
+                "created_at": "2026-11-12T12:00:00Z",
+                "repo": { "name": "mattDev0/portfolio-monorepo" },
+                "payload": { "head": "aaaaaaa1111111", "ref": "refs/heads/main" }
+              },
+              {
+                "type": "PushEvent",
+                "created_at": "2026-11-12T11:00:00Z",
+                "repo": { "name": "mattDev0/portfolio-monorepo" },
+                "payload": { "head": "bbbbbbb2222222", "ref": "refs/heads/fix/thing" }
+              },
+              {
+                "type": "PushEvent",
+                "created_at": "2026-11-12T10:00:00Z",
+                "repo": { "name": "mattDev0/portfolio-monorepo" },
+                "payload": { "head": "ccccccc3333333", "ref": "refs/heads/fix/thing" }
+              }
+            ]
+            """;
+        mockServer.expect(requestTo("https://api.github.com/users/mattDev0/events/public"))
+                  .andRespond(withSuccess(mockEventsJson, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/aaaaaaa1111111"))
+                  .andRespond(withSuccess("""
+                      {"sha": "aaaaaaa1111111", "commit": {"message": "Merge pull request #64 from mattDev0/fix/thing\\n\\nfix: report Spotify errors correctly"}}
+                      """, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/bbbbbbb2222222"))
+                  .andRespond(withSuccess("""
+                      {"sha": "bbbbbbb2222222", "commit": {"message": "Merge branch 'main' into fix/thing"}}
+                      """, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo("https://api.github.com/repos/mattDev0/portfolio-monorepo/commits/ccccccc3333333"))
+                  .andRespond(withSuccess("""
+                      {"sha": "ccccccc3333333", "commit": {"message": "fix: thing\\n\\nLonger body."}}
+                      """, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).extracting(GitHubCommitActivity::message)
+                .containsExactly("fix: report Spotify errors correctly", "fix: thing");
+        assertThat(activity).extracting(GitHubCommitActivity::hash)
+                .containsExactly("aaaaaaa", "ccccccc");
+
+        mockServer.verify();
+    }
+
+    @Test
+    void feedMessage_ShouldUseTitlesAndSkipBranchMerges() {
+        assertThat(GitHubService.feedMessage("Merge pull request #64 from mattDev0/fix/thing\n\nfix: thing")).isEqualTo("fix: thing");
+        assertThat(GitHubService.feedMessage("Merge pull request #64 from mattDev0/fix/thing")).isNull();
+        assertThat(GitHubService.feedMessage("Merge branch 'main' into feature")).isNull();
+        assertThat(GitHubService.feedMessage("Merge remote-tracking branch 'origin/main'")).isNull();
+        assertThat(GitHubService.feedMessage("fix: merge pull request handling\r\n\r\nbody")).isEqualTo("fix: merge pull request handling");
     }
 }

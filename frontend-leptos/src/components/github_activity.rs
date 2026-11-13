@@ -19,6 +19,17 @@ pub fn format_commit_date(date_str: &str) -> String {
     }
 }
 
+/// Link to the commit on GitHub, or `None` when the backend had no real hash
+/// (it sends "unknown") or the repo name has unexpected characters.
+pub fn commit_url(repo: &str, hash: &str) -> Option<String> {
+    let valid_hash = (7..=40).contains(&hash.len()) && hash.chars().all(|c| c.is_ascii_hexdigit());
+    let valid_repo = !repo.is_empty()
+        && repo
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'));
+    (valid_hash && valid_repo).then(|| format!("https://github.com/mattDev0/{repo}/commit/{hash}"))
+}
+
 // The signal setters are only used in the browser (wasm32) code below.
 #[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 #[component]
@@ -29,40 +40,20 @@ pub fn GitHubActivity() -> impl IntoView {
 
     #[cfg(target_arch = "wasm32")]
     {
-        use crate::api::api_url;
-        use gloo_net::http::Request;
+        use crate::api::{api_url, fetch_json};
+
+        const GITHUB_TIMEOUT_MS: u32 = 8_000;
 
         Effect::new(move |_| {
             leptos::task::spawn_local(async move {
                 let url = api_url("java", "/api/github/activity");
-                match Request::get(&url).send().await {
-                    Ok(resp) if resp.ok() => match resp.json::<Vec<GitHubCommitActivity>>().await {
-                        Ok(data) => {
-                            set_commits.set(data);
-                            set_loading.set(false);
-                        }
-                        Err(e) => {
-                            web_sys::console::error_2(
-                                &"GitHub fetch error:".into(),
-                                &e.to_string().into(),
-                            );
-                            set_error.set(Some("Activity feed temporarily unavailable."));
-                            set_loading.set(false);
-                        }
-                    },
-                    Ok(resp) => {
-                        web_sys::console::error_2(
-                            &"GitHub fetch error: non-ok status".into(),
-                            &resp.status().into(),
-                        );
-                        set_error.set(Some("Activity feed temporarily unavailable."));
+                match fetch_json::<Vec<GitHubCommitActivity>>(&url, GITHUB_TIMEOUT_MS).await {
+                    Ok(data) => {
+                        set_commits.set(data);
                         set_loading.set(false);
                     }
                     Err(e) => {
-                        web_sys::console::error_2(
-                            &"GitHub fetch error:".into(),
-                            &e.to_string().into(),
-                        );
+                        web_sys::console::error_2(&"GitHub fetch error:".into(), &e.into());
                         set_error.set(Some("Activity feed temporarily unavailable."));
                         set_loading.set(false);
                     }
@@ -110,27 +101,37 @@ pub fn GitHubActivity() -> impl IntoView {
                         <ul class="space-y-4">
                             {commit_items.into_iter().map(|commit| {
                                 let formatted_date = format_commit_date(&commit.date);
+                                let url = commit_url(&commit.repo, &commit.hash);
+                                let is_link = url.is_some();
                                 view! {
-                                    <li class="pb-4 border-b border-[var(--color-border-primary)] last:border-0 last:pb-0 group/item">
-                                        // Repo Name & Date
-                                        <div class="flex justify-between items-center mb-1.5">
-                                            <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-solid-hover)] transition-colors">
-                                                {commit.repo}
-                                            </span>
-                                            <span class="text-[var(--color-text-muted)] text-xs font-medium">
-                                                {formatted_date}
-                                            </span>
-                                        </div>
+                                    <li class="pb-4 border-b border-[var(--color-border-primary)] last:border-0 last:pb-0">
+                                        <a
+                                            href=url
+                                            target=is_link.then_some("_blank")
+                                            rel=is_link.then_some("noopener noreferrer")
+                                            title=is_link.then_some("View commit on GitHub")
+                                            class="block group/item rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
+                                        >
+                                            // Repo Name & Date
+                                            <div class="flex justify-between items-center mb-1.5">
+                                                <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-solid-hover)] transition-colors">
+                                                    {commit.repo}
+                                                </span>
+                                                <span class="text-[var(--color-text-muted)] text-xs font-medium">
+                                                    {formatted_date}
+                                                </span>
+                                            </div>
 
-                                        // Hash Badge & Commit Message
-                                        <div class="flex items-center space-x-2.5">
-                                            <span class="bg-[var(--color-bg-tag)] border border-[var(--color-accent-border)] text-[var(--color-accent)] font-mono text-[10px] px-2 py-0.5 rounded shadow-sm tracking-wider">
-                                                {commit.hash}
-                                            </span>
-                                            <span class="text-[var(--color-text-secondary)] text-sm truncate group-hover/item:text-[var(--color-text-primary)] transition-colors">
-                                                {commit.message}
-                                            </span>
-                                        </div>
+                                            // Hash Badge & Commit Message
+                                            <div class="flex items-center space-x-2.5">
+                                                <span class="bg-[var(--color-bg-tag)] border border-[var(--color-accent-border)] text-[var(--color-accent)] font-mono text-[10px] px-2 py-0.5 rounded shadow-sm tracking-wider">
+                                                    {commit.hash}
+                                                </span>
+                                                <span class="text-[var(--color-text-secondary)] text-sm truncate group-hover/item:text-[var(--color-text-primary)] transition-colors">
+                                                    {commit.message}
+                                                </span>
+                                            </div>
+                                        </a>
                                     </li>
                                 }
                             }).collect_view()}
@@ -139,5 +140,34 @@ pub fn GitHubActivity() -> impl IntoView {
                 }
             }}
         </div>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::commit_url;
+
+    #[test]
+    fn commit_url_links_short_and_full_hashes() {
+        assert_eq!(
+            commit_url("portfolio-monorepo", "d03efb6").as_deref(),
+            Some("https://github.com/mattDev0/portfolio-monorepo/commit/d03efb6")
+        );
+        let full = "d03efb6aa1b2c3d4e5f60718293a4b5c6d7e8f90";
+        assert_eq!(
+            commit_url("devops-control-center", full),
+            Some(format!(
+                "https://github.com/mattDev0/devops-control-center/commit/{full}"
+            ))
+        );
+    }
+
+    #[test]
+    fn commit_url_rejects_fallback_and_odd_values() {
+        assert_eq!(commit_url("portfolio-monorepo", "unknown"), None);
+        assert_eq!(commit_url("portfolio-monorepo", "abc12"), None);
+        assert_eq!(commit_url("", "d03efb6"), None);
+        assert_eq!(commit_url("../evil", "d03efb6"), None);
+        assert_eq!(commit_url("repo?x=1", "d03efb6"), None);
     }
 }
