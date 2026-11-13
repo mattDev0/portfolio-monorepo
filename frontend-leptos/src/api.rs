@@ -110,6 +110,28 @@ pub fn api_url(service: &str, path: &str) -> String {
     construct_api_url_pure(service, path, is_local, rust_override, java_override)
 }
 
+/// GET a JSON endpoint with a timeout. Network errors, timeouts, non-2xx
+/// responses and bad JSON all come back as `Err`, so callers can count them
+/// as failed polls instead of silently keeping old data.
+#[cfg(target_arch = "wasm32")]
+pub async fn fetch_json<T: serde::de::DeserializeOwned>(
+    url: &str,
+    timeout_ms: u32,
+) -> Result<T, String> {
+    use gloo_net::http::Request;
+
+    let signal = web_sys::AbortSignal::timeout_with_u32(timeout_ms);
+    let resp = Request::get(url)
+        .abort_signal(Some(&signal))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    if !resp.ok() {
+        return Err(format!("HTTP {}", resp.status()));
+    }
+    resp.json::<T>().await.map_err(|e| e.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

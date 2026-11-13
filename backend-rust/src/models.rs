@@ -1,29 +1,12 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use std::collections::VecDeque;
 
-#[derive(Serialize, Clone, Default)]
-pub struct SystemMetrics {
-    pub service: String,
-    pub os_info: String,
-    pub cpu_core_count: u32,
-    pub cpu_usage_percent: f32,
-    pub memory_used_mb: u64,
-    pub memory_total_mb: u64,
-}
-
-#[derive(Serialize, Clone, Default)]
-pub struct SpotifyStatus {
-    pub is_playing: bool,
-    pub is_recently_played: bool,
-    pub title: String,
-    pub artist: String,
-    pub album_art: String,
-    pub progress_ms: u64,
-    pub duration_ms: u64,
-    pub track_url: String,
-}
+pub use portfolio_api_types::{
+    NetworkHistoryPoint, NetworkMetrics, NetworkTarget, SpotifyStatus, SystemMetrics,
+    TelemetryPoint,
+};
 
 #[derive(Deserialize)]
 pub struct SpotifyTokenResponse {
@@ -44,34 +27,6 @@ pub struct CachedToken {
     pub expires_at: std::time::Instant,
 }
 
-#[derive(Serialize, Clone, Default)]
-pub struct TelemetryPoint {
-    pub cpu: f32,
-    pub memory: f32,
-}
-
-#[derive(Serialize, Deserialize, Clone, Default)]
-pub struct NetworkTarget {
-    pub target: String,
-    pub name: String,
-    pub latency_ms: f32,
-    pub status: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Default)]
-pub struct NetworkMetrics {
-    pub google_dns: NetworkTarget,
-    pub cloudflare_dns: NetworkTarget,
-    pub riot_games: NetworkTarget,
-}
-
-#[derive(Serialize, Deserialize, Clone, Default)]
-pub struct NetworkHistoryPoint {
-    pub google_dns: f32,
-    pub cloudflare_dns: f32,
-    pub riot_games: f32,
-}
-
 #[derive(Clone)]
 pub struct AppState {
     pub metrics: Arc<RwLock<SystemMetrics>>,
@@ -81,4 +36,97 @@ pub struct AppState {
     pub spotify_cache: Arc<RwLock<Option<SpotifyStatus>>>,
     pub spotify_token: Arc<RwLock<Option<CachedToken>>>,
     pub spotify_fresh: Arc<RwLock<Option<(SpotifyStatus, std::time::Instant)>>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_shared_types_serialization_snapshot() {
+        let system_metrics = SystemMetrics {
+            service: "backend-rust".to_string(),
+            os_info: "Linux 6.6.137 x86_64".to_string(),
+            cpu_core_count: 8,
+            cpu_usage_percent: 24.5,
+            memory_used_mb: 512,
+            memory_total_mb: 2048,
+        };
+
+        let spotify_status = SpotifyStatus {
+            is_playing: true,
+            is_recently_played: false,
+            title: "Time".to_string(),
+            artist: "Hans Zimmer".to_string(),
+            album_art: "https://example.com/art.jpg".to_string(),
+            progress_ms: 120000,
+            duration_ms: 275000,
+            track_url: "https://open.spotify.com/track/12345".to_string(),
+        };
+
+        let telemetry_point = TelemetryPoint {
+            cpu: 18.25,
+            memory: 45.5,
+        };
+
+        let google_dns = NetworkTarget {
+            target: "8.8.8.8".to_string(),
+            name: "Google DNS".to_string(),
+            latency_ms: 14.5,
+            status: "online".to_string(),
+        };
+
+        let cloudflare_dns = NetworkTarget {
+            target: "1.1.1.1".to_string(),
+            name: "Cloudflare DNS".to_string(),
+            latency_ms: 9.75,
+            status: "online".to_string(),
+        };
+
+        let riot_games = NetworkTarget {
+            target: "104.160.131.1".to_string(),
+            name: "Riot Games".to_string(),
+            latency_ms: 32.0,
+            status: "degraded".to_string(),
+        };
+
+        let network_metrics = NetworkMetrics {
+            google_dns: google_dns.clone(),
+            cloudflare_dns: cloudflare_dns.clone(),
+            riot_games: riot_games.clone(),
+        };
+
+        let network_history_point = NetworkHistoryPoint {
+            google_dns: 14.5,
+            cloudflare_dns: 9.75,
+            riot_games: 32.0,
+        };
+
+        // Field names, field order and number formatting are the API contract the
+        // frontend reads, so compare the exact JSON text, not individual fields.
+        assert_eq!(
+            serde_json::to_string(&system_metrics).unwrap(),
+            r#"{"service":"backend-rust","os_info":"Linux 6.6.137 x86_64","cpu_core_count":8,"cpu_usage_percent":24.5,"memory_used_mb":512,"memory_total_mb":2048}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&spotify_status).unwrap(),
+            r#"{"is_playing":true,"is_recently_played":false,"title":"Time","artist":"Hans Zimmer","album_art":"https://example.com/art.jpg","progress_ms":120000,"duration_ms":275000,"track_url":"https://open.spotify.com/track/12345"}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&telemetry_point).unwrap(),
+            r#"{"cpu":18.25,"memory":45.5}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&google_dns).unwrap(),
+            r#"{"target":"8.8.8.8","name":"Google DNS","latency_ms":14.5,"status":"online"}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&network_metrics).unwrap(),
+            r#"{"google_dns":{"target":"8.8.8.8","name":"Google DNS","latency_ms":14.5,"status":"online"},"cloudflare_dns":{"target":"1.1.1.1","name":"Cloudflare DNS","latency_ms":9.75,"status":"online"},"riot_games":{"target":"104.160.131.1","name":"Riot Games","latency_ms":32.0,"status":"degraded"}}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&network_history_point).unwrap(),
+            r#"{"google_dns":14.5,"cloudflare_dns":9.75,"riot_games":32.0}"#
+        );
+    }
 }

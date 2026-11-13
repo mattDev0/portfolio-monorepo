@@ -1,12 +1,11 @@
+use crate::feed::FeedHealth;
 use leptos::prelude::*;
 use portfolio_api_types::{
     InfrastructureMetrics, NetworkHistoryPoint, NetworkMetrics, SystemMetrics, TelemetryPoint,
 };
 
 #[cfg(target_arch = "wasm32")]
-use wasm_bindgen::JsCast;
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::closure::Closure;
+use std::time::Duration;
 
 pub const MAX_TELEMETRY_HISTORY: usize = 20;
 
@@ -56,6 +55,13 @@ pub fn append_network_history_point(
     true
 }
 
+/// Request timeouts. The 5 s Rust polls stay shorter than their interval so
+/// requests never overlap; the Java timeout leaves room for a cold start.
+#[cfg(target_arch = "wasm32")]
+const RUST_TIMEOUT_MS: u32 = 4_500;
+#[cfg(target_arch = "wasm32")]
+const JAVA_TIMEOUT_MS: u32 = 8_000;
+
 #[derive(Clone, Copy)]
 pub struct TelemetrySignals {
     pub rust_status: ReadSignal<Option<SystemMetrics>>,
@@ -68,19 +74,32 @@ pub struct TelemetrySignals {
     pub set_network_status: WriteSignal<Option<NetworkMetrics>>,
     pub network_history: ReadSignal<Vec<NetworkHistoryPoint>>,
     pub set_network_history: WriteSignal<Vec<NetworkHistoryPoint>>,
+    pub rust_health: ReadSignal<FeedHealth>,
+    pub java_health: ReadSignal<FeedHealth>,
+    pub network_health: ReadSignal<FeedHealth>,
 }
 
+// The signal setters are only used in the browser (wasm32) code below.
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
     let (rust_status, set_rust_status) = signal(None::<SystemMetrics>);
     let (java_status, set_java_status) = signal(None::<InfrastructureMetrics>);
     let (telemetry_history, set_telemetry_history) = signal(Vec::<TelemetryPoint>::new());
     let (network_status, set_network_status) = signal(None::<NetworkMetrics>);
     let (network_history, set_network_history) = signal(Vec::<NetworkHistoryPoint>::new());
+    let (rust_health, set_rust_health) = signal(FeedHealth::default());
+    let (java_health, set_java_health) = signal(FeedHealth::default());
+    let (network_health, set_network_health) = signal(FeedHealth::default());
 
     #[cfg(target_arch = "wasm32")]
     {
-        use crate::api::api_url;
-        use gloo_net::http::Request;
+        use crate::api::{api_url, fetch_json};
+        use crate::feed::now_ms;
+        use leptos::prelude::set_interval_with_handle;
+
+        fn log_error(label: &str, err: &str) {
+            web_sys::console::error_2(&label.into(), &err.into());
+        }
 
         // One-time history fetches on visibility change to true
         Effect::new(move |_| {
@@ -88,20 +107,19 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
                 // Fetch Rust Telemetry History
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status/history");
-                    if let Ok(resp) = Request::get(&url).send().await {
-                        if let Ok(data) = resp.json::<Vec<TelemetryPoint>>().await {
-                            set_telemetry_history.set(data);
-                        }
+                    if let Ok(data) = fetch_json::<Vec<TelemetryPoint>>(&url, RUST_TIMEOUT_MS).await
+                    {
+                        set_telemetry_history.set(data);
                     }
                 });
 
                 // Fetch Rust Network History
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status/network/history");
-                    if let Ok(resp) = Request::get(&url).send().await {
-                        if let Ok(data) = resp.json::<Vec<NetworkHistoryPoint>>().await {
-                            set_network_history.set(data);
-                        }
+                    if let Ok(data) =
+                        fetch_json::<Vec<NetworkHistoryPoint>>(&url, RUST_TIMEOUT_MS).await
+                    {
+                        set_network_history.set(data);
                     }
                 });
             }
@@ -113,126 +131,91 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
                 return;
             }
 
-            let Some(window) = web_sys::window() else {
-                return;
-            };
-
             // 1. Rust Hardware Status (every 5s)
             let fetch_rust = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<SystemMetrics>().await {
-                                let cpu = data.cpu_usage_percent;
-                                let mem = calculate_memory_percent(
-                                    data.memory_used_mb,
-                                    data.memory_total_mb,
-                                );
-                                set_rust_status.set(Some(data));
-                                set_telemetry_history.update(|h| {
-                                    append_telemetry_point(h, cpu, mem);
-                                });
-                            }
+                    match fetch_json::<SystemMetrics>(&url, RUST_TIMEOUT_MS).await {
+                        Ok(data) => {
+                            let cpu = data.cpu_usage_percent;
+                            let mem =
+                                calculate_memory_percent(data.memory_used_mb, data.memory_total_mb);
+                            set_rust_status.set(Some(data));
+                            set_telemetry_history.update(|h| {
+                                append_telemetry_point(h, cpu, mem);
+                            });
+                            set_rust_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
-                            web_sys::console::error_2(
-                                &"Error fetching from Rust API:".into(),
-                                &e.to_string().into(),
-                            );
+                            log_error("Error fetching from Rust API:", &e);
+                            set_rust_health.update(|h| h.record_failure());
                         }
                     }
                 });
             };
             fetch_rust();
 
-            let rust_closure = Closure::<dyn FnMut()>::new(fetch_rust);
-            let rust_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    rust_closure.as_ref().unchecked_ref(),
-                    5000,
-                )
-                .ok();
-            rust_closure.forget();
+            let rust_interval =
+                set_interval_with_handle(fetch_rust, Duration::from_millis(5000)).ok();
 
             // 2. Rust Network Status (every 5s)
             let fetch_network = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("rust", "/api/status/network");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<NetworkMetrics>().await {
-                                let google = data.google_dns.latency_ms;
-                                let cloudflare = data.cloudflare_dns.latency_ms;
-                                let riot = data.riot_games.latency_ms;
-                                set_network_status.set(Some(data));
-                                set_network_history.update(|h| {
-                                    append_network_history_point(h, google, cloudflare, riot);
-                                });
-                            }
+                    match fetch_json::<NetworkMetrics>(&url, RUST_TIMEOUT_MS).await {
+                        Ok(data) => {
+                            let google = data.google_dns.latency_ms;
+                            let cloudflare = data.cloudflare_dns.latency_ms;
+                            let riot = data.riot_games.latency_ms;
+                            set_network_status.set(Some(data));
+                            set_network_history.update(|h| {
+                                append_network_history_point(h, google, cloudflare, riot);
+                            });
+                            set_network_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
-                            web_sys::console::error_2(
-                                &"Error fetching from Rust Network API:".into(),
-                                &e.to_string().into(),
-                            );
+                            log_error("Error fetching from Rust Network API:", &e);
+                            set_network_health.update(|h| h.record_failure());
                         }
                     }
                 });
             };
             fetch_network();
 
-            let net_closure = Closure::<dyn FnMut()>::new(fetch_network);
-            let net_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    net_closure.as_ref().unchecked_ref(),
-                    5000,
-                )
-                .ok();
-            net_closure.forget();
+            let net_interval =
+                set_interval_with_handle(fetch_network, Duration::from_millis(5000)).ok();
 
             // 3. Java JVM Status (every 10s)
             let fetch_java = move || {
                 leptos::task::spawn_local(async move {
                     let url = api_url("java", "/api/infrastructure/metrics");
-                    match Request::get(&url).send().await {
-                        Ok(resp) => {
-                            if let Ok(data) = resp.json::<InfrastructureMetrics>().await {
-                                set_java_status.set(Some(data));
-                            }
+                    match fetch_json::<InfrastructureMetrics>(&url, JAVA_TIMEOUT_MS).await {
+                        Ok(data) => {
+                            set_java_status.set(Some(data));
+                            set_java_health.update(|h| h.record_success(now_ms()));
                         }
                         Err(e) => {
-                            web_sys::console::error_2(
-                                &"Error fetching from Java API:".into(),
-                                &e.to_string().into(),
-                            );
+                            log_error("Error fetching from Java API:", &e);
+                            set_java_health.update(|h| h.record_failure());
                         }
                     }
                 });
             };
             fetch_java();
 
-            let java_closure = Closure::<dyn FnMut()>::new(fetch_java);
-            let java_interval = window
-                .set_interval_with_callback_and_timeout_and_arguments_0(
-                    java_closure.as_ref().unchecked_ref(),
-                    10000,
-                )
-                .ok();
-            java_closure.forget();
+            let java_interval =
+                set_interval_with_handle(fetch_java, Duration::from_millis(10000)).ok();
 
             // Cleanup when visibility changes to false or on effect rerun
             on_cleanup(move || {
-                if let Some(w) = web_sys::window() {
-                    if let Some(id) = rust_interval {
-                        w.clear_interval_with_handle(id);
-                    }
-                    if let Some(id) = net_interval {
-                        w.clear_interval_with_handle(id);
-                    }
-                    if let Some(id) = java_interval {
-                        w.clear_interval_with_handle(id);
-                    }
+                if let Some(handle) = rust_interval {
+                    handle.clear();
+                }
+                if let Some(handle) = net_interval {
+                    handle.clear();
+                }
+                if let Some(handle) = java_interval {
+                    handle.clear();
                 }
             });
         });
@@ -249,6 +232,9 @@ pub fn use_telemetry(is_visible: Signal<bool>) -> TelemetrySignals {
         set_network_status,
         network_history,
         set_network_history,
+        rust_health,
+        java_health,
+        network_health,
     }
 }
 

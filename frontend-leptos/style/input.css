@@ -7,7 +7,7 @@
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   background-color: var(--color-bg-primary);
   scroll-behavior: smooth;
-  scroll-padding-top: 80px; /* Accounts for sticky header */
+  scroll-padding-top: 96px; /* Accounts for sticky header */
 
   /* Light Theme Semantic Tokens (Warm Parchment & Rich Wine Red) */
   --color-bg-primary: #fbf8f5;
@@ -27,8 +27,8 @@
 
   --color-text-primary: #2a0812;
   --color-text-secondary: #532532;
-  --color-text-tertiary: #7d4f5c;
-  --color-text-muted: #9e7380;
+  --color-text-tertiary: #6b3f4c;
+  --color-text-muted: #7a5663;
   --color-text-faint: #d5bdc4;
   --color-text-inverse: #fdfaf6;
 
@@ -37,20 +37,20 @@
   --color-border-tertiary: rgba(103, 25, 44, 0.35);
   --color-border-section: rgba(103, 25, 44, 0.1);
 
-  --color-accent-emerald: #9f1239;
-  --color-accent-emerald-bg: rgba(159, 18, 57, 0.08);
-  --color-accent-emerald-border: rgba(159, 18, 57, 0.28);
-  --color-accent-emerald-solid: #881337;
-  --color-accent-emerald-solid-hover: #700f2b;
-  --color-accent-teal: #b45309;
-  --color-accent-orange: #ea580c;
+  --color-accent: #9f1239;
+  --color-accent-bg: rgba(159, 18, 57, 0.08);
+  --color-accent-border: rgba(159, 18, 57, 0.28);
+  --color-accent-solid: #881337;
+  --color-accent-solid-hover: #700f2b;
+  --color-accent-gold: #9a4a07;
+  --color-accent-orange: #b53b0a;
   --color-accent-orange-bg: rgba(249, 115, 22, 0.08);
   --color-accent-orange-border: rgba(249, 115, 22, 0.3);
-  --color-accent-rose: #e11d48;
-  --color-accent-cyan: #0284c7;
-  --color-accent-purple: #c026d3;
-  --color-accent-amber: #d97706;
-  --color-accent-blue: #2563eb;
+  --color-accent-rose: #be123c;
+  --color-accent-cyan: #0369a1;
+  --color-accent-purple: #a21caf;
+  --color-accent-amber: #92550a;
+  --color-accent-blue: #1d4ed8;
 
   --shadow-card: 0 1px 3px rgba(42, 8, 18, 0.06), 0 1px 2px rgba(42, 8, 18, 0.04);
   --shadow-card-hover: 0 10px 25px -5px rgba(103, 25, 44, 0.12), 0 4px 6px rgba(103, 25, 44, 0.05);
@@ -68,10 +68,10 @@
   --color-selection-bg: rgba(159, 18, 57, 0.18);
   --color-selection-text: #2a0812;
 
-  --color-status-online: #059669;
-  --color-status-warning: #d97706;
-  --color-status-error: #e11d48;
-  --color-status-muted: #9e7380;
+  --color-status-online: #047857;
+  --color-status-warning: #a3500a;
+  --color-status-error: #be123c;
+  --color-status-muted: #7a5663;
 
   --color-nav-bg-scrolled: rgba(251, 248, 245, 0.88);
   --color-nav-bg-transparent: transparent;
@@ -99,8 +99,8 @@
   --color-text-primary: #fcf6ed;
   --color-text-secondary: #e5d5c5;
   --color-text-tertiary: #b5a192;
-  --color-text-muted: #826e63;
-  --color-text-faint: #57463c;
+  --color-text-muted: #9a8478;
+  --color-text-faint: #6b574c;
   --color-text-inverse: #0e0306;
 
   --color-border-primary: rgba(242, 221, 179, 0.09);
@@ -108,12 +108,12 @@
   --color-border-tertiary: rgba(242, 221, 179, 0.3);
   --color-border-section: rgba(242, 221, 179, 0.08);
 
-  --color-accent-emerald: #fb7185;
-  --color-accent-emerald-bg: rgba(225, 29, 72, 0.08);
-  --color-accent-emerald-border: rgba(225, 29, 72, 0.28);
-  --color-accent-emerald-solid: #9f1239;
-  --color-accent-emerald-solid-hover: #be123c;
-  --color-accent-teal: #f2ddb3;
+  --color-accent: #fb7185;
+  --color-accent-bg: rgba(225, 29, 72, 0.08);
+  --color-accent-border: rgba(225, 29, 72, 0.28);
+  --color-accent-solid: #9f1239;
+  --color-accent-solid-hover: #be123c;
+  --color-accent-gold: #f2ddb3;
   --color-accent-orange: #fb923c;
   --color-accent-orange-bg: rgba(249, 115, 22, 0.05);
   --color-accent-orange-border: rgba(249, 115, 22, 0.2);
@@ -142,7 +142,7 @@
   --color-status-online: #10b981;
   --color-status-warning: #f59e0b;
   --color-status-error: #f43f5e;
-  --color-status-muted: #826e63;
+  --color-status-muted: #9a8478;
 
   --color-nav-bg-scrolled: rgba(14, 3, 6, 0.85);
   --color-nav-bg-transparent: transparent;
@@ -208,7 +208,7 @@ code, pre, .font-mono {
 
 /* Micro-animations and polish */
 .hover-lift {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {

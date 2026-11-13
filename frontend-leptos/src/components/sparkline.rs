@@ -59,7 +59,7 @@ pub fn Sparkline(
                         <svg class="w-[80px] h-[18px] opacity-85" viewBox=format!("0 0 {} {}", SPARKLINE_WIDTH, SPARKLINE_HEIGHT)>
                             <polyline
                                 fill="none"
-                                stroke=color
+                                style=format!("stroke: {}", color)
                                 stroke-width="1.2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -70,7 +70,7 @@ pub fn Sparkline(
                 }
                 None => {
                     view! {
-                        <div class="h-4 flex items-center justify-center text-[8px] text-gray-600 font-mono tracking-wider opacity-50">
+                        <div class="h-4 flex items-center justify-center text-[10px] text-[var(--color-text-muted)] font-mono tracking-wider">
                             "syncing..."
                         </div>
                     }.into_any()

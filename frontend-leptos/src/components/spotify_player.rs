@@ -1,3 +1,4 @@
+use crate::feed::{FeedHealth, FeedState, format_age, now_ms};
 use crate::spotify::{
     calculate_progress_percent, format_time, get_spotify_state_label, get_spotify_tooltip,
 };
@@ -8,16 +9,23 @@ use portfolio_api_types::SpotifyStatus;
 pub fn SpotifyPlayer(
     spotify_data: ReadSignal<Option<SpotifyStatus>>,
     local_progress_ms: ReadSignal<u64>,
+    spotify_health: ReadSignal<FeedHealth>,
 ) -> impl IntoView {
     let view_content = move || {
         let data_opt = spotify_data.get();
-        let is_playing = data_opt.as_ref().map(|d| d.is_playing).unwrap_or(false);
-        let is_recently_played = data_opt
-            .as_ref()
-            .map(|d| d.is_recently_played)
-            .unwrap_or(false);
+        let feed_state = spotify_health.get().state(now_ms());
+        let is_stale = matches!(feed_state, FeedState::Stale { .. });
+        // Stale data must not look live: no "Now Playing", no ticking progress.
+        let is_playing = !is_stale && data_opt.as_ref().map(|d| d.is_playing).unwrap_or(false);
+        let is_recently_played = !is_stale
+            && data_opt
+                .as_ref()
+                .map(|d| d.is_recently_played)
+                .unwrap_or(false);
 
-        let ping_bg_class = if is_playing {
+        let ping_bg_class = if is_stale {
+            "hidden"
+        } else if is_playing {
             "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-status-online)]"
         } else if is_recently_played {
             "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-accent-amber)]"
@@ -26,14 +34,14 @@ pub fn SpotifyPlayer(
         };
 
         let dot_class = if is_playing {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_#10b981]"
+            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_var(--color-status-online)]"
         } else if is_recently_played {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-warning)] shadow-[0_0_8px_#f59e0b]"
+            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-warning)] shadow-[0_0_8px_var(--color-status-warning)]"
         } else {
             "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-muted)]"
         };
 
-        let tooltip_text = get_spotify_tooltip(is_playing, is_recently_played);
+        let tooltip_text = get_spotify_tooltip(is_playing, is_recently_played, is_stale);
         let anim_duration = if is_playing { "6s" } else { "0s" };
 
         view! {
@@ -50,14 +58,14 @@ pub fn SpotifyPlayer(
                     <span class=dot_class></span>
                 </span>
                 // Custom Tooltip
-                <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-emerald-border)] p-2 text-center text-[10px] text-[var(--color-accent-emerald)] font-mono shadow-xl z-20">
+                <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-border)] p-2 text-center text-[10px] text-[var(--color-accent)] font-mono shadow-xl z-20">
                     {tooltip_text}
                 </div>
             </div>
 
-            <h3 class="text-lg font-bold text-[var(--color-accent-emerald)] mb-0 tracking-wide flex items-center font-sans">
+            <h3 class="text-lg font-bold text-[var(--color-accent)] mb-0 tracking-wide flex items-center font-sans">
                 <svg
-                    class="w-5 h-5 mr-2 text-[var(--color-accent-emerald)] group-hover:animate-spin"
+                    class="w-5 h-5 mr-2 text-[var(--color-accent)] group-hover:animate-spin"
                     style=format!("animation-duration: {}", anim_duration)
                     fill="currentColor"
                     viewBox="0 0 24 24"
@@ -76,8 +84,6 @@ pub fn SpotifyPlayer(
                     let title = data.title.clone();
                     let artist = data.artist.clone();
                     let duration_ms = data.duration_ms;
-                    let local_ms = local_progress_ms.get();
-                    let percent = calculate_progress_percent(local_ms, duration_ms);
 
                     let art_box_class = if is_playing {
                         "w-16 h-16 bg-[var(--color-bg-tag)] rounded-lg flex-shrink-0 shadow-md overflow-hidden relative border border-[var(--color-border-primary)] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-105"
@@ -91,15 +97,21 @@ pub fn SpotifyPlayer(
                         "w-full h-full object-cover transition-all duration-500 grayscale opacity-60"
                     };
 
-                    let state_text_class = if is_playing {
-                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent-emerald)]"
+                    let state_text_class = if is_stale {
+                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-status-warning)]"
+                    } else if is_playing {
+                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent)]"
                     } else if is_recently_played {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent-amber)]"
                     } else {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-text-muted)]"
                     };
 
-                    let state_label = get_spotify_state_label(is_playing, is_recently_played);
+                    let state_label = get_spotify_state_label(is_playing, is_recently_played, is_stale);
+                    let stale_age = match feed_state {
+                        FeedState::Stale { age_secs } => Some(format!("Updated {}", format_age(age_secs))),
+                        _ => None,
+                    };
 
                     view! {
                         <div>
@@ -111,12 +123,12 @@ pub fn SpotifyPlayer(
                                         }.into_any()
                                     } else {
                                         view! {
-                                            <div class="absolute inset-0 bg-gradient-to-tr from-[var(--color-accent-emerald-solid)] to-[var(--color-bg-primary)] opacity-50"></div>
+                                            <div class="absolute inset-0 bg-gradient-to-tr from-[var(--color-accent-solid)] to-[var(--color-bg-primary)] opacity-50"></div>
                                         }.into_any()
                                     }}
                                 </div>
                                 <div class="overflow-hidden flex-grow">
-                                    <p class="text-[var(--color-text-primary)] font-bold truncate group-hover:text-[var(--color-accent-emerald)] transition-colors">
+                                    <p class="text-[var(--color-text-primary)] font-bold truncate group-hover:text-[var(--color-accent)] transition-colors">
                                         {title}
                                     </p>
                                     <p class="text-[var(--color-text-tertiary)] text-sm truncate">
@@ -125,6 +137,9 @@ pub fn SpotifyPlayer(
                                     <p class=state_text_class>
                                         {state_label}
                                     </p>
+                                    {stale_age.map(|age| view! {
+                                        <p class="text-[10px] font-mono text-[var(--color-text-muted)]">{age}</p>
+                                    })}
                                 </div>
                             </div>
 
@@ -133,12 +148,12 @@ pub fn SpotifyPlayer(
                                     <div class="mt-5">
                                         <div class="w-full h-1 bg-[var(--color-bg-progress-track)] rounded-full overflow-hidden">
                                             <div
-                                                class="h-full bg-[var(--color-accent-emerald-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent-emerald)]"
-                                                style=format!("width: {}%", percent)
+                                                class="h-full bg-[var(--color-accent-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent)]"
+                                                style=move || format!("width: {}%", calculate_progress_percent(local_progress_ms.get(), duration_ms))
                                             ></div>
                                         </div>
-                                        <div class="flex justify-between text-[9px] text-[var(--color-text-muted)] mt-1.5 font-mono">
-                                            <span>{format_time(Some(local_ms))}</span>
+                                        <div class="flex justify-between text-[10px] text-[var(--color-text-muted)] mt-1.5 font-mono">
+                                            <span>{move || format_time(Some(local_progress_ms.get()))}</span>
                                             <span>{format_time(Some(duration_ms))}</span>
                                         </div>
                                     </div>
@@ -147,6 +162,13 @@ pub fn SpotifyPlayer(
                                 None
                             }}
                         </div>
+                    }.into_any()
+                }
+                None if feed_state == FeedState::Unavailable => {
+                    view! {
+                        <p class="text-[var(--color-text-muted)] font-mono text-xs mt-2">
+                            "Spotify feed unavailable"
+                        </p>
                     }.into_any()
                 }
                 None => {
@@ -171,7 +193,7 @@ pub fn SpotifyPlayer(
                         href=track_url
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border border-[var(--color-accent-emerald-border)] hover:border-[var(--color-accent-emerald)] relative overflow-hidden transition-all duration-300 group flex flex-col justify-center cursor-pointer"
+                        class="hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border border-[var(--color-accent-border)] hover:border-[var(--color-accent)] relative overflow-hidden transition-all duration-300 group flex flex-col justify-center cursor-pointer"
                         style="box-shadow: var(--shadow-card)"
                     >
                         {view_content()}

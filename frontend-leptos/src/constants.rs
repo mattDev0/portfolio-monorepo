@@ -11,7 +11,7 @@ pub fn get_topology_info(id: &str) -> Option<TopologyInfo> {
     match id {
         "client" => Some(TopologyInfo {
             title: "Client Browser",
-            tech: "React 19 + Vite + Tailwind CSS",
+            tech: "Rust + Leptos (WebAssembly) + Tailwind CSS",
             protocol: "HTTPS (Port 443)",
             description: "The interactive UI dashboard running in the visitor's browser. It polls the microservice APIs periodically (Telemetry every 5s, JVM every 10s, Spotify every 10s) and updates the layout reactively.",
             badge: "Frontend",
@@ -31,10 +31,10 @@ pub fn get_topology_info(id: &str) -> Option<TopologyInfo> {
             badge: "Infrastructure",
         }),
         "frontend" => Some(TopologyInfo {
-            title: "frontend-react Service",
+            title: "frontend-leptos Service",
             tech: "Docker + Nginx Server",
             protocol: "HTTPS (Cloud Run Ingress)",
-            description: "Nginx (unprivileged) container serving the built React bundle. Deployed as a Cloud Run service: a new revision only takes traffic once it has started, and the service scales to zero when idle.",
+            description: "Nginx (unprivileged) container serving the Leptos WebAssembly bundle. Deployed as a Cloud Run service: a new revision only takes traffic once it has started, and the service scales to zero when idle.",
             badge: "Microservice",
         }),
         "rust" => Some(TopologyInfo {

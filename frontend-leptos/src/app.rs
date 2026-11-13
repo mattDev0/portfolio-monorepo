@@ -16,6 +16,8 @@ use wasm_bindgen::closure::Closure;
 
 pub static CONFIG: LazyLock<PortfolioConfig> = LazyLock::new(get_config);
 
+// The signal setters are only used in the browser (wasm32) code below.
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 #[component]
 pub fn App() -> impl IntoView {
     provide_theme_context();
@@ -140,7 +142,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <div
-            class="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] flex flex-col items-center pt-12 pb-8 px-4 sm:px-6 lg:px-8"
+            class="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] flex flex-col items-center pt-24 pb-8 px-4 sm:px-6 lg:px-8"
             style="background-image: var(--gradient-hero)"
         >
             <Navigation

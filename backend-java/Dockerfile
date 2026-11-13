@@ -20,6 +20,9 @@ RUN ./mvnw -B package -DskipTests && \
 FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 
+# Pick up Ubuntu security fixes that land before a new base image is published
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user and group with numeric UID/GID
 RUN groupadd -g 10001 -r appuser && useradd -u 10001 -m -r -g appuser appuser
 

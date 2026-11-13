@@ -1,4 +1,4 @@
-name: Deploy to Google Cloud Run
+name: Deploy
 
 on:
   push:
@@ -20,24 +20,56 @@ concurrency:
 
 jobs:
   test:
+    name: Test Before Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
+      - name: Set up Rust Toolchain
+        uses: dtolnay/rust-toolchain@1.95.0
         with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: './frontend-react/package-lock.json'
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
 
-      - name: Lint and Test Frontend
-        working-directory: ./frontend-react
+      - name: Set up Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ./frontend-leptos
+            ./backend-rust
+            ./shared/portfolio-api-types
+
+      - name: Install Tailwind CSS CLI
         run: |
-          npm ci
-          npm run lint
-          npm run test
+          curl -fsSLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64
+          echo "dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a  tailwindcss-linux-x64" | sha256sum -c -
+          chmod +x tailwindcss-linux-x64
+          sudo mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+
+      - name: Install Trunk
+        run: |
+          curl -fsSLO https://github.com/trunk-rs/trunk/releases/download/v0.22.1/trunk-x86_64-unknown-linux-gnu.tar.gz
+          echo "2ab8d548fd5ed9cda50906f61fd8654204e7893bd52ebbfd90533862b7d71ee1  trunk-x86_64-unknown-linux-gnu.tar.gz" | sha256sum -c -
+          sudo tar -xzf trunk-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin trunk
+          rm trunk-x86_64-unknown-linux-gnu.tar.gz
+
+      - name: Check Leptos Formatting
+        working-directory: ./frontend-leptos
+        run: cargo fmt --check
+
+      - name: Lint Leptos Frontend (Clippy)
+        working-directory: ./frontend-leptos
+        run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+
+      - name: Test Leptos Frontend
+        working-directory: ./frontend-leptos
+        run: cargo test
+
+      - name: Build Leptos Release Bundle
+        working-directory: ./frontend-leptos
+        run: trunk build --release --locked
 
       - uses: actions/setup-java@v6
         with:
@@ -45,21 +77,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run Java Tests
+      - name: Test Java API
         working-directory: ./backend-java
         run: ./mvnw test
 
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ./backend-rust
-
-      - name: Run Rust Tests
+      - name: Test Rust API
         working-directory: ./backend-rust
         run: cargo test
 
   build:
+    name: Build and Scan ${{ matrix.service }}
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -70,11 +97,17 @@ jobs:
       matrix:
         include:
           - service: portfolio-frontend
-            dir: frontend-react
+            context: .
+            file: ./frontend-leptos/Dockerfile
+            paths: frontend-leptos/ shared/portfolio-api-types/
           - service: portfolio-java-api
-            dir: backend-java
+            context: ./backend-java
+            file: ./backend-java/Dockerfile
+            paths: backend-java/
           - service: portfolio-rust-api
-            dir: backend-rust
+            context: .
+            file: ./backend-rust/Dockerfile
+            paths: backend-rust/ shared/portfolio-api-types/
     steps:
       - uses: actions/checkout@v7
         with:
@@ -97,14 +130,15 @@ jobs:
 
       - name: Compute Component SHA
         id: sha
-        run: echo "sha=$(git log -1 --format=%H -- ${{ matrix.dir }}/)" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git log -1 --format=%H -- ${{ matrix.paths }})" >> "$GITHUB_OUTPUT"
 
       # Each image gets its own cache scope. Without one, every build overwrites the
       # shared cache entry and only the last image built ever gets a cache hit.
       - name: Build and Push ${{ matrix.service }}
         uses: docker/build-push-action@v7
         with:
-          context: ./${{ matrix.dir }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           pull: true
           push: true
           provenance: false
@@ -116,7 +150,7 @@ jobs:
 
       # Images are pushed before they are scanned, but nothing is deployed
       # until every scan passes: the deploy job needs every build to succeed.
-      - name: Scan ${{ matrix.service }} Image
+      - name: Scan ${{ matrix.service }} Image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio/${{ matrix.service }}:${{ steps.sha.outputs.sha }}
@@ -126,6 +160,7 @@ jobs:
           severity: 'CRITICAL'
 
   deploy:
+    name: Deploy to Cloud Run
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -149,9 +184,9 @@ jobs:
       - name: Compute Component SHAs
         id: shas
         run: |
-          FRONTEND_SHA=$(git log -1 --format=%H -- frontend-react/)
+          FRONTEND_SHA=$(git log -1 --format=%H -- frontend-leptos/ shared/portfolio-api-types/)
           JAVA_SHA=$(git log -1 --format=%H -- backend-java/)
-          RUST_SHA=$(git log -1 --format=%H -- backend-rust/)
+          RUST_SHA=$(git log -1 --format=%H -- backend-rust/ shared/portfolio-api-types/)
           echo "frontend_sha=$FRONTEND_SHA" >> $GITHUB_OUTPUT
           echo "java_sha=$JAVA_SHA" >> $GITHUB_OUTPUT
           echo "rust_sha=$RUST_SHA" >> $GITHUB_OUTPUT
@@ -179,24 +214,3 @@ jobs:
             --region=us-central1 \
             --platform=managed \
             --quiet
-
-      - name: Prune Old Artifact Registry Images
-        run: |
-          REPO="us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/portfolio"
-          for SERVICE in portfolio-frontend portfolio-java-api portfolio-rust-api; do
-            IMAGE="${REPO}/${SERVICE}"
-            for PASS in 1 2; do
-              DIGESTS=$(gcloud artifacts docker images list "${IMAGE}" \
-                --include-tags \
-                --filter="-tags:latest" \
-                --format="value(version)")
-              if [ -z "${DIGESTS}" ]; then
-                break
-              fi
-              for DIGEST in ${DIGESTS}; do
-                gcloud artifacts docker images delete "${IMAGE}@${DIGEST}" \
-                  --delete-tags \
-                  --quiet || true
-              done
-            done
-          done

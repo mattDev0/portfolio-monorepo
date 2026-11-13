@@ -1,17 +1,21 @@
 # Stage 1: Build the Rust binary
 FROM rust:slim-bookworm AS builder
-WORKDIR /usr/src/app
+WORKDIR /workspace
+
+# Copy shared types dependency
+COPY shared/portfolio-api-types shared/portfolio-api-types
 
 # Build the dependencies alone first, against a placeholder main.rs, so this
 # layer stays cached until Cargo.toml or Cargo.lock changes.
-COPY Cargo.toml Cargo.lock* ./
+WORKDIR /workspace/backend-rust
+COPY backend-rust/Cargo.toml backend-rust/Cargo.lock* ./
 RUN mkdir src && echo 'fn main() {}' > src/main.rs && \
     cargo build --release && \
     rm -rf src
 
 # Build the real binary. The touch makes cargo rebuild this crate instead of
 # reusing the placeholder build.
-COPY src ./src
+COPY backend-rust/src ./src
 RUN touch src/main.rs && \
     cargo build --release && \
     cp target/release/backend-rust /usr/local/bin/backend-rust

@@ -50,11 +50,13 @@
     ],
     "Frameworks & Libs": [
       "Axum",
+      "Leptos",
       "Spring Boot",
       "React",
       "Flutter",
       "Vite",
-      "Tokio"
+      "Tokio",
+      "WebAssembly"
     ],
     "Observability & Tools": [
       "Prometheus",
@@ -134,10 +136,10 @@
     },
     {
       "title": "Polyglot Microservice Portfolio",
-      "description": "Production monorepo serving this site: a React frontend backed by live Rust (Axum) and Spring Boot APIs, each deployed to Google Cloud Run by GitHub Actions CI/CD with Trivy scanning.",
+      "description": "Production monorepo serving this site: a Leptos (Rust/WebAssembly) frontend backed by live Rust (Axum) and Spring Boot APIs, each deployed to Google Cloud Run by GitHub Actions CI/CD with Trivy scanning.",
       "tech": [
-        "React",
         "Rust",
+        "Leptos",
         "Spring Boot",
         "Cloud Run"
       ],
