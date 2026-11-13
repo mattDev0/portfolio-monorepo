@@ -1,7 +1,6 @@
 package com.matt.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,14 +16,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Service
 public class GitHubService {
 
     private static final Logger logger = LoggerFactory.getLogger(GitHubService.class);
+
+    static final String REPOS_URL = "https://api.github.com/users/mattDev0/repos?type=owner&sort=pushed&per_page=4";
+    static final int COMMITS_PER_REPO = 6;
+    private static final int FEED_LIMIT = 4;
 
     @Value("${github.token:}")
     private String githubToken;
@@ -33,10 +40,16 @@ public class GitHubService {
     private final ObjectMapper objectMapper;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record CommitInfo(String message) {}
+    public record RepoSummary(String name, boolean fork) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record CommitResponse(CommitInfo commit) {}
+    public record CommitActor(String date) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CommitInfo(String message, CommitActor author, CommitActor committer) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CommitResponse(String sha, CommitInfo commit) {}
 
     public GitHubService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
@@ -61,6 +74,27 @@ public class GitHubService {
         } catch (Exception e) {
             logger.error("Unauthenticated request failed for url: {}. Error: {}", url, e.getMessage(), e);
             return null;
+        }
+    }
+
+    static String commitDate(CommitInfo commit) {
+        if (commit.committer() != null && commit.committer().date() != null && !commit.committer().date().isBlank()) {
+            return commit.committer().date();
+        }
+        if (commit.author() != null && commit.author().date() != null && !commit.author().date().isBlank()) {
+            return commit.author().date();
+        }
+        return "";
+    }
+
+    private static Instant parseInstant(String date) {
+        if (date == null || date.isBlank()) {
+            return Instant.EPOCH;
+        }
+        try {
+            return OffsetDateTime.parse(date).toInstant();
+        } catch (Exception e) {
+            return Instant.EPOCH;
         }
     }
 
@@ -94,72 +128,64 @@ public class GitHubService {
 
     private List<GitHubCommitActivity> fetchRecentActivity() {
         List<GitHubCommitActivity> recentCommits = new ArrayList<>();
-        String url = "https://api.github.com/users/mattDev0/events/public";
 
         try {
-            String rawJson = fetchUrl(url);
+            String rawReposJson = fetchUrl(REPOS_URL);
+            if (rawReposJson == null) {
+                return List.of();
+            }
 
-            if (rawJson != null) {
-                JsonNode rootNode = objectMapper.readTree(rawJson);
+            RepoSummary[] repos = objectMapper.readValue(rawReposJson, RepoSummary[].class);
+            if (repos == null) {
+                return List.of();
+            }
 
-                for (JsonNode event : rootNode) {
-                    if (recentCommits.size() >= 4) break;
+            for (RepoSummary repo : repos) {
+                if (repo == null || repo.fork() || repo.name() == null || repo.name().isBlank()) {
+                    continue;
+                }
 
-                    if ("PushEvent".equals(event.get("type").asText())) {
-                        String repoName = event.get("repo").get("name").asText();
-                        String date = event.get("created_at").asText();
-                        JsonNode payload = event.get("payload");
+                String commitsUrl = "https://api.github.com/repos/mattDev0/" + repo.name() + "/commits?per_page=" + COMMITS_PER_REPO;
+                String commitsJson = fetchUrl(commitsUrl);
+                if (commitsJson == null) {
+                    continue;
+                }
 
-                        String message = "Pushed repository update";
-                        String hash = "unknown";
-                        String fullSha = null;
-
-                        // 1. Extract the Commit Hash (SHA)
-                        if (payload.has("head")) {
-                            fullSha = payload.get("head").asText();
-                            if (fullSha.length() >= 7) {
-                                hash = fullSha.substring(0, 7);
-                            }
-                        }
-
-                        // 2. Secondary API Call: Fetch the actual commit message 
-                        // (Required because GitHub removed the 'commits' array from PushEvents in late 2025)
-                        boolean messageFound = false;
-                        if (fullSha != null) {
-                            try {
-                                String commitUrl = "https://api.github.com/repos/" + repoName + "/commits/" + fullSha;
-                                String commitJson = fetchUrl(commitUrl);
-                                
-                                if (commitJson != null) {
-                                    CommitResponse commitRes = objectMapper.readValue(commitJson, CommitResponse.class);
-                                    if (commitRes != null && commitRes.commit() != null && commitRes.commit().message() != null) {
-                                        message = feedMessage(commitRes.commit().message());
-                                        messageFound = true;
-                                    }
-                                }
-                            } catch (Exception e) {
-                                // If we hit a rate limit, fail silently and rely on the fallback
-                                logger.warn("Rate limit hit or commit missing for hash: {}", hash);
-                            }
-                        }
-
-                        // 3. Fallback (If secondary fetch failed or rate limit exceeded)
-                        if (!messageFound && payload.has("ref")) {
-                            String ref = payload.get("ref").asText();
-                            message = "Pushed updates to branch: " + ref.replace("refs/heads/", "");
-                        }
-
-                        if (message != null) {
-                            recentCommits.add(new GitHubCommitActivity(
-                                repoName.replace("mattDev0/", ""), 
-                                message,
-                                date,
-                                hash
-                            ));
-                        }
+                try {
+                    CommitResponse[] commits = objectMapper.readValue(commitsJson, CommitResponse[].class);
+                    if (commits == null) {
+                        continue;
                     }
+
+                    Set<String> seenMessages = new HashSet<>();
+                    for (CommitResponse item : commits) {
+                        if (item == null || item.commit() == null || item.commit().message() == null) {
+                            continue;
+                        }
+
+                        String message = feedMessage(item.commit().message());
+                        if (message == null || !seenMessages.add(message)) {
+                            continue;
+                        }
+
+                        String sha = item.sha();
+                        String hash = (sha != null && sha.length() >= 7) ? sha.substring(0, 7) : "unknown";
+                        String date = commitDate(item.commit());
+
+                        recentCommits.add(new GitHubCommitActivity(
+                            repo.name(),
+                            message,
+                            date,
+                            hash
+                        ));
+                    }
+                } catch (Exception e) {
+                    logger.warn("Failed to parse commits for repo {}: {}", repo.name(), e.getMessage());
                 }
             }
+
+            recentCommits.sort(Comparator.comparing((GitHubCommitActivity a) -> parseInstant(a.date())).reversed());
+            return recentCommits.stream().limit(FEED_LIMIT).toList();
         } catch (Exception e) {
             logger.error("Failed to fetch GitHub activity: {}", e.getMessage(), e);
         }
