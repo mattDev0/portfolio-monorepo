@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -20,13 +21,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RateLimitInterceptor.class);
-    private static final int MAX_BUCKETS = 10_000;
-    private static final long EXPIRY_MS = 10 * 60 * 1000L; // 10 minutes
+    private static final int DEFAULT_MAX_BUCKETS = 10_000;
+    private static final long DEFAULT_EXPIRY_MS = 10 * 60 * 1000L; // 10 minutes
 
     private static class TimedBucket {
         final Bucket bucket;
@@ -38,14 +40,33 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         }
     }
 
+    private final int maxBuckets;
+    private final long expiryMs;
+    private final LongSupplier currentTimeMillis;
     private final Map<String, TimedBucket> buckets = new ConcurrentHashMap<>();
+    private final Bucket overflowBucket = createNewBucket();
     private final ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
+
+    @Autowired
+    public RateLimitInterceptor() {
+        this(DEFAULT_MAX_BUCKETS, DEFAULT_EXPIRY_MS, System::currentTimeMillis);
+    }
+
+    RateLimitInterceptor(int maxBuckets, long expiryMs, LongSupplier currentTimeMillis) {
+        this.maxBuckets = maxBuckets;
+        this.expiryMs = expiryMs;
+        this.currentTimeMillis = currentTimeMillis;
+    }
+
+    int bucketCount() {
+        return buckets.size();
+    }
 
     @PostConstruct
     public void startCleanup() {
         cleanupScheduler.scheduleAtFixedRate(() -> {
-            long now = System.currentTimeMillis();
-            buckets.entrySet().removeIf(entry -> now - entry.getValue().lastAccessTime > EXPIRY_MS);
+            long now = currentTimeMillis.getAsLong();
+            buckets.entrySet().removeIf(entry -> now - entry.getValue().lastAccessTime > expiryMs);
         }, 5, 5, TimeUnit.MINUTES);
     }
 
@@ -61,11 +82,29 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private Bucket resolveBucket(String clientIp) {
-        long now = System.currentTimeMillis();
-        if (buckets.size() >= MAX_BUCKETS && !buckets.containsKey(clientIp)) {
-            buckets.entrySet().removeIf(entry -> now - entry.getValue().lastAccessTime > EXPIRY_MS);
+        long now = currentTimeMillis.getAsLong();
+        TimedBucket existing = buckets.get(clientIp);
+        if (existing != null) {
+            existing.lastAccessTime = now;
+            return existing.bucket;
         }
-        TimedBucket tb = buckets.computeIfAbsent(clientIp, k -> new TimedBucket(createNewBucket(), now));
+
+        if (buckets.size() >= maxBuckets) {
+            buckets.entrySet().removeIf(entry -> now - entry.getValue().lastAccessTime > expiryMs);
+            if (buckets.size() >= maxBuckets) {
+                return overflowBucket;
+            }
+        }
+
+        TimedBucket tb = buckets.computeIfAbsent(clientIp, k -> {
+            if (buckets.size() >= maxBuckets) {
+                return null;
+            }
+            return new TimedBucket(createNewBucket(), now);
+        });
+        if (tb == null) {
+            return overflowBucket;
+        }
         tb.lastAccessTime = now;
         return tb.bucket;
     }

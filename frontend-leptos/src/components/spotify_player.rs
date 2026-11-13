@@ -84,8 +84,6 @@ pub fn SpotifyPlayer(
                     let title = data.title.clone();
                     let artist = data.artist.clone();
                     let duration_ms = data.duration_ms;
-                    let local_ms = local_progress_ms.get();
-                    let percent = calculate_progress_percent(local_ms, duration_ms);
 
                     let art_box_class = if is_playing {
                         "w-16 h-16 bg-[var(--color-bg-tag)] rounded-lg flex-shrink-0 shadow-md overflow-hidden relative border border-[var(--color-border-primary)] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-105"
@@ -151,11 +149,11 @@ pub fn SpotifyPlayer(
                                         <div class="w-full h-1 bg-[var(--color-bg-progress-track)] rounded-full overflow-hidden">
                                             <div
                                                 class="h-full bg-[var(--color-accent-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent)]"
-                                                style=format!("width: {}%", percent)
+                                                style=move || format!("width: {}%", calculate_progress_percent(local_progress_ms.get(), duration_ms))
                                             ></div>
                                         </div>
                                         <div class="flex justify-between text-[10px] text-[var(--color-text-muted)] mt-1.5 font-mono">
-                                            <span>{format_time(Some(local_ms))}</span>
+                                            <span>{move || format_time(Some(local_progress_ms.get()))}</span>
                                             <span>{format_time(Some(duration_ms))}</span>
                                         </div>
                                     </div>
