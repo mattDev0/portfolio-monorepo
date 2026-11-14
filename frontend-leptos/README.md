@@ -1,6 +1,6 @@
 # Portfolio Frontend (Leptos CSR)
 
-This is the Leptos 0.8 Client-Side Rendered (CSR) WebAssembly port of my portfolio single-page application, mirroring the user interface, design system, responsive layouts, and telemetry integrations of the original React frontend.
+This is the Leptos 0.8 Client-Side Rendered (CSR) WebAssembly port of my portfolio single-page application, mirroring the user interface, design system, responsive layouts, and telemetry integrations of the original React frontend, which has since been removed from this repository.
 
 It compiles to WebAssembly (`wasm32-unknown-unknown`) served statically through an unprivileged Nginx container, sharing strongly-typed API models with the backend services via `shared/portfolio-api-types`.
 
@@ -46,7 +46,7 @@ Trunk runs Tailwind before each build (the hook in `Trunk.toml`). Use a port oth
 
 ### Runtime Configuration
 
-`src/api.rs` picks the API base URLs the same way `frontend-react/src/api.js` does:
+`src/api.rs` picks the API base URLs:
 
 - **Local** when the build-time variable `PORTFOLIO_LOCAL_DEV` is `1`, `true`, `yes`,
   `local`, `dev` or `development`; or, unless it's set to `0`, `false`, `no`, `prod` or

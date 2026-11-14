@@ -9,16 +9,6 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: "npm"
-    directory: "/frontend-react"
-    schedule:
-      interval: "weekly"
-    groups:
-      npm-minor-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
   - package-ecosystem: "maven"
     directory: "/backend-java"
     schedule:
@@ -40,7 +30,7 @@ updates:
           - "patch"
 
   - package-ecosystem: "docker"
-    directory: "/frontend-react"
+    directory: "/frontend-leptos"
     schedule:
       interval: "weekly"
 

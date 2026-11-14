@@ -82,10 +82,6 @@ portfolio-monorepo/
 ├── frontend-leptos/                # Leptos (CSR) WebAssembly UI 🦀
 │   └── src/
 │
-├── frontend-react/                 # Previous React UI ⚛️ (no longer deployed; will be removed)
-│   ├── src/__tests__/              # Vitest + React Testing Library Suite
-│   └── src/
-│
 ├── backend-java/                   # Spring Boot API ☕
 │   ├── src/test/                   # JUnit + MockMvc Integration Tests
 │   └── src/main/
@@ -104,7 +100,6 @@ portfolio-monorepo/
 The repository maintains rigorous automated testing standards across all microservices.
 
 * **Frontend (Leptos):** Unit tests powered by `cargo test` covering URL construction, time formatting, telemetry math, and config parsing.
-* **Frontend (React):** Uses `Vitest` and `@testing-library/react` (previous UI, no longer deployed).
 * **Backend (Java):** Uses `JUnit 5`, `MockMvc`, and `MockRestServiceServer`. Ensures reliable integration with external REST APIs and correct JSON payload serialization.
 * **Backend (Rust):** Unit tests powered by `cargo test` and `wiremock`. Validates robust error handling, concurrency states, and mock Prometheus responses.
 
@@ -176,7 +171,6 @@ sequenceDiagram
 * Rust & Cargo (1.95.0, with wasm32-unknown-unknown target)
 * Trunk (0.22.1) & Tailwind CSS standalone CLI (v4.3.3)
 * Java 25+ (Maven via the included ./mvnw wrapper)
-* Node.js (v18+, for frontend-react legacy baseline)
 * Docker & Docker Compose
 
 ### Local Runtime Flag
@@ -189,7 +183,6 @@ The Leptos frontend automatically detects local runtime when running under debug
 cd frontend-leptos
 trunk serve
 ```
-*(The previous React UI in `frontend-react` is no longer deployed and will be removed.)*
 
 ### 2. Start the Java Microservice
 ```bash
