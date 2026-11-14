@@ -1,5 +1,5 @@
 # Stage 1: Build the Leptos WASM application
-FROM rust:1.95-slim-bookworm AS builder
+FROM rust:1.99-slim-bookworm AS builder
 
 # Install the build tools as prebuilt release binaries, each checked against
 # its published SHA-256: Tailwind CLI, Trunk, wasm-bindgen and wasm-opt.
