@@ -12,7 +12,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +26,15 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
-public class GitHubService {
+public class GitHubService implements DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(GitHubService.class);
 
@@ -36,8 +45,15 @@ public class GitHubService {
     @Value("${github.token:}")
     private String githubToken;
 
+    @Value("${github.activity.deadline-ms:5000}")
+    private long activityDeadlineMs;
+
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final ExecutorService repoFetchPool = Executors.newFixedThreadPool(
+        4,
+        Thread.ofPlatform().daemon().name("github-fetch-", 0).factory()
+    );
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record RepoSummary(String name, boolean fork) {}
@@ -59,6 +75,11 @@ public class GitHubService {
         this.objectMapper = objectMapper;
     }
 
+    @Override
+    public void destroy() {
+        repoFetchPool.shutdownNow();
+    }
+
     private String fetchUrl(String url) {
         if (githubToken != null && !githubToken.trim().isEmpty()) {
             HttpHeaders headers = new HttpHeaders();
@@ -67,8 +88,20 @@ public class GitHubService {
             try {
                 ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
                 return response.getBody();
+            } catch (HttpClientErrorException e) {
+                int status = e.getStatusCode().value();
+                if (status == 401 || status == 403 || status == 429) {
+                    logger.warn("Authenticated request failed for url: {} ({}). Falling back to unauthenticated. Error: {}", url, e.getStatusCode(), e.getMessage());
+                } else {
+                    logger.warn("Authenticated request failed for url: {} ({}). Error: {}", url, e.getStatusCode(), e.getMessage());
+                    return null;
+                }
+            } catch (HttpServerErrorException e) {
+                logger.warn("Authenticated request failed for url: {} ({}). Error: {}", url, e.getStatusCode(), e.getMessage());
+                return null;
             } catch (Exception e) {
-                logger.warn("Authenticated request failed for url: {}. Falling back to unauthenticated. Error: {}", url, e.getMessage());
+                logger.warn("Authenticated request failed for url: {}. Error: {}", url, e.getMessage());
+                return null;
             }
         }
         // Fallback or default to unauthenticated request
@@ -150,8 +183,52 @@ public class GitHubService {
         return fetchRecentActivity();
     }
 
+    private List<GitHubCommitActivity> commitsForRepo(RepoSummary repo) {
+        try {
+            String commitsUrl = "https://api.github.com/repos/mattDev0/" + repo.name() + "/commits?per_page=" + COMMITS_PER_REPO;
+            String commitsJson = fetchUrl(commitsUrl);
+            if (commitsJson == null) {
+                return List.of();
+            }
+
+            CommitResponse[] commits = objectMapper.readValue(commitsJson, CommitResponse[].class);
+            if (commits == null) {
+                return List.of();
+            }
+
+            List<GitHubCommitActivity> repoCommits = new ArrayList<>();
+            Set<String> seenMessages = new HashSet<>();
+            for (CommitResponse item : commits) {
+                if (item == null || item.commit() == null || item.commit().message() == null || isBotAuthor(item)) {
+                    continue;
+                }
+
+                String message = feedMessage(item.commit().message());
+                if (message == null || !seenMessages.add(message)) {
+                    continue;
+                }
+
+                String sha = item.sha();
+                String hash = (sha != null && sha.length() >= 7) ? sha.substring(0, 7) : "unknown";
+                String date = commitDate(item.commit());
+
+                repoCommits.add(new GitHubCommitActivity(
+                    repo.name(),
+                    message,
+                    date,
+                    hash
+                ));
+            }
+            return repoCommits;
+        } catch (Exception e) {
+            logger.warn("Failed to parse commits for repo {}: {}", repo.name(), e.getMessage());
+            return List.of();
+        }
+    }
+
     private List<GitHubCommitActivity> fetchRecentActivity() {
         List<GitHubCommitActivity> recentCommits = new ArrayList<>();
+        long startNanos = System.nanoTime();
 
         try {
             String rawReposJson = fetchUrl(REPOS_URL);
@@ -164,47 +241,37 @@ public class GitHubService {
                 return List.of();
             }
 
+            List<CompletableFuture<List<GitHubCommitActivity>>> futures = new ArrayList<>();
             for (RepoSummary repo : repos) {
                 if (repo == null || repo.fork() || repo.name() == null || repo.name().isBlank()) {
                     continue;
                 }
+                futures.add(CompletableFuture.supplyAsync(() -> commitsForRepo(repo), repoFetchPool));
+            }
 
-                String commitsUrl = "https://api.github.com/repos/mattDev0/" + repo.name() + "/commits?per_page=" + COMMITS_PER_REPO;
-                String commitsJson = fetchUrl(commitsUrl);
-                if (commitsJson == null) {
-                    continue;
-                }
+            long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+            long remainingMs = Math.max(0L, activityDeadlineMs - elapsedMs);
+            try {
+                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+                    .get(remainingMs, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException e) {
+                long finished = futures.stream()
+                    .filter(f -> f.isDone() && !f.isCompletedExceptionally())
+                    .count();
+                logger.warn("GitHub commit fetch timed out after {} ms ({}/{} repos finished)",
+                    activityDeadlineMs, finished, futures.size());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warn("Interrupted while waiting for GitHub commit fetches");
+            } catch (ExecutionException e) {
+                logger.warn("GitHub commit fetch task failed: {}", e.getMessage());
+            }
 
-                try {
-                    CommitResponse[] commits = objectMapper.readValue(commitsJson, CommitResponse[].class);
-                    if (commits == null) {
-                        continue;
-                    }
-
-                    Set<String> seenMessages = new HashSet<>();
-                    for (CommitResponse item : commits) {
-                        if (item == null || item.commit() == null || item.commit().message() == null || isBotAuthor(item)) {
-                            continue;
-                        }
-
-                        String message = feedMessage(item.commit().message());
-                        if (message == null || !seenMessages.add(message)) {
-                            continue;
-                        }
-
-                        String sha = item.sha();
-                        String hash = (sha != null && sha.length() >= 7) ? sha.substring(0, 7) : "unknown";
-                        String date = commitDate(item.commit());
-
-                        recentCommits.add(new GitHubCommitActivity(
-                            repo.name(),
-                            message,
-                            date,
-                            hash
-                        ));
-                    }
-                } catch (Exception e) {
-                    logger.warn("Failed to parse commits for repo {}: {}", repo.name(), e.getMessage());
+            for (CompletableFuture<List<GitHubCommitActivity>> future : futures) {
+                if (future.isDone() && !future.isCompletedExceptionally()) {
+                    recentCommits.addAll(future.join());
+                } else {
+                    future.cancel(true);
                 }
             }
 
