@@ -32,6 +32,7 @@ pub fn Navigation(
         "projects",
         "experience",
         "infrastructure",
+        "contact",
     ];
 
     view! {
