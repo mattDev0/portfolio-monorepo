@@ -5,14 +5,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.InterruptedIOException;
 import java.lang.reflect.Method;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,12 +25,14 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import org.springframework.context.annotation.Import;
 
 @SpringBootTest
 @Import(NoOpTaskSchedulerConfig.class)
 @TestPropertySource(properties = {
     "github.token=test-token",
+    "github.activity.deadline-ms=1000",
     "spring.cache.type=none"
 })
 class GitHubServiceTest {
@@ -41,7 +47,7 @@ class GitHubServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockServer = MockRestServiceServer.bindTo(restTemplate).build();
+        mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
     }
 
     private static final String REPOS_URL = GitHubService.REPOS_URL;
@@ -174,10 +180,7 @@ class GitHubServiceTest {
     @Test
     void getRecentActivity_ShouldHandleServerError() {
         mockServer.reset();
-        // First request (authenticated) fails with 500 Server Error
-        mockServer.expect(requestTo(REPOS_URL))
-                  .andRespond(withServerError());
-        // Second request (unauthenticated fallback) also fails
+        // Authenticated request fails with 500 Server Error (no anonymous retry)
         mockServer.expect(requestTo(REPOS_URL))
                   .andRespond(withServerError());
 
@@ -506,5 +509,195 @@ class GitHubServiceTest {
         assertThat(GitHubService.feedMessage("Merge branch 'main' into feature")).isNull();
         assertThat(GitHubService.feedMessage("Merge remote-tracking branch 'origin/main'")).isNull();
         assertThat(GitHubService.feedMessage("fix: merge pull request handling\r\n\r\nbody")).isEqualTo("fix: merge pull request handling");
+    }
+
+    private static ResponseCreator delayedSuccess(String json, long ms) {
+        return request -> {
+            try {
+                Thread.sleep(ms);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new InterruptedIOException(e.getMessage());
+            }
+            return withSuccess(json, MediaType.APPLICATION_JSON).createResponse(request);
+        };
+    }
+
+    @Test
+    void getRecentActivity_ShouldNotRetryAnonymouslyAfterTimeout() {
+        mockServer.reset();
+
+        mockServer.expect(requestTo(REPOS_URL))
+                  .andExpect(method(HttpMethod.GET))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(request -> {
+                      throw new SocketTimeoutException("Read timed out");
+                  });
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).isEmpty();
+        mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldRetryAnonymouslyWhenRateLimited() {
+        mockServer.reset();
+
+        mockServer.expect(requestTo(REPOS_URL))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS));
+
+        String mockReposJson = """
+            [
+              { "name": "portfolio-monorepo", "fork": false }
+            ]
+            """;
+        mockServer.expect(requestTo(REPOS_URL))
+                  .andExpect(request -> assertThat(request.getHeaders().getFirst("Authorization")).isNull())
+                  .andRespond(withSuccess(mockReposJson, MediaType.APPLICATION_JSON));
+
+        String mockCommitsJson = """
+            [
+              {
+                "sha": "abc1234567890",
+                "commit": {
+                  "message": "fix: rate limit fallback",
+                  "committer": { "date": "2026-11-13T06:00:00Z" }
+                }
+              }
+            ]
+            """;
+        mockServer.expect(requestTo(commitsUrl("portfolio-monorepo")))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(mockCommitsJson, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).hasSize(1);
+        assertThat(activity.get(0).repo()).isEqualTo("portfolio-monorepo");
+        assertThat(activity.get(0).message()).isEqualTo("fix: rate limit fallback");
+        assertThat(activity.get(0).hash()).isEqualTo("abc1234");
+        mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldFetchReposConcurrently() {
+        mockServer.reset();
+
+        String mockReposJson = """
+            [
+              { "name": "repo-one", "fork": false },
+              { "name": "repo-two", "fork": false },
+              { "name": "repo-three", "fork": false }
+            ]
+            """;
+        mockServer.expect(requestTo(REPOS_URL))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(mockReposJson, MediaType.APPLICATION_JSON));
+
+        mockServer.expect(requestTo(commitsUrl("repo-one")))
+                  .andRespond(delayedSuccess("""
+                      [
+                        {
+                          "sha": "1111111abcdef00",
+                          "commit": {
+                            "message": "feat: one",
+                            "committer": { "date": "2026-11-13T06:00:00Z" }
+                          }
+                        }
+                      ]
+                      """, 600));
+        mockServer.expect(requestTo(commitsUrl("repo-two")))
+                  .andRespond(delayedSuccess("""
+                      [
+                        {
+                          "sha": "2222222abcdef00",
+                          "commit": {
+                            "message": "feat: two",
+                            "committer": { "date": "2026-11-13T05:00:00Z" }
+                          }
+                        }
+                      ]
+                      """, 600));
+        mockServer.expect(requestTo(commitsUrl("repo-three")))
+                  .andRespond(delayedSuccess("""
+                      [
+                        {
+                          "sha": "3333333abcdef00",
+                          "commit": {
+                            "message": "feat: three",
+                            "committer": { "date": "2026-11-13T04:00:00Z" }
+                          }
+                        }
+                      ]
+                      """, 600));
+
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+
+        assertThat(activity).extracting(GitHubCommitActivity::repo)
+                .containsExactly("repo-one", "repo-two", "repo-three");
+        mockServer.verify();
+    }
+
+    @Test
+    void getRecentActivity_ShouldReturnFastReposWhenOneRepoIsSlow() {
+        mockServer.reset();
+
+        String mockReposJson = """
+            [
+              { "name": "fast-one", "fork": false },
+              { "name": "slow-repo", "fork": false },
+              { "name": "fast-two", "fork": false }
+            ]
+            """;
+        mockServer.expect(requestTo(REPOS_URL))
+                  .andExpect(header("Authorization", "Bearer test-token"))
+                  .andRespond(withSuccess(mockReposJson, MediaType.APPLICATION_JSON));
+
+        mockServer.expect(requestTo(commitsUrl("fast-one")))
+                  .andRespond(withSuccess("""
+                      [
+                        {
+                          "sha": "aaaaaaa1111111",
+                          "commit": {
+                            "message": "fix: fast one",
+                            "committer": { "date": "2026-11-13T06:00:00Z" }
+                          }
+                        }
+                      ]
+                      """, MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo(commitsUrl("slow-repo")))
+                  .andRespond(delayedSuccess("""
+                      [
+                        {
+                          "sha": "bbbbbbb2222222",
+                          "commit": {
+                            "message": "fix: slow",
+                            "committer": { "date": "2026-11-13T07:00:00Z" }
+                          }
+                        }
+                      ]
+                      """, 3000));
+        mockServer.expect(requestTo(commitsUrl("fast-two")))
+                  .andRespond(withSuccess("""
+                      [
+                        {
+                          "sha": "ccccccc3333333",
+                          "commit": {
+                            "message": "fix: fast two",
+                            "committer": { "date": "2026-11-13T05:00:00Z" }
+                          }
+                        }
+                      ]
+                      """, MediaType.APPLICATION_JSON));
+
+        long startMs = System.currentTimeMillis();
+        List<GitHubCommitActivity> activity = gitHubService.getRecentActivity();
+        long elapsedMs = System.currentTimeMillis() - startMs;
+
+        assertThat(elapsedMs).isLessThan(2500L);
+        assertThat(activity).extracting(GitHubCommitActivity::repo)
+                .containsExactly("fast-one", "fast-two");
     }
 }

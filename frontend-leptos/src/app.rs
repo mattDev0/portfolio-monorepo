@@ -3,7 +3,8 @@ use std::sync::LazyLock;
 
 use crate::config::{PortfolioConfig, get_config, get_unique_tech_tags};
 use crate::sections::{
-    About, CaseStudyModal, Experience, Footer, Header, Infrastructure, Navigation, Projects, Skills,
+    About, CaseStudyModal, Contact, Experience, Footer, Header, Infrastructure, Navigation,
+    Projects, Skills,
 };
 use crate::spotify::use_spotify;
 use crate::telemetry::use_telemetry;
@@ -65,18 +66,33 @@ pub fn App() -> impl IntoView {
                         "projects",
                         "experience",
                         "infrastructure",
+                        "contact",
                     ];
                     let scroll_pos = scroll_y + 200.0;
 
                     if let Some(doc) = w.document() {
-                        for sec in sections {
-                            if let Some(el) = doc.get_element_by_id(sec) {
-                                if let Ok(html_el) = el.dyn_into::<web_sys::HtmlElement>() {
-                                    let top = html_el.offset_top() as f64;
-                                    let height = html_el.offset_height() as f64;
-                                    if scroll_pos >= top && scroll_pos < top + height {
-                                        set_active_section.set(sec);
-                                        break;
+                        let inner_h = w
+                            .inner_height()
+                            .ok()
+                            .and_then(|v| v.as_f64())
+                            .unwrap_or(0.0);
+                        let scroll_h = doc
+                            .document_element()
+                            .map(|el| el.scroll_height() as f64)
+                            .unwrap_or(0.0);
+
+                        if scroll_h > inner_h && scroll_y + inner_h >= scroll_h - 40.0 {
+                            set_active_section.set("contact");
+                        } else {
+                            for sec in sections {
+                                if let Some(el) = doc.get_element_by_id(sec) {
+                                    if let Ok(html_el) = el.dyn_into::<web_sys::HtmlElement>() {
+                                        let top = html_el.offset_top() as f64;
+                                        let height = html_el.offset_height() as f64;
+                                        if scroll_pos >= top && scroll_pos < top + height {
+                                            set_active_section.set(sec);
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -165,6 +181,7 @@ pub fn App() -> impl IntoView {
                 />
                 <Experience config=&CONFIG />
                 <Infrastructure telemetry=telemetry spotify=spotify />
+                <Contact config=&CONFIG />
             </main>
 
             <Footer config=&CONFIG />

@@ -18,7 +18,6 @@ pub fn FeedDot(health: ReadSignal<FeedHealth>, accent: DotAccent) -> impl IntoVi
             DotAccent::Orange => view! {
                 <span class="flex h-3 w-3 relative">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-orange)] opacity-75"></span>
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-orange)]/40 opacity-40 delay-300"></span>
                     <span class="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-accent-orange)] border border-[var(--color-bg-primary)] shadow-[0_0_8px_var(--color-accent-orange)]"></span>
                 </span>
             }
@@ -26,7 +25,6 @@ pub fn FeedDot(health: ReadSignal<FeedHealth>, accent: DotAccent) -> impl IntoVi
             DotAccent::Online => view! {
                 <span class="flex h-3 w-3 relative">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)] opacity-75"></span>
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)]/40 opacity-40 delay-300"></span>
                     <span class="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_var(--color-status-online)]"></span>
                 </span>
             }
