@@ -63,10 +63,10 @@ pub fn GitHubActivity() -> impl IntoView {
     }
 
     view! {
-        <div class="card-surface p-6 mb-8 w-full transition-colors duration-300">
+        <div class="card-surface rounded-2xl p-6 w-full transition-colors duration-300">
             <div class="flex items-center mb-6">
                 <svg
-                    class="w-6 h-6 text-[var(--color-accent)] mr-3 animate-pulse drop-shadow-[0_0_8px_var(--color-accent-border)]"
+                    class="w-6 h-6 text-[var(--color-accent)] mr-3 drop-shadow-[0_0_8px_var(--color-accent-border)]"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                 >
@@ -121,7 +121,7 @@ pub fn GitHubActivity() -> impl IntoView {
                                             >
                                                 // Repo Name & Date
                                                 <div class="flex justify-between items-center mb-1.5">
-                                                    <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-solid-hover)] transition-colors">
+                                                    <span class="text-[var(--color-accent)] font-semibold text-sm truncate pr-4 group-hover/item:text-[var(--color-accent-hover)] transition-colors">
                                                         {commit.repo}
                                                     </span>
                                                     <span class="text-[var(--color-text-muted)] text-xs font-medium">

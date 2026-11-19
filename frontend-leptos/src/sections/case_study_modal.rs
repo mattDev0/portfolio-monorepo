@@ -2,6 +2,7 @@ use crate::components::{EmojiIcon, Icon};
 use crate::config::PortfolioConfig;
 use leptos::prelude::*;
 
+#[cfg_attr(not(target_arch = "wasm32"), allow(unused_variables))]
 #[component]
 pub fn CaseStudyModal(
     show: Signal<bool>,
@@ -13,12 +14,55 @@ pub fn CaseStudyModal(
         .iter()
         .find(|p| p.title == "DevOps Control Center");
 
+    #[cfg(target_arch = "wasm32")]
+    {
+        let key_handle = window_event_listener(leptos::ev::keydown, move |ev| {
+            if show.get_untracked() && ev.key() == "Escape" {
+                set_show.set(false);
+            }
+        });
+        on_cleanup(move || key_handle.remove());
+
+        Effect::new(move |_| {
+            let is_open = show.get();
+            if let Some(body) = web_sys::window()
+                .and_then(|w| w.document())
+                .and_then(|d| d.body())
+            {
+                let style = body.style();
+                if is_open {
+                    let _ = style.set_property("overflow", "hidden");
+                } else {
+                    let _ = style.remove_property("overflow");
+                }
+            }
+        });
+
+        on_cleanup(move || {
+            if let Some(body) = web_sys::window()
+                .and_then(|w| w.document())
+                .and_then(|d| d.body())
+            {
+                let _ = body.style().remove_property("overflow");
+            }
+        });
+    }
+
     view! {
         {move || {
             if show.get() {
                 Some(view! {
-                    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-bg-overlay)] backdrop-blur-md transition-opacity duration-300 overflow-y-auto">
-                        <div class="relative bg-[var(--color-bg-modal)] border border-[var(--color-border-secondary)] rounded-2xl w-full max-w-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div
+                        on:click=move |_| set_show.set(false)
+                        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-bg-overlay)] backdrop-blur-md transition-opacity duration-300 overflow-y-auto"
+                    >
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="case-study-modal-title"
+                            on:click=move |ev| ev.stop_propagation()
+                            class="relative bg-[var(--color-bg-modal)] border border-[var(--color-border-secondary)] rounded-2xl w-full max-w-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
+                        >
                             // Background glowing design elements
                             <div class="absolute top-0 left-1/4 w-72 h-72 bg-[var(--color-accent-bg)] rounded-full blur-3xl -z-10"></div>
                             <div class="absolute bottom-0 right-1/4 w-72 h-72 bg-[var(--color-accent-bg)] rounded-full blur-3xl -z-10"></div>
@@ -29,7 +73,10 @@ pub fn CaseStudyModal(
                                     <span class="text-[10px] font-bold text-[var(--color-accent)] uppercase tracking-widest">
                                         "Case Study & Architecture"
                                     </span>
-                                    <h3 class="text-2xl font-extrabold text-[var(--color-text-primary)] mt-1">
+                                    <h3
+                                        id="case-study-modal-title"
+                                        class="text-2xl font-extrabold text-[var(--color-text-primary)] mt-1"
+                                    >
                                         "DevOps Control Center"
                                     </h3>
                                     <p class="text-xs text-[var(--color-text-tertiary)] mt-1">
@@ -37,8 +84,10 @@ pub fn CaseStudyModal(
                                     </p>
                                 </div>
                                 <button
+                                    type="button"
+                                    aria-label="Close case study"
                                     on:click=move |_| set_show.set(false)
-                                    class="text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] p-1 hover:bg-[var(--color-hover-bg)] rounded-lg transition-colors cursor-pointer"
+                                    class="text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] p-1 hover:bg-[var(--color-hover-bg-strong)] rounded-lg transition-colors cursor-pointer"
                                 >
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -123,7 +172,7 @@ pub fn CaseStudyModal(
                                     href="https://github.com/mattDev0/devops-control-center"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
+                                    class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
                                 >
                                     "View Repository Code"
                                 </a>
@@ -134,7 +183,7 @@ pub fn CaseStudyModal(
                                             href=incidents_url
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
+                                            class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs text-center transition-colors cursor-pointer"
                                         >
                                             "Incident Write-ups"
                                         </a>
@@ -143,8 +192,9 @@ pub fn CaseStudyModal(
                                     None
                                 }}
                                 <button
+                                    type="button"
                                     on:click=move |_| set_show.set(false)
-                                    class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-bg-tag)] hover:bg-[var(--color-hover-bg)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs cursor-pointer"
+                                    class="w-full sm:w-auto whitespace-nowrap px-5 py-2.5 bg-[var(--color-bg-tag)] hover:bg-[var(--color-hover-bg-strong)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] font-semibold rounded-xl text-xs cursor-pointer transition-colors"
                                 >
                                     "Close Case Study"
                                 </button>

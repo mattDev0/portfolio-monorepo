@@ -1,5 +1,6 @@
 pub mod about;
 pub mod case_study_modal;
+pub mod contact;
 pub mod experience;
 pub mod footer;
 pub mod header;
@@ -9,6 +10,7 @@ pub mod skills;
 
 pub use about::About;
 pub use case_study_modal::CaseStudyModal;
+pub use contact::Contact;
 pub use experience::Experience;
 pub use footer::Footer;
 pub use header::{Header, Navigation};
