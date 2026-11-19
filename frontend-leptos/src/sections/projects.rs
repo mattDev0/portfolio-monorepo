@@ -1,5 +1,5 @@
 use crate::components::{EmojiIcon, SectionHeading};
-use crate::config::{PortfolioConfig, ProjectItem};
+use crate::config::{PortfolioConfig, ProjectItem, project_link_label};
 use leptos::prelude::*;
 
 #[component]
@@ -136,7 +136,7 @@ pub fn Projects(
                                             href=devops_project.link.as_str()
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            class="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
+                                            class="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
                                         >
                                             <span>"View Repository"</span>
                                             <span>"→"</span>
@@ -148,7 +148,7 @@ pub fn Projects(
                                                     href=incidents
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    class="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
+                                                    class="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
                                                 >
                                                     <span>"Incident Write-ups"</span>
                                                     <span>"→"</span>
@@ -165,7 +165,7 @@ pub fn Projects(
                 }}
 
                 // Other Projects Grid
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-start">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {move || {
                         let current_filter = selected_tech.get();
                         config.projects
@@ -283,9 +283,9 @@ where
                     href=link.as_str()
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-solid-hover)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center"
+                    class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] hover:bg-[var(--color-accent-bg)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center"
                 >
-                    "View Repository" <span class="ml-1">"→"</span>
+                    {project_link_label(project)} <span class="ml-1">"→"</span>
                 </a>
 
                 {project.incidents_link.as_deref().map(|incidents| {
@@ -294,7 +294,7 @@ where
                             href=incidents
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-solid-hover)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center mt-2"
+                            class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] hover:bg-[var(--color-accent-bg)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center mt-2"
                         >
                             "Incident Write-up" <span class="ml-1">"→"</span>
                         </a>

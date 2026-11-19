@@ -52,7 +52,13 @@ pub struct ProjectItem {
     pub description: String,
     pub tech: Vec<String>,
     pub link: String,
+    #[serde(default)]
+    pub link_label: Option<String>,
     pub incidents_link: Option<String>,
+}
+
+pub fn project_link_label(project: &ProjectItem) -> &str {
+    project.link_label.as_deref().unwrap_or("View Repository")
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -133,5 +139,23 @@ mod tests {
             }
         }
         assert_eq!(tags, expected_order);
+    }
+
+    #[test]
+    fn test_project_link_label_defaults_and_override() {
+        let config = get_config();
+        let statixos = config
+            .projects
+            .iter()
+            .find(|p| p.title.contains("StatiXOS"))
+            .expect("StatiXOS project");
+        assert_eq!(project_link_label(statixos), "View XDA Thread");
+
+        let dcc = config
+            .projects
+            .iter()
+            .find(|p| p.title == "DevOps Control Center")
+            .expect("DevOps Control Center project");
+        assert_eq!(project_link_label(dcc), "View Repository");
     }
 }

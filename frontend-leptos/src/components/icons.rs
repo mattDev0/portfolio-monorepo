@@ -44,6 +44,15 @@ fn markup(name: &str) -> Option<&'static str> {
         "lightbulb" => {
             r#"<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>"#
         }
+        "copy" => {
+            r#"<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>"#
+        }
+        "check" => r#"<path d="M20 6 9 17l-5-5"/>"#,
+        "menu" => r#"<path d="M4 6h16M4 12h16M4 18h16"/>"#,
+        "x" => r#"<path d="M18 6 6 18M6 6l12 12"/>"#,
+        "mail" => {
+            r#"<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>"#
+        }
         _ => return None,
     })
 }
@@ -118,6 +127,13 @@ mod tests {
     fn every_emoji_has_an_icon_with_markup() {
         for glyph in EMOJI {
             let name = name_for_emoji(glyph).unwrap_or_else(|| panic!("no icon for {glyph}"));
+            assert!(markup(name).is_some(), "no markup for {name}");
+        }
+    }
+
+    #[test]
+    fn named_ui_icons_have_markup() {
+        for name in ["copy", "check", "menu", "x", "mail"] {
             assert!(markup(name).is_some(), "no markup for {name}");
         }
     }

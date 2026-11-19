@@ -42,6 +42,7 @@
   --color-accent-border: rgba(159, 18, 57, 0.28);
   --color-accent-solid: #881337;
   --color-accent-solid-hover: #700f2b;
+  --color-accent-hover: #700f2b;
   --color-accent-gold: #9a4a07;
   --color-accent-orange: #b53b0a;
   --color-accent-orange-bg: rgba(249, 115, 22, 0.08);
@@ -63,6 +64,7 @@
   --gradient-glow: linear-gradient(to right, rgba(212, 163, 115, 0.6), rgba(159, 18, 57, 0.6), rgba(190, 18, 60, 0.6));
 
   --color-hover-bg: rgba(103, 25, 44, 0.04);
+  --color-hover-bg-strong: rgba(103, 25, 44, 0.09);
   --color-hover-text: #2a0812;
   --color-focus-ring: rgba(159, 18, 57, 0.4);
   --color-selection-bg: rgba(159, 18, 57, 0.18);
@@ -113,6 +115,7 @@
   --color-accent-border: rgba(225, 29, 72, 0.28);
   --color-accent-solid: #9f1239;
   --color-accent-solid-hover: #be123c;
+  --color-accent-hover: #fda4af;
   --color-accent-gold: #f2ddb3;
   --color-accent-orange: #fb923c;
   --color-accent-orange-bg: rgba(249, 115, 22, 0.05);
@@ -134,6 +137,7 @@
   --gradient-glow: linear-gradient(to right, rgba(242, 221, 179, 0.6), rgba(225, 29, 72, 0.6), rgba(159, 18, 57, 0.6));
 
   --color-hover-bg: rgba(242, 221, 179, 0.06);
+  --color-hover-bg-strong: rgba(242, 221, 179, 0.12);
   --color-hover-text: #ffffff;
   --color-focus-ring: rgba(251, 113, 133, 0.5);
   --color-selection-bg: rgba(225, 29, 72, 0.3);

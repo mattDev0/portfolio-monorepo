@@ -1,6 +1,6 @@
 use crate::components::{
-    DotAccent, FeedDot, FeedPending, GitHubActivity, Icon, Sparkline, SpotifyPlayer, StaleNotice,
-    TopologyNode,
+    DotAccent, FeedDot, FeedPending, GitHubActivity, Icon, SectionHeading, Sparkline,
+    SpotifyPlayer, StaleNotice, TopologyNode,
 };
 use crate::constants::get_topology_info;
 use crate::spotify::SpotifySignals;
@@ -9,7 +9,10 @@ use leptos::prelude::*;
 
 #[component]
 pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> impl IntoView {
-    let (hovered_topology_node, set_hovered_topology_node) = signal(None::<&'static str>);
+    let (hovered_node, set_hovered_node) = signal(None::<&'static str>);
+    let (selected_node, set_selected_node) = signal(None::<&'static str>);
+    let active_topology_node =
+        Signal::derive(move || hovered_node.get().or_else(|| selected_node.get()));
 
     let rust_status = telemetry.rust_status;
     let java_status = telemetry.java_status;
@@ -21,26 +24,20 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
     let network_health = telemetry.network_health;
 
     let k8s_box_class = move || {
-        if hovered_topology_node.get() == Some("k8s") {
-            "flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 border-[var(--color-accent-gold)] bg-[var(--color-accent-bg)] shadow-[0_0_15px_var(--color-accent-border)]"
+        if active_topology_node.get() == Some("k8s") {
+            "flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 border-[var(--color-accent-gold)] bg-[var(--color-accent-bg)] shadow-[0_0_15px_var(--color-accent-border)] cursor-pointer"
         } else {
-            "flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 border-[var(--color-border-secondary)] bg-[var(--color-bg-surface-deep)]"
+            "flex-[2] w-full p-4 rounded-xl border border-dashed transition-all duration-300 border-[var(--color-border-secondary)] bg-[var(--color-bg-surface-deep)] cursor-pointer"
         }
     };
 
     view! {
         <section id="infrastructure" class="reveal-in space-y-8">
-            <div class="border-b border-[var(--color-border-primary)] pb-3">
-                <span class="text-[10px] font-bold text-[var(--color-accent)] uppercase tracking-widest font-mono">
-                    "Systems Observability"
-                </span>
-                <h3 class="text-2xl font-extrabold text-[var(--color-text-primary)] tracking-wide mt-1">
-                    "Live Infrastructure Dashboard"
-                </h3>
-                <p class="text-xs text-[var(--color-text-tertiary)] mt-1">
-                    "Real-time health telemetry and network architecture mapping my deployed systems."
-                </p>
-            </div>
+            <SectionHeading
+                eyebrow="Systems Observability"
+                title="Live Infrastructure Dashboard"
+                subtitle="Real-time health telemetry and network architecture mapping my deployed systems."
+            />
 
             // Architecture Topology - Full Width
             <div class="bg-[var(--color-bg-surface-deep)] backdrop-blur-md p-6 md:p-8 rounded-2xl border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] transition-colors duration-300">
@@ -64,8 +61,10 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                     icon="🌐"
                                     title="Client Browser"
                                     tech="Rust + Leptos"
-                                    hovered_node=hovered_topology_node
-                                    set_hovered_node=set_hovered_topology_node
+                                    active_node=active_topology_node
+                                    selected_node=selected_node
+                                    set_hovered_node=set_hovered_node
+                                    set_selected_node=set_selected_node
                                 />
                             </div>
 
@@ -84,8 +83,10 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                     icon="🛡️"
                                     title="GCP Ingress"
                                     tech="HTTPS Gateway"
-                                    hovered_node=hovered_topology_node
-                                    set_hovered_node=set_hovered_topology_node
+                                    active_node=active_topology_node
+                                    selected_node=selected_node
+                                    set_hovered_node=set_hovered_node
+                                    set_selected_node=set_selected_node
                                 />
                             </div>
 
@@ -99,43 +100,64 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
 
                             // 3. Google Cloud Run (Serverless)
                             <div
-                                on:mouseenter=move |_| set_hovered_topology_node.set(Some("k8s"))
-                                on:mouseleave=move |_| set_hovered_topology_node.set(None)
+                                on:mouseenter=move |_| set_hovered_node.set(Some("k8s"))
+                                on:mouseleave=move |_| set_hovered_node.set(None)
+                                on:click=move |_| {
+                                    set_selected_node.update(|cur| *cur = if *cur == Some("k8s") { None } else { Some("k8s") });
+                                }
                                 class=k8s_box_class
                             >
-                                <div class="flex justify-between items-center mb-3">
+                                <div class="flex justify-between items-center mb-3 gap-2">
                                     <span class="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest font-mono">
                                         "Platform: Google Cloud"
                                     </span>
-                                    <span class="text-[10px] font-mono text-[var(--color-accent-gold)] bg-[var(--color-accent-bg)] px-1 py-0.5 rounded">
+                                    <button
+                                        type="button"
+                                        on:mouseenter=move |_| set_hovered_node.set(Some("k8s"))
+                                        on:mouseleave=move |_| set_hovered_node.set(None)
+                                        on:focus=move |_| set_hovered_node.set(Some("k8s"))
+                                        on:blur=move |_| set_hovered_node.set(None)
+                                        on:click=move |ev| {
+                                            ev.stop_propagation();
+                                            set_selected_node.update(|cur| *cur = if *cur == Some("k8s") { None } else { Some("k8s") });
+                                        }
+                                        aria-pressed=move || (selected_node.get() == Some("k8s")).to_string()
+                                        class="text-[10px] font-mono text-[var(--color-accent-gold)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-hover-bg-strong)] border border-transparent hover:border-[var(--color-accent-border)] px-1.5 py-0.5 rounded cursor-pointer inline-flex items-center transition-colors"
+                                    >
                                         <Icon name="cloud" class="w-3 h-3 mr-1" />"GCP Cloud Run"
-                                    </span>
+                                    </button>
                                 </div>
 
-                                <div class="grid grid-cols-3 gap-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     <TopologyNode
                                         id="frontend"
                                         icon="🦀"
                                         title="Frontend Service"
                                         tech="Cloud Run"
-                                        hovered_node=hovered_topology_node
-                                        set_hovered_node=set_hovered_topology_node
+                                        active_node=active_topology_node
+                                        selected_node=selected_node
+                                        set_hovered_node=set_hovered_node
+                                        set_selected_node=set_selected_node
                                     />
                                     <TopologyNode
                                         id="rust"
                                         icon="🦀"
                                         title="Rust Service"
                                         tech="Cloud Run"
-                                        hovered_node=hovered_topology_node
-                                        set_hovered_node=set_hovered_topology_node
+                                        active_node=active_topology_node
+                                        selected_node=selected_node
+                                        set_hovered_node=set_hovered_node
+                                        set_selected_node=set_selected_node
                                     />
                                     <TopologyNode
                                         id="java"
                                         icon="☕"
                                         title="Java Service"
                                         tech="Cloud Run"
-                                        hovered_node=hovered_topology_node
-                                        set_hovered_node=set_hovered_topology_node
+                                        active_node=active_topology_node
+                                        selected_node=selected_node
+                                        set_hovered_node=set_hovered_node
+                                        set_selected_node=set_selected_node
                                     />
                                 </div>
                             </div>
@@ -151,15 +173,19 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 </div>
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="text-xs font-bold text-[var(--color-text-secondary)]">"Rust API"</span>
-                                    <span class="text-[var(--color-accent-orange)] font-mono text-[10px]">"── OAuth ──▶"</span>
-                                    <TopologyNode
-                                        id="spotify"
-                                        icon="🎵"
-                                        title="Spotify API"
-                                        tech="v1 Player Web Service"
-                                        hovered_node=hovered_topology_node
-                                        set_hovered_node=set_hovered_topology_node
-                                    />
+                                    <span class="text-[var(--color-accent-orange)] font-mono text-[10px] shrink-0">"── OAuth ──▶"</span>
+                                    <div class="flex-1 max-w-[160px]">
+                                        <TopologyNode
+                                            id="spotify"
+                                            icon="🎵"
+                                            title="Spotify API"
+                                            tech="v1 Player Web Service"
+                                            active_node=active_topology_node
+                                            selected_node=selected_node
+                                            set_hovered_node=set_hovered_node
+                                            set_selected_node=set_selected_node
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -171,15 +197,19 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 </div>
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="text-xs font-bold text-[var(--color-text-secondary)]">"Java API"</span>
-                                    <span class="text-[var(--color-accent)] font-mono text-[10px]">"── REST ──▶"</span>
-                                    <TopologyNode
-                                        id="github"
-                                        icon="🐙"
-                                        title="GitHub API"
-                                        tech="v3 Public REST"
-                                        hovered_node=hovered_topology_node
-                                        set_hovered_node=set_hovered_topology_node
-                                    />
+                                    <span class="text-[var(--color-accent)] font-mono text-[10px] shrink-0">"── REST ──▶"</span>
+                                    <div class="flex-1 max-w-[160px]">
+                                        <TopologyNode
+                                            id="github"
+                                            icon="🐙"
+                                            title="GitHub API"
+                                            tech="v3 Public REST"
+                                            active_node=active_topology_node
+                                            selected_node=selected_node
+                                            set_hovered_node=set_hovered_node
+                                            set_selected_node=set_selected_node
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -191,20 +221,17 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
 
                         <div>
                             <div class="flex items-center space-x-2 border-b border-[var(--color-border-primary)] pb-2 mb-3">
-                                <span class="flex h-2 w-2 relative">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)] opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-status-online)]"></span>
-                                </span>
+                                <span class="inline-flex rounded-full h-2 w-2 bg-[var(--color-status-online)]"></span>
                                 <h4 class="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
                                     "Topology Inspector"
                                 </h4>
                             </div>
 
                             {move || {
-                                if let Some(node_id) = hovered_topology_node.get() {
+                                if let Some(node_id) = active_topology_node.get() {
                                     if let Some(info) = get_topology_info(node_id) {
                                         return view! {
-                                            <div class="space-y-3.5 animate-fadeIn">
+                                            <div class="space-y-3.5">
                                                 <div class="flex justify-between items-center">
                                                     <span class="text-sm font-bold text-[var(--color-accent)]">
                                                         {info.title}
@@ -234,9 +261,9 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 }
                                 view! {
                                     <div class="text-center py-10 flex flex-col items-center justify-center space-y-3">
-                                        <span class="text-2xl opacity-40 animate-bounce"><Icon name="search" /></span>
+                                        <span class="text-2xl opacity-40"><Icon name="search" /></span>
                                         <p class="text-[var(--color-text-muted)] text-xs leading-relaxed font-mono">
-                                            "Hover over any node or container in the diagram to inspect microservice details, proxy routes, and deployment states."
+                                            "Hover or tap any node in the diagram to inspect microservice details, routes, and deployment states."
                                         </p>
                                     </div>
                                 }.into_any()
