@@ -21,13 +21,13 @@ pub fn Footer(config: &'static PortfolioConfig) -> impl IntoView {
             <div class="flex items-center space-x-2">
                 <span>{format!("© {} {}. All rights reserved.", year, &config.name)}</span>
             </div>
-            <div class="flex items-center space-x-1 text-[var(--color-text-muted)]">
-                <span>"Architected with"</span>
-                <span class="text-[var(--color-accent-orange)] font-semibold font-mono">"Rust"</span>
-                <span>"•"</span>
-                <span class="text-[var(--color-accent)] font-semibold font-mono">"Spring Boot"</span>
-                <span>"•"</span>
-                <span class="text-[var(--color-accent-gold)] font-semibold font-mono">"Leptos"</span>
+            <div class="flex items-center space-x-1.5 text-[var(--color-text-muted)]">
+                <span>"Built with"</span>
+                <span class="text-[var(--color-text-secondary)] font-medium font-mono">"Rust"</span>
+                <span>"·"</span>
+                <span class="text-[var(--color-text-secondary)] font-medium font-mono">"Spring Boot"</span>
+                <span>"·"</span>
+                <span class="text-[var(--color-text-secondary)] font-medium font-mono">"Leptos"</span>
             </div>
             <div class="flex items-center space-x-4">
                 <a
@@ -62,7 +62,7 @@ pub fn Footer(config: &'static PortfolioConfig) -> impl IntoView {
                     href=format!("mailto:{}", &config.email)
                     class="hover:text-[var(--color-hover-text)] transition-colors duration-200"
                     title="Email"
-                    aria-label="Email Odunayo Abraham"
+                    aria-label=format!("Email {}", &config.name)
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

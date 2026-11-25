@@ -25,18 +25,19 @@ pub fn Projects(
     };
 
     view! {
-        <section id="projects" class="reveal-in space-y-6">
-            <SectionHeading eyebrow="Projects" title="Featured Projects" />
+        <section id="projects" class="reveal-in space-y-5">
+            <SectionHeading eyebrow="Selected Work" title="Projects" />
 
             // Project Filter Controls
             <div class="flex gap-2 overflow-x-auto sm:overflow-visible sm:flex-wrap pb-2 sm:pb-0 custom-scrollbar">
                 <button
+                    type="button"
                     on:click=move |_| set_selected_tech.set(None)
                     class=move || {
                         if selected_tech.get().is_none() {
-                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-md font-mono text-xs font-medium border transition-colors duration-200 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white"
                         } else {
-                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)]"
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-md font-mono text-xs font-medium border transition-colors duration-200 cursor-pointer bg-[var(--color-bg-surface)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                         }
                     }
                 >
@@ -49,13 +50,14 @@ pub fn Projects(
                     let is_active = move || selected_tech.get().as_ref() == Some(&tag_for_active);
                     let btn_class = move || {
                         if is_active() {
-                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white shadow-[0_0_8px_var(--color-accent-border)]"
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-md font-mono text-xs font-medium border transition-colors duration-200 cursor-pointer bg-[var(--color-accent-solid)] border-[var(--color-accent-solid)] text-white"
                         } else {
-                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold tracking-wide border transition-all duration-300 cursor-pointer bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
+                            "shrink-0 whitespace-nowrap px-3 py-1 rounded-md font-mono text-xs font-medium border transition-colors duration-200 cursor-pointer bg-[var(--color-bg-surface)] border-[var(--color-border-primary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                         }
                     };
                     view! {
                         <button
+                            type="button"
                             on:click=move |_| toggle_tech(&tag_for_click)
                             class=btn_class
                         >
@@ -65,8 +67,8 @@ pub fn Projects(
                 }).collect_view()}
             </div>
 
-            // Featured Card or Grid Layout
-            <div class="space-y-6">
+            // Featured Card + Grid Layout
+            <div class="space-y-5">
                 // Featured Card: DevOps Control Center
                 {move || {
                     let current_filter = selected_tech.get();
@@ -77,35 +79,32 @@ pub fn Projects(
 
                     if matches_devops {
                         Some(view! {
-                            <div
-                                class="hover-lift backdrop-blur-md p-6 md:p-8 rounded-2xl border-t-2 border-t-[var(--color-accent-solid)] border-x border-b border-[var(--color-border-primary)] relative overflow-hidden transition-all duration-300 group hover:border-[var(--color-accent-border)]"
-                                style="background: linear-gradient(to bottom right, var(--color-accent-bg), var(--color-bg-surface), var(--color-bg-primary)); box-shadow: var(--shadow-card)"
-                            >
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-bg)] rounded-full blur-2xl -z-10"></div>
+                            <div class="card-surface p-6 md:p-7 rounded-xl border-[var(--color-border-secondary)]">
                                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div class="flex-1 space-y-4">
+                                    <div class="flex-1 space-y-3.5">
                                         <div class="flex items-center space-x-2">
-                                            <span class="bg-[var(--color-accent-bg)] text-[var(--color-accent)] border border-[var(--color-accent-border)] px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">
-                                                "Featured Project"
+                                            <span class="font-mono text-[11px] font-medium text-[var(--color-accent)] uppercase tracking-[0.12em]">
+                                                "Featured"
                                             </span>
-                                            <span class="text-xl"><EmojiIcon glyph="⚙️" /></span>
+                                            <span class="text-[var(--color-text-faint)]">"·"</span>
+                                            <span class="text-sm text-[var(--color-text-muted)]"><EmojiIcon glyph="⚙️" /></span>
                                         </div>
-                                        <h4 class="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors tracking-wide">
+                                        <h4 class="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] tracking-tight">
                                             {devops_project.title.as_str()}
                                         </h4>
-                                        <p class="text-[var(--color-text-secondary)] text-sm md:text-base leading-relaxed">
+                                        <p class="text-[var(--color-text-secondary)] text-sm sm:text-[15px] leading-relaxed">
                                             {devops_project.description.as_str()}
                                         </p>
 
-                                        <div class="flex flex-wrap gap-1.5 pt-2">
+                                        <div class="flex flex-wrap gap-1.5 pt-1">
                                             {devops_project.tech.iter().map(|tech| {
                                                 let tech_str = tech.as_str();
                                                 let is_tag_active = move || selected_tech.get().as_deref() == Some(tech_str);
                                                 let tag_class = move || {
                                                     if is_tag_active() {
-                                                        "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-solid)] text-[var(--color-accent)]"
+                                                        "border font-mono text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-colors duration-150 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-border)] text-[var(--color-accent)]"
                                                     } else {
-                                                        "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
+                                                        "border font-mono text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-colors duration-150 bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                                                     }
                                                 };
                                                 view! {
@@ -122,11 +121,11 @@ pub fn Projects(
                                         </div>
                                     </div>
 
-                                    <div class="flex flex-col justify-center space-y-3 w-full md:w-64 flex-shrink-0">
+                                    <div class="flex flex-col justify-center space-y-2.5 w-full md:w-60 flex-shrink-0">
                                         <button
+                                            type="button"
                                             on:click=move |_| set_show_case_study.set(true)
-                                            class="px-5 py-3 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white rounded-xl text-xs font-bold transition-all duration-300 w-full cursor-pointer flex items-center justify-center space-x-1.5"
-                                            style="box-shadow: var(--shadow-button)"
+                                            class="px-4 py-2.5 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white rounded-lg text-xs font-semibold transition-colors duration-200 w-full cursor-pointer flex items-center justify-center space-x-1.5"
                                         >
                                             <EmojiIcon glyph="⚙️" />
                                             <span>"System Design & Demo"</span>
@@ -136,7 +135,7 @@ pub fn Projects(
                                             href=devops_project.link.as_str()
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            class="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
+                                            class="px-4 py-2.5 bg-[var(--color-bg-surface-elevated)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-lg text-xs font-medium transition-colors duration-200 w-full text-center flex items-center justify-center space-x-1.5"
                                         >
                                             <span>"View Repository"</span>
                                             <span>"→"</span>
@@ -148,7 +147,7 @@ pub fn Projects(
                                                     href=incidents
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    class="px-5 py-3 bg-[var(--color-hover-bg)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-bold transition-all duration-300 w-full text-center flex items-center justify-center space-x-1.5"
+                                                    class="px-4 py-2.5 bg-[var(--color-bg-surface-elevated)] border border-[var(--color-border-primary)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-lg text-xs font-medium transition-colors duration-200 w-full text-center flex items-center justify-center space-x-1.5"
                                                 >
                                                     <span>"Incident Write-ups"</span>
                                                     <span>"→"</span>
@@ -165,7 +164,7 @@ pub fn Projects(
                 }}
 
                 // Other Projects Grid
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {move || {
                         let current_filter = selected_tech.get();
                         config.projects
@@ -196,16 +195,16 @@ fn render_project_card<F>(
 where
     F: Fn(&str) + Copy + 'static,
 {
-    let (accent_class, emoji) = if project.title.contains("Flutter") {
-        ("border-t-[var(--color-accent-orange)]", "📱")
+    let emoji = if project.title.contains("Flutter") {
+        "📱"
     } else if project.title.contains("Portfolio") {
-        ("border-t-[var(--color-accent-solid)]", "🌐")
+        "🌐"
     } else if project.title.contains("WSL") {
-        ("border-t-[var(--color-accent-gold)]", "🖥️")
+        "🖥️"
     } else if project.title.contains("GitOps") {
-        ("border-t-[var(--color-accent-orange)]", "☸️")
+        "☸️"
     } else {
-        ("border-t-[var(--color-accent-gold)]", "📁")
+        "📁"
     };
 
     let title = &project.title;
@@ -221,36 +220,23 @@ where
     };
 
     let card_class = move || {
-        let is_matched = is_card_matched();
-        format!(
-            "hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border-t-2 {} border-x border-b transition-all duration-500 flex flex-col justify-between group md:[&:last-child:nth-child(odd)]:col-span-2 {}",
-            accent_class,
-            if is_matched {
-                "border-[var(--color-accent-border)]"
-            } else {
-                "border-[var(--color-border-primary)] hover:border-[var(--color-accent-border)]"
-            }
-        )
-    };
-
-    let card_style = move || {
         if is_card_matched() {
-            "box-shadow: var(--shadow-card-hover)"
+            "card-surface p-6 rounded-xl border-[var(--color-accent-border)] transition-colors duration-200 flex flex-col justify-between md:[&:last-child:nth-child(odd)]:col-span-2"
         } else {
-            "box-shadow: var(--shadow-card)"
+            "card-surface p-6 rounded-xl hover:border-[var(--color-border-secondary)] transition-colors duration-200 flex flex-col justify-between md:[&:last-child:nth-child(odd)]:col-span-2"
         }
     };
 
     view! {
-        <div class=card_class style=card_style>
+        <div class=card_class>
             <div>
                 <div class="flex items-center space-x-2 mb-2">
-                    <span class="text-lg"><EmojiIcon glyph=emoji /></span>
-                    <h4 class="text-lg font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors tracking-wide">
+                    <span class="text-base text-[var(--color-accent)]"><EmojiIcon glyph=emoji /></span>
+                    <h4 class="text-base sm:text-lg font-bold text-[var(--color-text-primary)] tracking-tight">
                         {title.as_str()}
                     </h4>
                 </div>
-                <p class="text-[var(--color-text-tertiary)] text-sm leading-relaxed mb-6">
+                <p class="text-[var(--color-text-tertiary)] text-sm leading-relaxed mb-5">
                     {description.as_str()}
                 </p>
             </div>
@@ -261,9 +247,9 @@ where
                         let is_tag_active = move || selected_tech.get().as_deref() == Some(tech_str);
                         let tag_class = move || {
                             if is_tag_active() {
-                                "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-solid)] text-[var(--color-accent)]"
+                                "border font-mono text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-colors duration-150 bg-[var(--color-bg-tag-active)] border-[var(--color-accent-border)] text-[var(--color-accent)]"
                             } else {
-                                "border text-[10px] px-2.5 py-0.5 rounded-md font-semibold tracking-wide cursor-pointer transition-all duration-200 bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
+                                "border font-mono text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-colors duration-150 bg-[var(--color-bg-tag)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:border-[var(--color-border-secondary)]"
                             }
                         };
                         view! {
@@ -283,9 +269,9 @@ where
                     href=link.as_str()
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] hover:bg-[var(--color-accent-bg)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center"
+                    class="px-4 py-2 border border-[var(--color-border-secondary)] rounded-lg text-xs font-medium text-[var(--color-text-primary)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-bg)] inline-flex items-center transition-colors duration-200 w-full justify-center"
                 >
-                    {project_link_label(project)} <span class="ml-1">"→"</span>
+                    {project_link_label(project)} <span class="ml-1.5">"→"</span>
                 </a>
 
                 {project.incidents_link.as_deref().map(|incidents| {
@@ -294,9 +280,9 @@ where
                             href=incidents
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="px-4 py-2 border border-[var(--color-accent-border)] rounded-lg text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] hover:bg-[var(--color-accent-bg)] hover:border-[var(--color-accent)] inline-flex items-center transition-all duration-300 w-full justify-center mt-2"
+                            class="px-4 py-2 border border-[var(--color-border-primary)] rounded-lg text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] hover:bg-[var(--color-hover-bg-strong)] hover:border-[var(--color-border-secondary)] inline-flex items-center transition-colors duration-200 w-full justify-center mt-2"
                         >
-                            "Incident Write-up" <span class="ml-1">"→"</span>
+                            "Incident Write-up" <span class="ml-1.5">"→"</span>
                         </a>
                     }
                 })}

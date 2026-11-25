@@ -7,19 +7,19 @@ pub fn Experience(config: &'static PortfolioConfig) -> impl IntoView {
     view! {
         <section
             id="experience"
-            class="reveal-in card-surface p-6 md:p-8 rounded-2xl transition-colors duration-300"
+            class="reveal-in card-surface p-6 md:p-8 rounded-xl"
         >
-            <SectionHeading eyebrow="Experience" title="Professional Experience" />
-            <div class="space-y-8">
+            <SectionHeading eyebrow="History" title="Experience" />
+            <div class="space-y-7">
                 {config.experience.iter().map(|exp| {
                     view! {
-                        <div class="relative pl-8 border-l-2 border-[var(--color-accent-border)] hover:border-[var(--color-accent)] transition-colors duration-300">
-                            <div class="absolute w-4 h-4 bg-[var(--color-accent-solid)] rounded-full -left-[9px] top-1 border-2 border-[var(--color-bg-primary)] shadow-[0_0_8px_var(--color-accent)]"></div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                                <h4 class="text-[var(--color-text-primary)] font-bold text-base tracking-wide">
+                        <div class="relative pl-6 border-l border-[var(--color-border-secondary)]">
+                            <div class="absolute w-2.5 h-2.5 bg-[var(--color-accent)] rounded-full -left-[5.5px] top-1.5 ring-4 ring-[var(--color-bg-surface)]"></div>
+                            <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1.5">
+                                <h4 class="text-[var(--color-text-primary)] font-semibold text-base">
                                     {exp.role.as_str()}
                                 </h4>
-                                <p class="text-[var(--color-accent)] text-xs sm:text-sm font-semibold">
+                                <p class="text-[var(--color-text-tertiary)] text-xs sm:text-sm font-medium">
                                     {exp.company.as_str()}
                                 </p>
                             </div>
