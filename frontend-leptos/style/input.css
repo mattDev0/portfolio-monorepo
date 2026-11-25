@@ -183,12 +183,16 @@ code, pre, .font-mono {
   color: var(--color-selection-text);
 }
 
-/* Card Surface Semantic Utility Class */
-.card-surface {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-primary);
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+/* Card Surface Semantic Utility Class
+   Kept in the components layer so Tailwind utilities (border colour,
+   hover states) on the same element can override it. */
+@layer components {
+  .card-surface {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-primary);
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
 }
 
 .reveal-in {
