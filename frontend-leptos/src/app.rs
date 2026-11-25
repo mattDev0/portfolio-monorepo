@@ -157,10 +157,7 @@ pub fn App() -> impl IntoView {
     let spotify = use_spotify(is_visible.into());
 
     view! {
-        <div
-            class="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] flex flex-col items-center pt-24 pb-8 px-4 sm:px-6 lg:px-8"
-            style="background-image: var(--gradient-hero)"
-        >
+        <div class="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] flex flex-col items-center pt-24 pb-10 px-4 sm:px-6 lg:px-8">
             <Navigation
                 is_scrolled=is_scrolled.into()
                 active_section=active_section.into()
@@ -169,7 +166,7 @@ pub fn App() -> impl IntoView {
 
             <Header config=&CONFIG />
 
-            <main class="w-full max-w-5xl space-y-16 md:space-y-20">
+            <main class="w-full max-w-5xl space-y-12 md:space-y-14">
                 <About config=&CONFIG />
                 <Skills config=&CONFIG />
                 <Projects

@@ -84,9 +84,9 @@ pub fn Contact(config: &'static PortfolioConfig) -> impl IntoView {
     view! {
         <section
             id="contact"
-            class="reveal-in card-surface p-6 md:p-8 rounded-2xl transition-colors duration-300"
+            class="reveal-in card-surface p-6 md:p-8 rounded-xl"
         >
-            <SectionHeading eyebrow="Contact" title="Get in Touch" />
+            <SectionHeading eyebrow="Reach Out" title="Get in Touch" />
 
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div class="space-y-2 max-w-xl">
@@ -99,7 +99,7 @@ pub fn Contact(config: &'static PortfolioConfig) -> impl IntoView {
                 </div>
 
                 <div class="flex flex-col gap-3 w-full lg:w-auto lg:min-w-[360px]">
-                    <div class="flex items-center justify-between gap-3 bg-[var(--color-bg-surface-elevated)] border border-[var(--color-border-primary)] rounded-xl px-4 py-3">
+                    <div class="flex items-center justify-between gap-3 bg-[var(--color-bg-surface-elevated)] border border-[var(--color-border-primary)] rounded-lg px-4 py-2.5">
                         <div class="flex items-center space-x-2.5 min-w-0">
                             <Icon name="mail" class="w-4 h-4 text-[var(--color-accent)]" />
                             <span class="font-mono text-xs sm:text-sm text-[var(--color-text-primary)] select-all truncate">
@@ -132,8 +132,7 @@ pub fn Contact(config: &'static PortfolioConfig) -> impl IntoView {
                     <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5">
                         <a
                             href=format!("mailto:{}", email)
-                            class="inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white rounded-xl text-xs font-bold transition-all duration-300"
-                            style="box-shadow: var(--shadow-button)"
+                            class="inline-flex items-center justify-center space-x-1.5 px-4 py-2 bg-[var(--color-accent-solid)] hover:bg-[var(--color-accent-solid-hover)] text-white rounded-lg text-xs font-semibold transition-colors duration-200"
                         >
                             <Icon name="mail" class="w-3.5 h-3.5" />
                             <span>"Email Me"</span>
@@ -142,7 +141,7 @@ pub fn Contact(config: &'static PortfolioConfig) -> impl IntoView {
                             href=config.linkedin_url.as_str()
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center justify-center px-4 py-2.5 bg-[var(--color-hover-bg)] hover:bg-[var(--color-hover-bg-strong)] border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-semibold transition-all duration-300"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-[var(--color-bg-surface-elevated)] hover:bg-[var(--color-hover-bg-strong)] border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-lg text-xs font-medium transition-colors duration-200"
                         >
                             "LinkedIn"
                         </a>
@@ -150,7 +149,7 @@ pub fn Contact(config: &'static PortfolioConfig) -> impl IntoView {
                             href=config.github_url.as_str()
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center justify-center px-4 py-2.5 bg-[var(--color-hover-bg)] hover:bg-[var(--color-hover-bg-strong)] border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-semibold transition-all duration-300"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-[var(--color-bg-surface-elevated)] hover:bg-[var(--color-hover-bg-strong)] border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-lg text-xs font-medium transition-colors duration-200"
                         >
                             "GitHub"
                         </a>
@@ -158,7 +157,7 @@ pub fn Contact(config: &'static PortfolioConfig) -> impl IntoView {
                             href=config.resume_url.as_str()
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center justify-center px-4 py-2.5 bg-[var(--color-hover-bg)] hover:bg-[var(--color-hover-bg-strong)] border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-xl text-xs font-semibold transition-all duration-300"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-[var(--color-bg-surface-elevated)] hover:bg-[var(--color-hover-bg-strong)] border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-hover-text)] rounded-lg text-xs font-medium transition-colors duration-200"
                         >
                             "Resume"
                         </a>
