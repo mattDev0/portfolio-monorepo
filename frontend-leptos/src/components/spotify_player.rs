@@ -1,3 +1,4 @@
+use crate::components::Icon;
 use crate::feed::{FeedHealth, FeedState, format_age, now_ms};
 use crate::spotify::{
     calculate_progress_percent, format_time, get_spotify_state_label, get_spotify_tooltip,
@@ -23,50 +24,28 @@ pub fn SpotifyPlayer(
                 .map(|d| d.is_recently_played)
                 .unwrap_or(false);
 
-        let ping_bg_class = if is_stale {
-            "hidden"
-        } else if is_playing {
-            "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-status-online)]"
-        } else if is_recently_played {
-            "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-accent-amber)]"
-        } else {
-            "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[var(--color-status-muted)]"
-        };
-
         let dot_class = if is_playing {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-online)] shadow-[0_0_8px_var(--color-status-online)]"
-        } else if is_recently_played {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-warning)] shadow-[0_0_8px_var(--color-status-warning)]"
+            "inline-flex rounded-full h-2.5 w-2.5 bg-[var(--color-status-online)]"
+        } else if is_recently_played || is_stale {
+            "inline-flex rounded-full h-2.5 w-2.5 bg-[var(--color-status-warning)]"
         } else {
-            "relative inline-flex rounded-full h-3 w-3 bg-[var(--color-status-muted)]"
+            "inline-flex rounded-full h-2.5 w-2.5 bg-[var(--color-status-muted)]"
         };
 
         let tooltip_text = get_spotify_tooltip(is_playing, is_recently_played, is_stale);
-        let anim_duration = if is_playing { "6s" } else { "0s" };
 
         view! {
             <div class="absolute top-0 right-0 p-4 cursor-help group/tooltip">
-                <span class="flex h-3 w-3 relative">
-                    <span class=ping_bg_class></span>
-                    {if is_playing {
-                        Some(view! {
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-status-online)] opacity-40 delay-300"></span>
-                        })
-                    } else {
-                        None
-                    }}
-                    <span class=dot_class></span>
-                </span>
+                <span class=dot_class></span>
                 // Custom Tooltip
-                <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-all duration-200 origin-top-right rounded bg-[var(--color-bg-surface-elevated)] border border-[var(--color-accent-border)] p-2 text-center text-[10px] text-[var(--color-accent)] font-mono shadow-xl z-20">
+                <div class="absolute right-0 top-8 w-32 scale-0 group-hover/tooltip:scale-100 transition-transform duration-150 origin-top-right rounded-md bg-[var(--color-bg-surface-elevated)] border border-[var(--color-border-secondary)] p-2 text-center text-[10px] text-[var(--color-text-primary)] font-mono shadow-md z-20">
                     {tooltip_text}
                 </div>
             </div>
 
-            <h3 class="text-lg font-bold text-[var(--color-accent)] mb-0 tracking-wide flex items-center font-sans">
+            <h3 class="text-base font-bold text-[var(--color-text-primary)] mb-0.5 tracking-tight flex items-center font-sans">
                 <svg
-                    class="w-5 h-5 mr-2 text-[var(--color-accent)] group-hover:animate-spin"
-                    style=format!("animation-duration: {}", anim_duration)
+                    class="w-4 h-4 mr-2 text-[var(--color-accent)] shrink-0"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                 >
@@ -74,7 +53,7 @@ pub fn SpotifyPlayer(
                 </svg>
                 "Spotify Session"
             </h3>
-            <p class="text-[10px] text-[var(--color-text-muted)] font-medium mb-5">
+            <p class="text-[11px] text-[var(--color-text-muted)] font-sans mb-4">
                 "Web API sync via Rust token auth"
             </p>
 
@@ -85,22 +64,16 @@ pub fn SpotifyPlayer(
                     let artist = data.artist.clone();
                     let duration_ms = data.duration_ms;
 
-                    let art_box_class = if is_playing {
-                        "w-16 h-16 bg-[var(--color-bg-tag)] rounded-lg flex-shrink-0 shadow-md overflow-hidden relative border border-[var(--color-border-primary)] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-105"
-                    } else {
-                        "w-16 h-16 bg-[var(--color-bg-tag)] rounded-lg flex-shrink-0 shadow-md overflow-hidden relative border border-[var(--color-border-primary)] transition-transform duration-500"
-                    };
-
                     let art_img_class = if is_playing {
-                        "w-full h-full object-cover transition-all duration-500"
+                        "w-full h-full object-cover"
                     } else {
-                        "w-full h-full object-cover transition-all duration-500 grayscale opacity-60"
+                        "w-full h-full object-cover grayscale opacity-65"
                     };
 
                     let state_text_class = if is_stale {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-status-warning)]"
                     } else if is_playing {
-                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent)]"
+                        "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-status-online)]"
                     } else if is_recently_played {
                         "text-[10px] mt-1 font-mono tracking-wider uppercase font-semibold text-[var(--color-accent-amber)]"
                     } else {
@@ -115,23 +88,23 @@ pub fn SpotifyPlayer(
 
                     view! {
                         <div>
-                            <div class="flex items-center space-x-4 mt-2">
-                                <div class=art_box_class>
+                            <div class="flex items-center space-x-3.5 mt-1">
+                                <div class="w-14 h-14 bg-[var(--color-bg-tag)] rounded-md flex-shrink-0 overflow-hidden relative border border-[var(--color-border-primary)] flex items-center justify-center">
                                     {if !album_art.is_empty() {
                                         view! {
                                             <img src=album_art alt="Album Art" class=art_img_class />
                                         }.into_any()
                                     } else {
                                         view! {
-                                            <div class="absolute inset-0 bg-gradient-to-tr from-[var(--color-accent-solid)] to-[var(--color-bg-primary)] opacity-50"></div>
+                                            <Icon name="music" class="w-5 h-5 text-[var(--color-text-muted)]" />
                                         }.into_any()
                                     }}
                                 </div>
                                 <div class="overflow-hidden flex-grow">
-                                    <p class="text-[var(--color-text-primary)] font-bold truncate group-hover:text-[var(--color-accent)] transition-colors">
+                                    <p class="text-[var(--color-text-primary)] font-sans font-semibold text-sm truncate group-hover:text-[var(--color-accent)] transition-colors">
                                         {title}
                                     </p>
-                                    <p class="text-[var(--color-text-tertiary)] text-sm truncate">
+                                    <p class="text-[var(--color-text-tertiary)] font-sans text-xs truncate">
                                         {artist}
                                     </p>
                                     <p class=state_text_class>
@@ -145,10 +118,10 @@ pub fn SpotifyPlayer(
 
                             {if is_playing && duration_ms > 0 {
                                 Some(view! {
-                                    <div class="mt-5">
+                                    <div class="mt-4">
                                         <div class="w-full h-1 bg-[var(--color-bg-progress-track)] rounded-full overflow-hidden">
                                             <div
-                                                class="h-full bg-[var(--color-accent-solid)] transition-all duration-1000 ease-linear shadow-[0_0_8px_var(--color-accent)]"
+                                                class="h-full bg-[var(--color-accent-solid)] transition-all duration-1000 ease-linear"
                                                 style=move || format!("width: {}%", calculate_progress_percent(local_progress_ms.get(), duration_ms))
                                             ></div>
                                         </div>
@@ -173,7 +146,7 @@ pub fn SpotifyPlayer(
                 }
                 None => {
                     view! {
-                        <p class="text-[var(--color-text-muted)] animate-pulse font-mono text-xs mt-2">
+                        <p class="text-[var(--color-text-muted)] font-mono text-xs mt-2">
                             "Connecting to Spotify Web API..."
                         </p>
                     }.into_any()
@@ -193,18 +166,14 @@ pub fn SpotifyPlayer(
                         href=track_url
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border border-[var(--color-accent-border)] hover:border-[var(--color-accent)] relative overflow-hidden transition-all duration-300 group flex flex-col justify-center cursor-pointer"
-                        style="box-shadow: var(--shadow-card)"
+                        class="card-surface hover:border-[var(--color-border-secondary)] p-5 rounded-xl relative group flex flex-col justify-center cursor-pointer"
                     >
                         {view_content()}
                     </a>
                 }.into_any()
             } else {
                 view! {
-                    <section
-                        class="hover-lift bg-[var(--color-bg-surface)] backdrop-blur-md p-6 rounded-2xl border border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)] relative overflow-hidden transition-all duration-300 flex flex-col justify-center"
-                        style="box-shadow: var(--shadow-card)"
-                    >
+                    <section class="card-surface p-5 rounded-xl relative flex flex-col justify-center">
                         {view_content()}
                     </section>
                 }.into_any()
