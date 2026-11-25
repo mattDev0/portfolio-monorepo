@@ -18,26 +18,23 @@ pub fn TopologyNode(
         if is_active() {
             match id {
                 "rust" => {
-                    "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-accent-orange-border)] shadow-[0_0_12px_rgba(249,115,22,0.15)] bg-[var(--color-accent-orange-bg)] scale-[1.02]"
+                    "w-full p-3 rounded-lg border flex flex-col items-center justify-center text-center transition-colors duration-150 cursor-pointer select-none border-[var(--color-accent-orange)] bg-[var(--color-accent-orange-bg)]"
                 }
                 "java" => {
-                    "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-accent-rose)]/40 shadow-[0_0_12px_rgba(244,63,94,0.15)] bg-[var(--color-accent-rose)]/5 scale-[1.02]"
+                    "w-full p-3 rounded-lg border flex flex-col items-center justify-center text-center transition-colors duration-150 cursor-pointer select-none border-[var(--color-accent)] bg-[var(--color-accent-bg)]"
                 }
                 "frontend" | "client" => {
-                    "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-accent-gold)]/40 shadow-[0_0_12px_var(--color-accent-border)] bg-[var(--color-accent-gold)]/5 scale-[1.02]"
-                }
-                "nginx" => {
-                    "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-accent-border)] shadow-[0_0_12px_var(--color-accent-border)] bg-[var(--color-accent-bg)] scale-[1.02]"
+                    "w-full p-3 rounded-lg border flex flex-col items-center justify-center text-center transition-colors duration-150 cursor-pointer select-none border-[var(--color-accent-gold)] bg-[var(--color-hover-bg-strong)]"
                 }
                 "k8s" => {
-                    "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-accent-cyan)]/50 shadow-[0_0_12px_rgba(6,182,212,0.2)] bg-[var(--color-accent-cyan)]/5 scale-[1.02]"
+                    "w-full p-3 rounded-lg border flex flex-col items-center justify-center text-center transition-colors duration-150 cursor-pointer select-none border-[var(--color-accent-cyan)] bg-[var(--color-hover-bg-strong)]"
                 }
                 _ => {
-                    "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-accent-border)] shadow-[0_0_12px_var(--color-accent-border)] bg-[var(--color-accent-bg)] scale-[1.02]"
+                    "w-full p-3 rounded-lg border flex flex-col items-center justify-center text-center transition-colors duration-150 cursor-pointer select-none border-[var(--color-accent)] bg-[var(--color-accent-bg)]"
                 }
             }
         } else {
-            "w-full p-3 md:p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer select-none border-[var(--color-border-primary)] bg-[var(--color-bg-surface-deep)] hover:border-[var(--color-accent-border)]"
+            "w-full p-3 rounded-lg border flex flex-col items-center justify-center text-center transition-colors duration-150 cursor-pointer select-none border-[var(--color-border-primary)] bg-[var(--color-bg-surface)] hover:border-[var(--color-border-secondary)]"
         }
     };
 
@@ -45,24 +42,20 @@ pub fn TopologyNode(
         if is_active() {
             match id {
                 "rust" => {
-                    "text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent-orange)]"
-                }
-                "java" => {
-                    "text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent-rose)]"
+                    "text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent-orange)]"
                 }
                 "frontend" | "client" => {
-                    "text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent-gold)]"
-                }
-                "nginx" => {
-                    "text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent)]"
+                    "text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]"
                 }
                 "k8s" => {
-                    "text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent-cyan)]"
+                    "text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent-cyan)]"
                 }
-                _ => "text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent)]",
+                _ => {
+                    "text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]"
+                }
             }
         } else {
-            "text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-secondary)]"
+            "text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]"
         }
     };
 
@@ -80,7 +73,7 @@ pub fn TopologyNode(
             aria-pressed=move || (selected_node.get() == Some(id)).to_string()
             class=container_class
         >
-            <span class="text-lg md:text-xl mb-0.5"><EmojiIcon glyph=icon /></span>
+            <span class="text-base md:text-lg mb-1 text-[var(--color-text-secondary)]"><EmojiIcon glyph=icon /></span>
             <span class=title_class>{title}</span>
             <span class="text-[10px] text-[var(--color-text-muted)] font-mono mt-0.5">{tech}</span>
         </button>

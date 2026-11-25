@@ -7,15 +7,15 @@ pub fn SectionHeading(
     #[prop(optional)] subtitle: Option<&'static str>,
 ) -> impl IntoView {
     view! {
-        <div class="mb-6 pb-4 border-b border-[var(--color-border-primary)]">
-            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-accent-gold)] mb-1.5">
+        <div class="mb-6 pb-3.5 border-b border-[var(--color-border-primary)]">
+            <p class="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-muted)] mb-1">
                 {eyebrow}
             </p>
-            <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-text-primary)]">
+            <h3 class="text-xl md:text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
                 {title}
             </h3>
             {subtitle.map(|sub| view! {
-                <p class="text-xs text-[var(--color-text-tertiary)] mt-1.5">{sub}</p>
+                <p class="text-xs sm:text-sm text-[var(--color-text-tertiary)] mt-1">{sub}</p>
             })}
         </div>
     }
