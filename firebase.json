@@ -1,0 +1,18 @@
+{
+  "hosting": {
+    "site": "mattdev0-portfolio",
+    "public": "infrastructure/firebase",
+    "ignore": [
+      "**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "portfolio-frontend",
+          "region": "us-central1"
+        }
+      }
+    ]
+  }
+}

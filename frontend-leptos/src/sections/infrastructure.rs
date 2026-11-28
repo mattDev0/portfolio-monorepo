@@ -76,13 +76,13 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 </span>
                             </div>
 
-                            // 2. Nginx Card
+                            // 2. Gateway Card (Firebase Hosting)
                             <div class="flex-1 w-full flex flex-col justify-center">
                                 <TopologyNode
                                     id="nginx"
                                     icon="🛡️"
-                                    title="GCP Ingress"
-                                    tech="HTTPS Gateway"
+                                    title="Firebase Hosting"
+                                    tech="Edge CDN & TLS"
                                     active_node=active_topology_node
                                     selected_node=selected_node
                                     set_hovered_node=set_hovered_node
@@ -90,11 +90,11 @@ pub fn Infrastructure(telemetry: TelemetrySignals, spotify: SpotifySignals) -> i
                                 />
                             </div>
 
-                            // Arrow Nginx -> K8s Namespace
+                            // Arrow Gateway -> Cloud Run
                             <div class="flex items-center justify-center text-[var(--color-text-muted)] font-mono text-xs py-1 md:py-0">
                                 <span class="md:hidden"><Icon name="arrow-down" /></span>
                                 <span class="hidden md:inline text-[var(--color-text-muted)]">
-                                    "── Proxy ──▶"
+                                    "── Rewrite ──▶"
                                 </span>
                             </div>
 
