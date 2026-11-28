@@ -16,12 +16,12 @@ A high-performance, microservice-backed personal portfolio demonstrating full-st
 
 ## 🏗️ System Architecture
 
-This monorepo houses three distinct microservices deployed as serverless containers on **Google Cloud Run**, automatically scaled to zero when idle, and deployed via GitHub Actions.
+This monorepo houses three distinct microservices deployed as serverless containers on **Google Cloud Run**, automatically scaled to zero when idle, and deployed via GitHub Actions. `mattdev0.tech` routes through **Firebase Hosting** (edge CDN, Google-managed TLS, and `www` redirect) rewriting requests to `portfolio-frontend`, while the browser queries the Rust and Java APIs directly on their Cloud Run URLs.
 
 ```mermaid
 graph TD
-    Client[Client Browser] -->|HTTPS 443| GFE[Google Frontend Load Balancer]
-    GFE -->|Host: mattdev0.tech| FE[portfolio-frontend: Cloud Run]
+    Client[Client Browser] -->|HTTPS 443| FH[Firebase Hosting: Edge CDN & TLS]
+    FH -->|Rewrite /**| FE[portfolio-frontend: Cloud Run]
     
     Client -->|Direct API Call| Rust[portfolio-rust-api: Cloud Run]
     Client -->|Direct API Call| Java[portfolio-java-api: Cloud Run]
@@ -30,8 +30,8 @@ graph TD
     Java -->|GitHub API| GitHub[GitHub REST API]
 ```
 
-### 1. Frontend Gateway (Leptos / WebAssembly)
-A responsive, dark-themed UI built with Leptos 0.8 (CSR) and Tailwind CSS v4, compiled to WebAssembly. It dynamically polls the backend services for real-time telemetry and GitHub activity.
+### 1. Frontend Gateway (Firebase Hosting + Leptos / WebAssembly)
+A responsive, dark-themed UI built with Leptos 0.8 (CSR) and Tailwind CSS v4, compiled to WebAssembly and served by an unprivileged Nginx container on Cloud Run behind Firebase Hosting (`firebase.json` rewrites `/**` to `portfolio-frontend` in `us-central1`). It dynamically polls the backend services for real-time telemetry and GitHub activity.
 
 ### 2. Java Engine (Spring Boot 4.1.1 / Java 25)
 Handles external third-party API integration.
@@ -68,14 +68,16 @@ portfolio-monorepo/
 │       ├── deploy-gcp.yml          # Production CD to Google Cloud Run (OIDC Auth)
 │       └── test.yml                # PR CI Validation Gate (Frontend, Java, & Rust tests)
 │
-├── infrastructure/k8s/             # Kubernetes Manifests ☸️
-│   ├── kustomization.yaml          # Declarative Kustomize Base
-│   ├── ingress.yaml                # Traefik routing paths
-│   ├── network-policies.yaml       # Namespace network isolation policies
-│   ├── pdb.yaml                    # Pod Disruption Budget
-│   ├── frontend.yaml
-│   ├── java-api.yaml
-│   └── rust-api.yaml
+├── infrastructure/
+│   ├── firebase/                   # Placeholder directory for Firebase Hosting config
+│   └── k8s/                        # Kubernetes Manifests ☸️
+│       ├── kustomization.yaml      # Declarative Kustomize Base
+│       ├── ingress.yaml            # Traefik routing paths
+│       ├── network-policies.yaml   # Namespace network isolation policies
+│       ├── pdb.yaml                # Pod Disruption Budget
+│       ├── frontend.yaml
+│       ├── java-api.yaml
+│       └── rust-api.yaml
 │
 ├── shared/portfolio-api-types/     # Shared Serde API contracts 📦
 │
@@ -90,6 +92,8 @@ portfolio-monorepo/
 │   ├── src/                        # Tokio Async Handlers & Services
 │   └── Cargo.toml
 │
+├── .firebaserc                     # Firebase project mapping (mattdev0-portfolio)
+├── firebase.json                   # Firebase Hosting rewrite to portfolio-frontend
 └── README.md
 ```
 

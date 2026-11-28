@@ -17,10 +17,10 @@ pub fn get_topology_info(id: &str) -> Option<TopologyInfo> {
             badge: "Frontend",
         }),
         "nginx" => Some(TopologyInfo {
-            title: "Cloud Run Domain Mapping",
-            tech: "Custom domain + Google-managed TLS",
-            protocol: "HTTPS (Google Front End)",
-            description: "mattdev0.tech points at Google's front end through a Cloud Run domain mapping, which terminates TLS with a Google-managed certificate and routes requests to the frontend service. The browser then calls the Rust and Java APIs directly on their own Cloud Run URLs.",
+            title: "Firebase Hosting",
+            tech: "Edge CDN + Managed TLS",
+            protocol: "HTTPS (Fastly CDN)",
+            description: "mattdev0.tech routes through Firebase Hosting, which terminates TLS with a Google-managed certificate, caches static assets at the edge, and rewrites requests to the portfolio-frontend Cloud Run service. The browser then calls the Rust and Java APIs directly on their own Cloud Run URLs.",
             badge: "Gateway",
         }),
         "k8s" => Some(TopologyInfo {
@@ -66,5 +66,18 @@ pub fn get_topology_info(id: &str) -> Option<TopologyInfo> {
             badge: "External Service",
         }),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_gateway_topology_describes_firebase_hosting() {
+        let info = get_topology_info("nginx").expect("nginx gateway node must exist");
+        assert_eq!(info.title, "Firebase Hosting");
+        assert!(info.description.contains("portfolio-frontend"));
+        assert!(!info.description.contains("domain mapping"));
     }
 }
